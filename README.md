@@ -45,7 +45,7 @@ You can try the application directly on your Android device by downloading the s
 * لإخ لإق 
 * For IOS users you can try the app using Flutter web platform:
 
-  [Try the web version](https://srfalah.github.io/Cryptography-Toolkit/)
+[🌐 Try the web version](https://srfalah.github.io/Cryptography-Toolkit/)
 ---
 
 ## Tech Stack
