@@ -29,9 +29,9 @@ The ability to communicate directly with the developer via integrated contact me
 
 ## Screenshots
 
-|                                            D-H Key Exchange Screen                                             |                                                About me Screen                                                |
-|:--------------------------------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------------------------:|
-| ![Key Exchange](https://raw.githubusercontent.com/srfalah/Cryptography-Toolkit/master/screenshots/dh_screen.png) | ![About Me](https://raw.githubusercontent.com/srfalah/Cryptography-Toolkit/master/screenshots/about_screen.png) |
+| D-H Key Exchange Screen | About me Screen |
+| :---: | :---: |
+| <img src="screenshots/dh_screen.png" width="300"> | <img src="screenshots/about_screen.png" width="300"> |
 
 ---
 
