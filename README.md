@@ -39,7 +39,7 @@ The ability to communicate directly with the developer via integrated contact me
 
 You can try the application directly on your Android device by downloading the stable **APK** version:
 
-[📥 Cryptography Toolkit v2.0.2]([Releases](https://github.com/srfalah/Cryptography-Toolkit/releases/download/V2.0.2/app-release.apk))
+[📥 Cryptography Toolkit v2.0.2](https://github.com/srfalah/Cryptography-Toolkit/releases/download/V2.0.2/app-release.apk)
 > *I have removed old versions which were only a simple calculator with no algorithms.*
 
 ---
