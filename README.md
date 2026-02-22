@@ -42,6 +42,10 @@ You can try the application directly on your Android device by downloading the s
 [📥 Cryptography Toolkit v2.0.2](https://github.com/srfalah/Cryptography-Toolkit/releases/download/V2.0.2/app-release.apk)
 > *I have removed old versions which were only a simple calculator with no algorithms.*
 
+* لإخ لإق 
+* For IOS users you can try the app using Flutter web platform:
+
+  [Try the web version](https://srfalah.github.io/Cryptography-Toolkit/)
 ---
 
 ## Tech Stack
