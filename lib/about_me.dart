@@ -120,7 +120,7 @@ class AboutMeScreen extends StatelessWidget {
         
                     const SizedBox(height: 50),
                     const Text(
-                      "Version 2.0.2",
+                      "Version 2.1.0",
                       style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w500),
                     ),
                     const SizedBox(height: 20),
