@@ -69,6 +69,8 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
   }
 
   void _resetFields() {
+    FocusScope.of(context).unfocus() ;
+
     setState(() {
       baseController.clear();
       exponentController.clear();
@@ -77,19 +79,28 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
     });
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text("Modular Exponentiation", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: const [
+            Icon(Icons.speed_rounded, size: 20),
+            SizedBox(width: 8),
+            Text(
+              'Modular Exponentiation',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+          ],
+        ),
         centerTitle: true,
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          IconButton(onPressed: _resetFields, icon: const Icon(Icons.refresh_rounded)),
-        ],
+        actions: [IconButton(onPressed: _resetFields, icon: const Icon(Icons.refresh))],
       ),
       body: SafeArea(
         child: SingleChildScrollView(

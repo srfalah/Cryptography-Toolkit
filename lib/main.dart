@@ -6,7 +6,9 @@ import 'inverse_calc_screen.dart';
 import 'mod_calculator_screen.dart';
 import 'rsa_screen.dart';
 import 'vigenere_screen.dart';
-//import 'about_me_screen.dart';
+import 'elgamal_screen.dart';
+import 'rail_fence_screen.dart';
+import 'row_transposition_screen.dart';
 
 void main() {
   runApp(const CryptographyApp());
@@ -50,19 +52,27 @@ class DashboardScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "Security Laboratory",
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF1E3A8A)),
+              Row(
+                  children: const [
+                    Icon(Icons.handyman, color: Color(0xFF1E3A8A)),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        "Algorithm Workbench",
+                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF1E3A8A)),
+                      ),
+                    ),
+                  ]
               ),
               const Text("Select a tool to start learning", style: TextStyle(color: Colors.grey)),
               const SizedBox(height: 25),
-        
+
               _buildSectionTitle("Mathematical Tools"),
               _buildMenuCard(
                 context,
                 title: "Extended Euclidean",
                 subtitle: "Find Modular Inverse step-by-step",
-                icon: Icons.calculate_rounded,
+                icon: Icons.view_comfortable,
                 color: Colors.teal.shade700,
                 destination: const InverseCalcScreen(),
               ),
@@ -74,35 +84,63 @@ class DashboardScreen extends StatelessWidget {
                 color: Colors.orange.shade800,
                 destination: const ModCalculatorScreen(),
               ),
-        
+
               const SizedBox(height: 20),
-        
-              _buildSectionTitle("Classical Ciphers"),
+
+
+              _buildSectionTitle("Symmetric Ciphers"),
+
+              _buildSubSectionTitle("Substitution", Colors.deepPurple.shade600),
               _buildMenuCard(
                 context,
+                isSubItem: true,
                 title: "Caesar Cipher",
                 subtitle: "The classic shift substitution cipher",
                 icon: Icons.text_fields_rounded,
-                color: Colors.indigo.shade600,
+                color: Colors.deepPurple.shade600,
                 destination: const CaesarScreen(),
               ),
               _buildMenuCard(
                 context,
+                isSubItem: true,
                 title: "Vigenère Cipher",
                 subtitle: "Polyalphabetic substitution method",
-                icon: Icons.grid_on_rounded,
+                icon: Icons.lock_open,
                 color: Colors.deepPurple.shade600,
                 destination: const VigenereScreen(),
               ),
-        
+
+              const SizedBox(height: 10),
+
+              _buildSubSectionTitle("Transposition", Colors.blueGrey.shade800),
+              _buildMenuCard(
+                context,
+                isSubItem: true,
+                title: "Rail-Fence Cipher",
+                subtitle: "Zigzag transposition method",
+                icon: Icons.fence_rounded,
+                color: Colors.blueGrey.shade800,
+                destination: const RailFenceScreen(),
+              ),
+              _buildMenuCard(
+                context,
+                isSubItem: true,
+                title: "Row Transposition",
+                subtitle: "Columnar rearrangement technique",
+                icon: Icons.view_column_rounded,
+                color: Colors.blueGrey.shade800,
+                destination: const RowTranspositionScreen(),
+              ),
+
               const SizedBox(height: 20),
-        
+
+
               _buildSectionTitle("Asymmetric Encryption"),
               _buildMenuCard(
                 context,
                 title: "RSA Algorithm",
                 subtitle: "Key generation, encryption & decryption",
-                icon: Icons.security_rounded,
+                icon: Icons.key_outlined,
                 color: const Color(0xFF1E3A8A),
                 destination: const RsaScreen(),
               ),
@@ -111,19 +149,28 @@ class DashboardScreen extends StatelessWidget {
                 title: "Diffie-Hellman",
                 subtitle: "Key exchange & Alice-Bob simulation",
                 icon: Icons.swap_horizontal_circle_rounded,
-                color: const Color(0xFFBE185D),
+                color: const Color(0xFF1E3A8A),
                 destination: const DiffieHellmanScreen(),
               ),
-        
+              _buildMenuCard(
+                context,
+                title: "El-Gamal Cipher",
+                subtitle: "Public-key cryptography & discrete logs",
+                icon: Icons.shield_outlined,
+                color: const Color(0xFF1E3A8A),
+                destination: const ElGamalScreen(),
+              ),
+
               const SizedBox(height: 20),
-        
+
+
               _buildSectionTitle("Developer"),
               _buildMenuCard(
                 context,
                 title: "About Me",
                 subtitle: "Information about the developer",
                 icon: Icons.person_pin_rounded,
-                color: Colors.blueGrey.shade800,
+                color: Colors.blueGrey.shade900,
                 destination: const AboutMeScreen(),
               ),
             ],
@@ -134,11 +181,67 @@ class DashboardScreen extends StatelessWidget {
   }
 
   Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      margin: const EdgeInsets.only(top: 20, bottom: 15),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFF1E3A8A),
+            const Color(0xFF1E3A8A).withOpacity(0.8),
+            const Color(0xFF1E3A8A).withOpacity(0.0),
+          ],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(8),
+          bottomLeft: Radius.circular(8),
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.arrow_right, color: Colors.white, size: 24),
+          const SizedBox(width: 5),
+          Text(
+            title.toUpperCase(),
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              letterSpacing: 1.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSubSectionTitle(String title, Color color) {
+    return Container(
+      width: 200,
+      margin: const EdgeInsets.only(bottom: 10, left: 25),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        border: Border(left: BorderSide(color: color, width: 5)),
+        gradient: LinearGradient(
+          colors: [
+            color.withOpacity(0.15),
+            color.withOpacity(0.02),
+          ],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+      ),
       child: Text(
         title.toUpperCase(),
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.blueGrey, letterSpacing: 1.2),
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+          color: color,
+          letterSpacing: 1.2,
+        ),
       ),
     );
   }
@@ -148,10 +251,11 @@ class DashboardScreen extends StatelessWidget {
     required String subtitle,
     required IconData icon,
     required Color color,
-    required Widget destination
+    required Widget destination,
+    bool isSubItem = false,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 12, left: isSubItem ? 25 : 0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),

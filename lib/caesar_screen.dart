@@ -49,17 +49,36 @@ class _CaesarScreenState extends State<CaesarScreen> {
       result = processedText;
     });
   }
+  
+  void _clearAll() {
+    FocusScope.of(context).unfocus() ;
+
+    setState(() {
+      messageController.clear();
+      _shiftValue = 3.0;
+      _selectedMode = CaesarMode.encrypt;
+      result = '';
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text('Caesar Cipher', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(Icons.text_fields_rounded),
+            SizedBox(width: 10),
+            Text('Caesar Cipher', style: TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
         centerTitle: true,
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
         elevation: 0,
+        actions: [IconButton(onPressed: _clearAll, icon: const Icon(Icons.refresh))],
       ),
       body: SafeArea(
         child: SingleChildScrollView(

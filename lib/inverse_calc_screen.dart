@@ -63,16 +63,39 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
     }
   }
 
+  void _resetFields() {
+    FocusScope.of(context).unfocus() ;
+
+    setState(() {
+      eController.clear();
+      phiController.clear();
+      tableRows.clear();
+      finalResult = "";
+    });
+  }
+  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text('Extended Euclidean Algorithm', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: const [
+            Icon(Icons.view_comfortable, size: 22),
+            SizedBox(width: 8),
+            Text(
+              'Extended Euclidean Algorithm',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+          ],
+        ),
         centerTitle: true,
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
-        elevation: 0,
+        actions: [IconButton(onPressed: _resetFields, icon: const Icon(Icons.refresh))],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -151,13 +174,13 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
               children: const [
                 TableRow(
                   children: [
-                    Center(child: Text('Q', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
-                    Center(child: Text('A', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
-                    Center(child: Text('B', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
-                    Center(child: Text('R', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
-                    Center(child: Text('𝑥', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
-                    Center(child: Text('𝑦', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
-                    Center(child: Text('𝑧', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                    Center(child: Text('Q', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
+                    Center(child: Text('A', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
+                    Center(child: Text('B', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
+                    Center(child: Text('R', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
+                    Center(child: Text('𝑥', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
+                    Center(child: Text('𝑦', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
+                    Center(child: Text('𝑧', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
                   ],
                 ),
               ],

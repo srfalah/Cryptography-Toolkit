@@ -69,16 +69,40 @@ class _VigenereScreenState extends State<VigenereScreen> {
     });
   }
 
+  void _clearAll() {
+    FocusScope.of(context).unfocus() ;
+
+    setState(() {
+      messageController.clear();
+      keywordController.clear();
+      _selectedMode = VigenereMode.encrypt;
+      result = '';
+      repeatedKeyDisplay = '';
+    });
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text('Vigenère Cipher', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: const [
+            Icon(Icons.lock_open, size: 25),
+            SizedBox(width: 8),
+            Text(
+              'Vigenère Cipher',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
+            ),
+          ],
+        ),
         centerTitle: true,
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
-        elevation: 0,
+        actions: [IconButton(onPressed: _clearAll, icon: const Icon(Icons.refresh))],
       ),
       body: SafeArea(
         child: SingleChildScrollView(

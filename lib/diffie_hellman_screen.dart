@@ -87,20 +87,43 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
     });
   }
 
+
+  void _clearAll() {
+    FocusScope.of(context).unfocus() ;
+
+    setState(() {
+      qController.clear();
+      alphaController.clear();
+      privateAController.clear();
+      privateBController.clear();
+      _resetResults();
+      errorMessage = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF1F5F9),
       appBar: AppBar(
-        title: const Text('Diffie-Hellman Exchange', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: const [
+            Icon(Icons.swap_horizontal_circle_rounded, size: 22),
+            SizedBox(width: 8),
+            Text(
+              'D-H Key Exchange',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
         centerTitle: true,
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
-        actions: [IconButton(onPressed: () {
-          qController.clear(); alphaController.clear();
-          privateAController.clear(); privateBController.clear();
-          setState(() => _resetResults());
-        }, icon: const Icon(Icons.refresh))],
+        elevation: 0,
+        actions: [IconButton(onPressed: _clearAll, icon: const Icon(Icons.refresh))],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -171,7 +194,7 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
         _buildInput(ctrl, "Private Key ($keySuffix)", color: color),
         TextButton.icon(
           onPressed: () => _generateKey(ctrl),
-          icon: const Icon(Icons.casino, size: 14),
+          icon: const Icon(Icons.auto_awesome, size: 14),
           label: const Text("Generate", style: TextStyle(fontSize: 10)),
           style: TextButton.styleFrom(foregroundColor: color, padding: EdgeInsets.zero),
         ),

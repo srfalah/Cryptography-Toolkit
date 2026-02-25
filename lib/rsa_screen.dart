@@ -140,10 +140,20 @@ class _RsaScreenState extends State<RsaScreen> {
   void _showError(String msg) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.red));
 
   void _clearAll() {
-    pController.clear(); qController.clear(); nController.clear();
-    phiController.clear(); eController.clear(); dController.clear();
-    messageController.clear(); encryptedController.clear(); decryptedController.clear();
-    setState(() => isEncryptionReady = false);
+    FocusScope.of(context).unfocus() ;
+
+    setState(() {
+      pController.clear();
+      qController.clear();
+      nController.clear();
+      phiController.clear();
+      eController.clear();
+      dController.clear();
+      messageController.clear();
+      encryptedController.clear();
+      decryptedController.clear();
+      isEncryptionReady = false;
+    });
   }
 
   @override
@@ -151,7 +161,18 @@ class _RsaScreenState extends State<RsaScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF1F5F9),
       appBar: AppBar(
-        title: const Text('RSA Algorithm', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: const [
+            Icon(Icons.key_outlined, size: 30),
+            SizedBox(width: 8),
+            Text(
+              'RSA',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30),
+            ),
+          ],
+        ),
         centerTitle: true,
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
