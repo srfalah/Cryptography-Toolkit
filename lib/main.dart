@@ -61,6 +61,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   WorkbenchFilter _selectedFilter = WorkbenchFilter.all;
   SymmetricSubFilter _symmetricSubFilter = SymmetricSubFilter.all;
+  bool _isGridView = false;
 
   @override
   Widget build(BuildContext context) {
@@ -150,24 +151,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   icon: Icons.calculate_outlined,
                   countLabel: "2 Tools",
                 ),
-                _buildMenuCard(
-                  context,
-                  title: "Extended Euclidean",
-                  formulaBadge: "a⁻¹ mod n",
-                  subtitle: "Find Modular Inverse & GCD step-by-step",
-                  icon: Icons.view_comfortable_rounded,
-                  color: tealColor,
-                  destination: const InverseCalcScreen(),
-                ),
-                _buildMenuCard(
-                  context,
-                  title: "Crypto Calculator",
-                  formulaBadge: "a^b mod n",
-                  subtitle: "Modular power, inverse, GCD, primes & roots",
-                  icon: Icons.calculate_rounded,
-                  color: orangeColor,
-                  destination: const ModCalculatorScreen(),
-                ),
+                _buildToolCollection([
+                  _buildToolItem(
+                    context,
+                    title: "Extended Euclidean",
+                    formulaBadge: "a⁻¹ mod n",
+                    subtitle: "Find Modular Inverse & GCD step-by-step",
+                    icon: Icons.view_comfortable_rounded,
+                    color: tealColor,
+                    destination: const InverseCalcScreen(),
+                  ),
+                  _buildToolItem(
+                    context,
+                    title: "Crypto Calculator",
+                    formulaBadge: "a^b mod n",
+                    subtitle: "Modular power, inverse, GCD, primes & roots",
+                    icon: Icons.calculate_rounded,
+                    color: orangeColor,
+                    destination: const ModCalculatorScreen(),
+                  ),
+                ]),
                 const SizedBox(height: 8),
               ],
 
@@ -197,7 +200,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     icon: Icons.find_replace_rounded,
                     color: purpleColor,
                     children: [
-                      _buildMenuCard(
+                      _buildToolItem(
                         context,
                         isSubItem: true,
                         title: "Caesar Cipher",
@@ -207,7 +210,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         color: purpleColor,
                         destination: const CaesarScreen(),
                       ),
-                      _buildMenuCard(
+                      _buildToolItem(
                         context,
                         isSubItem: true,
                         title: "Vigenère Cipher",
@@ -217,7 +220,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         color: purpleColor,
                         destination: const VigenereScreen(),
                       ),
-                      _buildMenuCard(
+                      _buildToolItem(
                         context,
                         isSubItem: true,
                         isLastInGroup: true,
@@ -241,7 +244,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     icon: Icons.swap_calls_rounded,
                     color: transColor,
                     children: [
-                      _buildMenuCard(
+                      _buildToolItem(
                         context,
                         isSubItem: true,
                         title: "Rail-Fence Cipher",
@@ -251,7 +254,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         color: transColor,
                         destination: const RailFenceScreen(),
                       ),
-                      _buildMenuCard(
+                      _buildToolItem(
                         context,
                         isSubItem: true,
                         title: "Row Transposition",
@@ -261,7 +264,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         color: transColor,
                         destination: const RowTranspositionScreen(),
                       ),
-                      _buildMenuCard(
+                      _buildToolItem(
                         context,
                         isSubItem: true,
                         isLastInGroup: true,
@@ -285,34 +288,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   icon: Icons.security_rounded,
                   countLabel: "3 Protocols",
                 ),
-                _buildMenuCard(
-                  context,
-                  title: "RSA Algorithm",
-                  formulaBadge: "C = M^e mod n",
-                  subtitle: "Prime key generation, encryption & decryption",
-                  icon: Icons.key_rounded,
-                  color: brandAccent,
-                  destination: const RsaScreen(),
-                ),
-                _buildMenuCard(
-                  context,
-                  title: "Diffie-Hellman",
-                  formulaBadge: "K = Y^X mod q",
-                  subtitle: "Visual public-channel key exchange crossover",
-                  icon: Icons.swap_horizontal_circle_rounded,
-                  color: brandAccent,
-                  destination: const DiffieHellmanScreen(),
-                ),
-                _buildMenuCard(
-                  context,
-                  title: "El-Gamal Cipher",
-                  formulaBadge: "(C₁, C₂) Pair",
-                  subtitle:
-                      "Probabilistic public-key encryption & discrete logs",
-                  icon: Icons.shield_outlined,
-                  color: brandAccent,
-                  destination: const ElGamalScreen(),
-                ),
+                _buildToolCollection([
+                  _buildToolItem(
+                    context,
+                    title: "RSA Algorithm",
+                    formulaBadge: "C = M^e mod n",
+                    subtitle: "Prime key generation, encryption & decryption",
+                    icon: Icons.key_rounded,
+                    color: brandAccent,
+                    destination: const RsaScreen(),
+                  ),
+                  _buildToolItem(
+                    context,
+                    title: "Diffie-Hellman",
+                    formulaBadge: "K = Y^X mod q",
+                    subtitle: "Visual public-channel key exchange crossover",
+                    icon: Icons.swap_horizontal_circle_rounded,
+                    color: brandAccent,
+                    destination: const DiffieHellmanScreen(),
+                  ),
+                  _buildToolItem(
+                    context,
+                    title: "El-Gamal Cipher",
+                    formulaBadge: "(C₁, C₂) Pair",
+                    subtitle:
+                        "Probabilistic public-key encryption & discrete logs",
+                    icon: Icons.shield_outlined,
+                    color: brandAccent,
+                    destination: const ElGamalScreen(),
+                  ),
+                ]),
               ],
             ],
           ),
@@ -424,24 +429,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ],
                 ),
               ),
+              // View Mode Toggle (List vs 2-Column Grid)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                padding: const EdgeInsets.all(2.5),
                 decoration: BoxDecoration(
                   color: isDark
-                      ? Colors.white.withValues(alpha: 0.1)
+                      ? Colors.white.withValues(alpha: 0.08)
                       : Colors.white.withValues(alpha: 0.85),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(10),
                   border: Border.all(
                     color: brandAccent.withValues(alpha: 0.25),
                   ),
                 ),
-                child: Text(
-                  "11 Tools",
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: brandAccent,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildViewModeButton(
+                      context,
+                      icon: Icons.view_agenda_rounded,
+                      tooltip: 'List View',
+                      selected: !_isGridView,
+                      brandAccent: brandAccent,
+                      isDark: isDark,
+                      onTap: () => setState(() => _isGridView = false),
+                    ),
+                    const SizedBox(width: 2),
+                    _buildViewModeButton(
+                      context,
+                      icon: Icons.grid_view_rounded,
+                      tooltip: '2-Column Grid View',
+                      selected: _isGridView,
+                      brandAccent: brandAccent,
+                      isDark: isDark,
+                      onTap: () => setState(() => _isGridView = true),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -794,8 +816,255 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ],
           ),
           const SizedBox(height: 10),
-          ...children,
+          _buildToolCollection(children, isSubGroup: true),
         ],
+      ),
+    );
+  }
+
+  Widget _buildViewModeButton(
+    BuildContext context, {
+    required IconData icon,
+    required String tooltip,
+    required bool selected,
+    required Color brandAccent,
+    required bool isDark,
+    required VoidCallback onTap,
+  }) {
+    final Color activeText =
+        isDark && brandAccent.computeLuminance() > 0.45
+            ? const Color(0xFF0F172A)
+            : Colors.white;
+    return GestureDetector(
+      onTap: onTap,
+      child: Tooltip(
+        message: tooltip,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
+          decoration: BoxDecoration(
+            color: selected ? brandAccent : Colors.transparent,
+            borderRadius: BorderRadius.circular(7),
+          ),
+          child: Icon(
+            icon,
+            size: 15,
+            color: selected ? activeText : AppTheme.textSecondary(context),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Renders items as a vertical list or a 2-column grid depending on _isGridView
+  Widget _buildToolCollection(List<Widget> items, {bool isSubGroup = false}) {
+    if (!_isGridView) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: items,
+      );
+    }
+
+    final List<Widget> rows = [];
+    for (int i = 0; i < items.length; i += 2) {
+      final bool hasSecond = i + 1 < items.length;
+      final bool isLastRow = i + 2 >= items.length;
+      rows.add(
+        Padding(
+          padding: EdgeInsets.only(bottom: isLastRow ? 0 : 8),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(child: items[i]),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: hasSecond ? items[i + 1] : const SizedBox.shrink(),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    return Padding(
+      padding: EdgeInsets.only(bottom: isSubGroup ? 0 : 6),
+      child: Column(children: rows),
+    );
+  }
+
+  Widget _buildToolItem(
+    BuildContext context, {
+    required String title,
+    required String formulaBadge,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required Widget destination,
+    bool isSubItem = false,
+    bool isLastInGroup = false,
+  }) {
+    if (_isGridView) {
+      return _buildGridMenuCard(
+        context,
+        title: title,
+        formulaBadge: formulaBadge,
+        subtitle: subtitle,
+        icon: icon,
+        color: color,
+        destination: destination,
+      );
+    }
+    return _buildMenuCard(
+      context,
+      title: title,
+      formulaBadge: formulaBadge,
+      subtitle: subtitle,
+      icon: icon,
+      color: color,
+      destination: destination,
+      isSubItem: isSubItem,
+      isLastInGroup: isLastInGroup,
+    );
+  }
+
+  Widget _buildGridMenuCard(
+    BuildContext context, {
+    required String title,
+    required String formulaBadge,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required Widget destination,
+  }) {
+    final bool isDark = AppTheme.isDark(context);
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.cardBg(context),
+        borderRadius: BorderRadius.circular(13),
+        border: Border.all(
+          color: color.withValues(alpha: isDark ? 0.34 : 0.22),
+          width: 1.1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.25)
+                : color.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(13),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(13),
+          splashColor: color.withValues(alpha: 0.12),
+          highlightColor: color.withValues(alpha: 0.06),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => destination),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(11),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Top Row: Icon on left, subtle arrow on right
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            color.withValues(alpha: isDark ? 0.22 : 0.16),
+                            color.withValues(alpha: isDark ? 0.08 : 0.06),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: color.withValues(alpha: isDark ? 0.35 : 0.22),
+                        ),
+                      ),
+                      child: Icon(icon, color: color, size: 19),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: isDark ? 0.14 : 0.08),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 10,
+                        color: color,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 9),
+
+                // Line 1: Title
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13.5,
+                    color: AppTheme.textPrimary(context),
+                  ),
+                ),
+                const SizedBox(height: 4),
+
+                // Line 2: Math Symbol Badge
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: isDark ? 0.16 : 0.1),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: color.withValues(alpha: isDark ? 0.4 : 0.25),
+                    ),
+                  ),
+                  child: Text(
+                    formulaBadge,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontFamily: 'Courier New',
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 5),
+
+                // Line 3: Subtitle
+                Text(
+                  subtitle,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    height: 1.25,
+                    color: AppTheme.textSecondary(context),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
