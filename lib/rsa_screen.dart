@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:math';
-
 
 class RsaScreen extends StatefulWidget {
   const RsaScreen({super.key});
@@ -13,6 +13,7 @@ class _RsaScreenState extends State<RsaScreen> {
   final Color primaryColor = const Color(0xFF1E3A8A);
   final Color accentColor = Colors.orange.shade800;
 
+  // Step 1: Key Generation Controllers
   final TextEditingController pController = TextEditingController();
   final TextEditingController qController = TextEditingController();
   final TextEditingController nController = TextEditingController();
@@ -20,132 +21,365 @@ class _RsaScreenState extends State<RsaScreen> {
   final TextEditingController eController = TextEditingController();
   final TextEditingController dController = TextEditingController();
 
+  // Step 2 & 3: Encryption / Decryption Controllers
   final TextEditingController messageController = TextEditingController();
   final TextEditingController encryptedController = TextEditingController();
   final TextEditingController decryptedController = TextEditingController();
 
+  bool isPrimesValid = false;
   bool isEncryptionReady = false;
+  bool isEncrypted = false;
+  bool isDecrypted = false;
 
+  String? _primeValidationMessage;
+  String? _eValidationMessage;
+  String? _encryptErrorMessage;
+  String? _decryptErrorMessage;
+  List<BigInt> _suggestedEValues = [];
+
+  @override
+  void dispose() {
+    pController.dispose();
+    qController.dispose();
+    nController.dispose();
+    phiController.dispose();
+    eController.dispose();
+    dController.dispose();
+    messageController.dispose();
+    encryptedController.dispose();
+    decryptedController.dispose();
+    super.dispose();
+  }
 
   bool _isPrime(BigInt number) {
     if (number <= BigInt.one) return false;
     if (number == BigInt.two || number == BigInt.from(3)) return true;
-    if (number % BigInt.two == BigInt.zero || number % BigInt.from(3) == BigInt.zero) return false;
+    if (number.isEven || number % BigInt.from(3) == BigInt.zero) {
+      return false;
+    }
     BigInt i = BigInt.from(5);
     while (i * i <= number) {
-      if (number % i == BigInt.zero || number % (i + BigInt.two) == BigInt.zero) return false;
+      if (number % i == BigInt.zero ||
+          number % (i + BigInt.two) == BigInt.zero) {
+        return false;
+      }
       i += BigInt.from(6);
     }
     return true;
+  }
+
+  void _resetDownstreamResults() {
+    encryptedController.clear();
+    decryptedController.clear();
+    isEncrypted = false;
+    isDecrypted = false;
+    _encryptErrorMessage = null;
+    _decryptErrorMessage = null;
   }
 
   void _generatePrimes() {
     final random = Random.secure();
     BigInt generateRandomPrime() {
       BigInt candidate;
-      do { candidate = BigInt.from(random.nextInt(900) + 10); } while (!_isPrime(candidate));
+      do {
+        candidate = BigInt.from(random.nextInt(150) + 11);
+      } while (!_isPrime(candidate));
       return candidate;
     }
+
+    final BigInt p = generateRandomPrime();
+    BigInt q;
+    do {
+      q = generateRandomPrime();
+    } while (q == p); // Guarantee distinct primes p != q
+
     setState(() {
-      pController.text = generateRandomPrime().toString();
-      qController.text = generateRandomPrime().toString();
-      _onPrimeFieldsChanged();
+      pController.text = p.toString();
+      qController.text = q.toString();
+      _onPrimeFieldsChanged(autoPickEIfInvalid: true);
     });
   }
 
-  void _onPrimeFieldsChanged() {
-    if (pController.text.isEmpty || qController.text.isEmpty) return;
-    try {
-      BigInt p = BigInt.parse(pController.text);
-      BigInt q = BigInt.parse(qController.text);
-      if (_isPrime(p) && _isPrime(q)) {
-        nController.text = (p * q).toString();
-        phiController.text = ((p - BigInt.one) * (q - BigInt.one)).toString();
-        _onEFieldChanged();
+  List<BigInt> _computeSuggestedEValues(BigInt phi) {
+    final List<BigInt> suggestions = [];
+    BigInt candidate = BigInt.from(3);
+    while (candidate < phi && suggestions.length < 5) {
+      if (candidate.gcd(phi) == BigInt.one) {
+        suggestions.add(candidate);
       }
+      candidate += BigInt.two;
+    }
+    final BigInt fermat = BigInt.from(65537);
+    if (fermat < phi &&
+        fermat.gcd(phi) == BigInt.one &&
+        !suggestions.contains(fermat)) {
+      suggestions.add(fermat);
+    }
+    return suggestions;
+  }
+
+  void _onPrimeFieldsChanged({bool autoPickEIfInvalid = false}) {
+    _resetDownstreamResults();
+
+    if (pController.text.trim().isEmpty || qController.text.trim().isEmpty) {
+      setState(() {
+        isPrimesValid = false;
+        isEncryptionReady = false;
+        nController.clear();
+        phiController.clear();
+        dController.clear();
+        _suggestedEValues = [];
+        _primeValidationMessage = null;
+        _eValidationMessage = null;
+      });
+      return;
+    }
+
+    try {
+      final BigInt p = BigInt.parse(pController.text.trim());
+      final BigInt q = BigInt.parse(qController.text.trim());
+
+      final bool pPrime = _isPrime(p);
+      final bool qPrime = _isPrime(q);
+
+      if (!pPrime || !qPrime) {
+        String msg;
+        if (!pPrime && !qPrime) {
+          msg = 'Both p ($p) and q ($q) must be prime numbers.';
+        } else if (!pPrime) {
+          msg = 'p = $p is not a prime number.';
+        } else {
+          msg = 'q = $q is not a prime number.';
+        }
+        setState(() {
+          isPrimesValid = false;
+          isEncryptionReady = false;
+          nController.clear();
+          phiController.clear();
+          dController.clear();
+          _suggestedEValues = [];
+          _primeValidationMessage = msg;
+          _eValidationMessage = null;
+        });
+        return;
+      }
+
+      if (p == q) {
+        setState(() {
+          isPrimesValid = false;
+          isEncryptionReady = false;
+          nController.clear();
+          phiController.clear();
+          dController.clear();
+          _suggestedEValues = [];
+          _primeValidationMessage =
+              'Primes p and q must be distinct (p ≠ q) for RSA.';
+          _eValidationMessage = null;
+        });
+        return;
+      }
+
+      final BigInt n = p * q;
+      final BigInt phi = (p - BigInt.one) * (q - BigInt.one);
+
+      nController.text = n.toString();
+      phiController.text = phi.toString();
+      _suggestedEValues = _computeSuggestedEValues(phi);
+      isPrimesValid = true;
+      _primeValidationMessage = null;
+
+      if (autoPickEIfInvalid && _suggestedEValues.isNotEmpty) {
+        eController.text = _suggestedEValues.first.toString();
+      }
+
+      _onEFieldChanged();
     } catch (e) {
-      // Ignore invalid input
+      setState(() {
+        isPrimesValid = false;
+        isEncryptionReady = false;
+        nController.clear();
+        phiController.clear();
+        dController.clear();
+        _suggestedEValues = [];
+        _primeValidationMessage = 'Please enter valid integer primes.';
+      });
     }
   }
 
   void _suggestE() {
-    if (phiController.text.isEmpty) {
-      _showError('يجب توليد قيم p و q أولاً');
+    if (!isPrimesValid || phiController.text.isEmpty) {
+      setState(() {
+        _primeValidationMessage = 'Please enter valid primes p and q first.';
+      });
       return;
     }
-    try {
-      BigInt phi = BigInt.parse(phiController.text);
-      List<BigInt> candidates = [BigInt.from(3), BigInt.from(17), BigInt.from(65537)];
+    if (_suggestedEValues.isEmpty) return;
 
-      for (BigInt e in candidates) {
-        if (e < phi && e.gcd(phi) == BigInt.one) {
-          setState(() {
-            eController.text = e.toString();
-            _onEFieldChanged();
-          });
-          return;
-        }
+    final String currentE = eController.text.trim();
+    int nextIndex = 0;
+    for (int i = 0; i < _suggestedEValues.length; i++) {
+      if (_suggestedEValues[i].toString() == currentE) {
+        nextIndex = (i + 1) % _suggestedEValues.length;
+        break;
       }
-
-
-      BigInt start = BigInt.from(3);
-      while (start < phi) {
-        if (start.gcd(phi) == BigInt.one) {
-          setState(() {
-            eController.text = start.toString();
-            _onEFieldChanged();
-          });
-          break;
-        }
-        start += BigInt.two;
-      }
-    } catch (e) {
-      // Ignore invalid input
     }
+    setState(() {
+      eController.text = _suggestedEValues[nextIndex].toString();
+      _onEFieldChanged();
+    });
   }
 
   void _onEFieldChanged() {
-    if (eController.text.isEmpty || phiController.text.isEmpty) {
-      setState(() => isEncryptionReady = false);
+    _resetDownstreamResults();
+
+    if (!isPrimesValid || phiController.text.isEmpty) {
+      setState(() {
+        isEncryptionReady = false;
+        dController.clear();
+        _eValidationMessage = null;
+      });
       return;
     }
-    try {
-      BigInt e = BigInt.parse(eController.text);
-      BigInt phi = BigInt.parse(phiController.text);
-      if (e > BigInt.one && e < phi && e.gcd(phi) == BigInt.one) {
-        dController.text = e.modInverse(phi).toString();
-        setState(() => isEncryptionReady = true);
-      } else {
+
+    if (eController.text.trim().isEmpty) {
+      setState(() {
+        isEncryptionReady = false;
         dController.clear();
-        setState(() => isEncryptionReady = false);
+        _eValidationMessage = null;
+      });
+      return;
+    }
+
+    try {
+      final BigInt e = BigInt.parse(eController.text.trim());
+      final BigInt phi = BigInt.parse(phiController.text.trim());
+
+      if (e <= BigInt.one || e >= phi) {
+        setState(() {
+          isEncryptionReady = false;
+          dController.clear();
+          _eValidationMessage =
+              'Public exponent e must satisfy 1 < e < φ(n) ($phi).';
+        });
+        return;
       }
-    } catch (err) { setState(() => isEncryptionReady = false); }
+
+      final BigInt g = e.gcd(phi);
+      if (g != BigInt.one) {
+        setState(() {
+          isEncryptionReady = false;
+          dController.clear();
+          _eValidationMessage =
+              'gcd($e, $phi) = $g ≠ 1. e must be coprime to φ(n).';
+        });
+        return;
+      }
+
+      final BigInt d = e.modInverse(phi);
+      setState(() {
+        dController.text = d.toString();
+        isEncryptionReady = true;
+        _eValidationMessage = null;
+      });
+    } catch (err) {
+      setState(() {
+        isEncryptionReady = false;
+        dController.clear();
+        _eValidationMessage = 'Invalid number format for e.';
+      });
+    }
   }
 
   void _encryptMessage() {
+    FocusScope.of(context).unfocus();
+    setState(() => _encryptErrorMessage = null);
+
+    if (messageController.text.trim().isEmpty) {
+      setState(() {
+        _encryptErrorMessage = 'Please enter a numeric Message (M) to encrypt.';
+      });
+      return;
+    }
+
     try {
-      BigInt m = BigInt.parse(messageController.text);
-      BigInt n = BigInt.parse(nController.text);
-      BigInt e = BigInt.parse(eController.text);
-      if (m >= n) { _showError('Message m must be less than n'); return; }
-      setState(() => encryptedController.text = m.modPow(e, n).toString());
-    } catch (e) { _showError('Input error'); }
+      final BigInt m = BigInt.parse(messageController.text.trim());
+      final BigInt n = BigInt.parse(nController.text.trim());
+      final BigInt e = BigInt.parse(eController.text.trim());
+
+      if (m < BigInt.zero || m >= n) {
+        setState(() {
+          _encryptErrorMessage =
+              'Message (M) must be between 0 and ${n - BigInt.one} (M < n).';
+        });
+        return;
+      }
+
+      final BigInt c = m.modPow(e, n);
+      setState(() {
+        encryptedController.text = c.toString();
+        isEncrypted = true;
+        isDecrypted = false;
+        decryptedController.clear();
+      });
+    } catch (e) {
+      setState(() {
+        _encryptErrorMessage = 'Invalid message input.';
+      });
+    }
   }
 
   void _decryptMessage() {
+    FocusScope.of(context).unfocus();
+    setState(() => _decryptErrorMessage = null);
+
+    if (encryptedController.text.trim().isEmpty) {
+      setState(() {
+        _decryptErrorMessage =
+            'Enter Ciphertext (C) (or encrypt a message in Step 2).';
+      });
+      return;
+    }
+
     try {
-      BigInt c = BigInt.parse(encryptedController.text);
-      BigInt n = BigInt.parse(nController.text);
-      BigInt d = BigInt.parse(dController.text);
-      setState(() => decryptedController.text = c.modPow(d, n).toString());
-    } catch (e) { _showError('Decryption failed'); }
+      final BigInt c = BigInt.parse(encryptedController.text.trim());
+      final BigInt n = BigInt.parse(nController.text.trim());
+      final BigInt d = BigInt.parse(dController.text.trim());
+
+      if (c < BigInt.zero || c >= n) {
+        setState(() {
+          _decryptErrorMessage =
+              'Ciphertext (C) must be less than Modulus n ($n).';
+        });
+        return;
+      }
+
+      final BigInt m = c.modPow(d, n);
+      setState(() {
+        decryptedController.text = m.toString();
+        isDecrypted = true;
+      });
+    } catch (e) {
+      setState(() {
+        _decryptErrorMessage = 'Decryption failed: check ciphertext input.';
+      });
+    }
   }
 
-  void _showError(String msg) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.red));
+  void _copyText(String text, String label) {
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$label copied to clipboard!'),
+        backgroundColor: Colors.green.shade700,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
 
   void _clearAll() {
-    FocusScope.of(context).unfocus() ;
-
+    FocusScope.of(context).unfocus();
     setState(() {
       pController.clear();
       qController.clear();
@@ -154,9 +388,12 @@ class _RsaScreenState extends State<RsaScreen> {
       eController.clear();
       dController.clear();
       messageController.clear();
-      encryptedController.clear();
-      decryptedController.clear();
+      _resetDownstreamResults();
+      isPrimesValid = false;
       isEncryptionReady = false;
+      _primeValidationMessage = null;
+      _eValidationMessage = null;
+      _suggestedEValues = [];
     });
   }
 
@@ -169,121 +406,42 @@ class _RsaScreenState extends State<RsaScreen> {
           alignment: WrapAlignment.center,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: const [
-            Icon(Icons.key_outlined, size: 30),
+            Icon(Icons.key_outlined, size: 24),
             SizedBox(width: 8),
             Text(
-              'RSA',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30),
+              'RSA Algorithm',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
             ),
           ],
         ),
         centerTitle: true,
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
-        actions: [IconButton(onPressed: _clearAll, icon: const Icon(Icons.refresh))],
+        elevation: 0,
+        actions: [
+          IconButton(
+            onPressed: _clearAll,
+            tooltip: 'Reset All',
+            icon: const Icon(Icons.refresh),
+          ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              _buildStepCard(
-                title: "1. Key Generation",
-                icon: Icons.settings_suggest,
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(child: _buildInput(pController, "Prime (p)", onChanged: (_)=> _onPrimeFieldsChanged())),
-                        const SizedBox(width: 10),
-                        Expanded(child: _buildInput(qController, "Prime (q)", onChanged: (_)=> _onPrimeFieldsChanged())),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: _generatePrimes,
-                        icon: const Icon(Icons.auto_awesome),
-                        label: const Text("Generate Random Primes"),
-                        style: OutlinedButton.styleFrom(foregroundColor: Colors.teal),
-                      ),
-                    ),
-                    const Divider(height: 30),
-                    Row(
-                      children: [
-                        Expanded(child: _buildInput(nController, "Modulus (n)", readOnly: true)),
-                        const SizedBox(width: 10),
-                        Expanded(child: _buildInput(phiController, "Totient φ(n)", readOnly: true)),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-        
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildInput(
-                              eController,
-                              "Public Exponent (e)",
-                              icon: Icons.public,
-                              onChanged: (_)=> _onEFieldChanged()
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        SizedBox(
-                          height: 55,
-                          child: ElevatedButton(
-                            onPressed: _suggestE,
-                            style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.amber.shade700,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))
-                            ),
-                            child: const Icon(Icons.lightbulb_outline, color: Colors.white),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    _buildInput(dController, "Private Exponent (d)", icon: Icons.lock_person, readOnly: true, color: accentColor),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-        
+              // STEP 1: KEY GENERATION
+              _buildKeyGenerationCard(),
+              const SizedBox(height: 16),
+
               if (isEncryptionReady) ...[
-                _buildStepCard(
-                  title: "2. Encryption",
-                  icon: Icons.lock,
-                  child: Column(
-                    children: [
-                      _buildInput(messageController, "Message (m)", icon: Icons.tag),
-                      const SizedBox(height: 15),
-                      ElevatedButton(
-                        onPressed: _encryptMessage,
-                        style: ElevatedButton.styleFrom(backgroundColor: primaryColor, minimumSize: const Size(double.infinity, 50)),
-                        child: const Text("ENCRYPT", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                      ),
-                      const SizedBox(height: 15),
-                      _buildInput(encryptedController, "Ciphertext (c)", readOnly: true),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                _buildStepCard(
-                  title: "3. Decryption",
-                  icon: Icons.lock_open,
-                  child: Column(
-                    children: [
-                      ElevatedButton(
-                        onPressed: _decryptMessage,
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey.shade800, minimumSize: const Size(double.infinity, 50)),
-                        child: const Text("DECRYPT", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                      ),
-                      const SizedBox(height: 15),
-                      _buildInput(decryptedController, "Recovered (m)", readOnly: true, color: Colors.green.shade700),
-                    ],
-                  ),
-                ),
+                // STEP 2: ENCRYPTION
+                _buildEncryptionCard(),
+                const SizedBox(height: 16),
+
+                // STEP 3: DECRYPTION (Directly usable for decryption-only problems too!)
+                _buildDecryptionCard(),
               ] else
                 _buildWarningCard(),
             ],
@@ -293,48 +451,671 @@ class _RsaScreenState extends State<RsaScreen> {
     );
   }
 
+  Widget _buildKeyGenerationCard() {
+    final String pMinus1 = isPrimesValid
+        ? (BigInt.parse(pController.text.trim()) - BigInt.one).toString()
+        : 'p−1';
+    final String qMinus1 = isPrimesValid
+        ? (BigInt.parse(qController.text.trim()) - BigInt.one).toString()
+        : 'q−1';
 
-  Widget _buildStepCard({required String title, required IconData icon, required Widget child}) {
+    return _buildStepCard(
+      title: "1. Key Generation",
+      subtitle: "Public Key: {e, n}  •  Private Key: {d, n}",
+      icon: Icons.settings_suggest_rounded,
+      trailing: TextButton.icon(
+        onPressed: _generatePrimes,
+        icon: const Icon(Icons.auto_awesome, size: 16),
+        label: const Text("Auto Primes", style: TextStyle(fontSize: 12)),
+        style: TextButton.styleFrom(
+          foregroundColor: Colors.teal.shade700,
+          backgroundColor: Colors.teal.shade50,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Primes p and q Row
+          Row(
+            children: [
+              Expanded(
+                child: _buildInput(
+                  pController,
+                  "Prime (p)",
+                  onChanged: (_) => _onPrimeFieldsChanged(),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _buildInput(
+                  qController,
+                  "Prime (q)",
+                  onChanged: (_) => _onPrimeFieldsChanged(),
+                ),
+              ),
+            ],
+          ),
+
+          // Inline Prime Validation Banner
+          if (_primeValidationMessage != null) ...[
+            const SizedBox(height: 12),
+            _buildInlineValidationBanner(_primeValidationMessage!),
+          ],
+
+          // Computed n and φ(n) Live Breakdown Rows
+          if (isPrimesValid) ...[
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildCompactCalcRow(
+                    label: "Modulus (n)",
+                    symbolicFormula: "p × q",
+                    substitutedFormula:
+                        "${pController.text} × ${qController.text}",
+                    resultValue: nController.text,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildCompactCalcRow(
+                    label: "Totient φ(n)",
+                    symbolicFormula: "(p−1)(q−1)",
+                    substitutedFormula: "$pMinus1 × $qMinus1",
+                    resultValue: phiController.text,
+                  ),
+                ),
+              ],
+            ),
+            const Divider(height: 26),
+
+            // Public Exponent (e) Row + Suggest Button
+            Row(
+              children: [
+                Expanded(
+                  child: _buildInput(
+                    eController,
+                    "Public Exponent (e)",
+                    icon: Icons.public_rounded,
+                    onChanged: (_) => _onEFieldChanged(),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                SizedBox(
+                  height: 48,
+                  child: ElevatedButton.icon(
+                    onPressed: _suggestE,
+                    icon: const Icon(Icons.lightbulb_outline_rounded,
+                        color: Colors.white, size: 18),
+                    label: const Text(
+                      "Suggest e",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.amber.shade700,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            // Clickable Valid e Suggestion Chips
+            if (_suggestedEValues.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    Text(
+                      "Valid coprime e: ",
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blueGrey.shade600,
+                      ),
+                    ),
+                    ..._suggestedEValues.map((val) {
+                      final bool isSelected =
+                          eController.text.trim() == val.toString();
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              eController.text = val.toString();
+                              _onEFieldChanged();
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? primaryColor
+                                  : primaryColor.withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: isSelected
+                                    ? primaryColor
+                                    : primaryColor.withValues(alpha: 0.25),
+                              ),
+                            ),
+                            child: Text(
+                              val.toString(),
+                              style: TextStyle(
+                                fontFamily: 'Courier New',
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.bold,
+                                color: isSelected ? Colors.white : primaryColor,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ),
+            ],
+
+            if (_eValidationMessage != null) ...[
+              const SizedBox(height: 10),
+              _buildInlineValidationBanner(_eValidationMessage!),
+            ],
+
+            // Computed Private Exponent (d) & Key Summary
+            if (isEncryptionReady) ...[
+              const SizedBox(height: 12),
+              _buildCompactCalcRow(
+                label: "Private Exponent (d)",
+                symbolicFormula: "d = e⁻¹ mod φ(n)",
+                substitutedFormula:
+                    "${eController.text}⁻¹ mod ${phiController.text}",
+                resultValue: dController.text,
+                highlightColor: accentColor,
+              ),
+              const SizedBox(height: 10),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: primaryColor.withValues(alpha: 0.06),
+                  borderRadius: BorderRadius.circular(10),
+                  border:
+                      Border.all(color: primaryColor.withValues(alpha: 0.2)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        "Public Key PU = {${eController.text}, ${nController.text}}",
+                        style: TextStyle(
+                          fontFamily: 'Courier New',
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: primaryColor,
+                        ),
+                      ),
+                    ),
+                    Flexible(
+                      child: Text(
+                        "Private Key PR = {${dController.text}, ${nController.text}}",
+                        style: TextStyle(
+                          fontFamily: 'Courier New',
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: accentColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEncryptionCard() {
+    return _buildStepCard(
+      title: "2. Encryption",
+      subtitle: "Encrypts Message M < ${nController.text} using Public Key {e, n}",
+      icon: Icons.lock_outline_rounded,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildInput(
+            messageController,
+            "Plaintext Message (M)",
+            icon: Icons.tag_rounded,
+          ),
+          if (_encryptErrorMessage != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              _encryptErrorMessage!,
+              style: TextStyle(
+                color: Colors.red.shade700,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+          const SizedBox(height: 12),
+          ElevatedButton.icon(
+            onPressed: _encryptMessage,
+            icon: const Icon(Icons.lock_rounded, size: 18),
+            label: const Text(
+              "ENCRYPT (C = M^e mod n)",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryColor,
+              foregroundColor: Colors.white,
+              minimumSize: const Size(double.infinity, 46),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+          ),
+          if (isEncrypted) ...[
+            const Divider(height: 22),
+            _buildCompactCalcRow(
+              label: "Ciphertext Calculation",
+              symbolicFormula: "C = M^e mod n",
+              substitutedFormula:
+                  "${messageController.text}^${eController.text} mod ${nController.text}",
+              resultValue: encryptedController.text,
+              onCopy: () =>
+                  _copyText(encryptedController.text, 'Ciphertext (C)'),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDecryptionCard() {
+    return _buildStepCard(
+      title: "3. Decryption",
+      subtitle: "Recovers M from Ciphertext C using Private Key {d, n}",
+      icon: Icons.lock_open_rounded,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Editable Ciphertext (C) so students can also solve Decryption-only exam problems!
+          _buildInput(
+            encryptedController,
+            "Ciphertext (C)",
+            icon: Icons.enhanced_encryption_outlined,
+            onChanged: (_) => setState(() => isDecrypted = false),
+          ),
+          if (_decryptErrorMessage != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              _decryptErrorMessage!,
+              style: TextStyle(
+                color: Colors.red.shade700,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+          const SizedBox(height: 12),
+          ElevatedButton.icon(
+            onPressed: _decryptMessage,
+            icon: const Icon(Icons.lock_open_rounded, size: 18),
+            label: const Text(
+              "DECRYPT (M = C^d mod n)",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blueGrey.shade800,
+              foregroundColor: Colors.white,
+              minimumSize: const Size(double.infinity, 46),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+          ),
+          if (isDecrypted) ...[
+            const Divider(height: 22),
+            _buildCompactCalcRow(
+              label: "Plaintext Recovery",
+              symbolicFormula: "M = C^d mod n",
+              substitutedFormula:
+                  "${encryptedController.text}^${dController.text} mod ${nController.text}",
+              resultValue: decryptedController.text,
+              highlightColor: Colors.green.shade700,
+            ),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.green.shade400, width: 1.5),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.verified_user_rounded,
+                          color: Colors.green.shade700, size: 22),
+                      const SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Recovered Original Message (M)",
+                            style: TextStyle(
+                              color: Colors.green.shade900,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11.5,
+                            ),
+                          ),
+                          SelectableText(
+                            decryptedController.text,
+                            style: TextStyle(
+                              fontFamily: 'Courier New',
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green.shade800,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    onPressed: () => _copyText(
+                        decryptedController.text, 'Recovered Message M'),
+                    icon: Icon(Icons.copy_rounded,
+                        color: Colors.green.shade800, size: 20),
+                    tooltip: 'Copy M',
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInlineValidationBanner(String message) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      decoration: BoxDecoration(
+        color: Colors.amber.shade50,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.amber.shade300),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.warning_amber_rounded,
+              color: Colors.amber.shade900, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Colors.amber.shade900,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStepCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    Widget? trailing,
+    required Widget child,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: [Icon(icon, color: primaryColor), const SizedBox(width: 10), Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: primaryColor))]),
-          const SizedBox(height: 15),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: primaryColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: primaryColor, size: 20),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                        color: primaryColor,
+                      ),
+                    ),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.blueGrey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              ?trailing,
+            ],
+          ),
+          const SizedBox(height: 14),
           child,
         ],
       ),
     );
   }
 
-  Widget _buildInput(TextEditingController ctrl, String label, {bool readOnly = false, IconData? icon, Color? color, Function(String)? onChanged}) {
-    return TextField(
-      controller: ctrl,
-      readOnly: readOnly,
-      onChanged: onChanged,
-      keyboardType: TextInputType.number,
-      style: TextStyle(color: color, fontWeight: readOnly ? FontWeight.bold : FontWeight.normal),
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: icon != null ? Icon(icon, size: 20, color: primaryColor) : null,
-        border: const OutlineInputBorder(),
-        filled: readOnly,
-        fillColor: readOnly ? Colors.grey.shade50 : Colors.white,
+  Widget _buildInput(
+    TextEditingController ctrl,
+    String label, {
+    bool readOnly = false,
+    IconData? icon,
+    Color? color,
+    Function(String)? onChanged,
+  }) {
+    return SizedBox(
+      height: 48,
+      child: TextField(
+        controller: ctrl,
+        readOnly: readOnly,
+        onChanged: onChanged,
+        keyboardType: TextInputType.number,
+        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9]'))],
+        style: TextStyle(
+          color: color ?? Colors.black87,
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          fontFamily: 'Courier New',
+        ),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(fontFamily: 'Roboto', fontSize: 12),
+          isDense: true,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          prefixIcon: icon != null
+              ? Icon(icon, size: 18, color: color ?? primaryColor)
+              : null,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: color ?? primaryColor, width: 2),
+          ),
+          filled: true,
+          fillColor: readOnly ? Colors.grey.shade50 : const Color(0xFFF8FAFC),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCompactCalcRow({
+    required String label,
+    required String symbolicFormula,
+    required String substitutedFormula,
+    required String resultValue,
+    Color? highlightColor,
+    VoidCallback? onCopy,
+  }) {
+    final Color activeColor = highlightColor ?? primaryColor;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.blueGrey.shade100),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blueGrey.shade800,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 1.5),
+                      decoration: BoxDecoration(
+                        color: activeColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        symbolicFormula,
+                        style: TextStyle(
+                          fontFamily: 'Courier New',
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.bold,
+                          color: activeColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "= $substitutedFormula",
+                  style: TextStyle(
+                    fontFamily: 'Courier New',
+                    fontSize: 11.5,
+                    color: Colors.blueGrey.shade600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: activeColor.withValues(alpha: 0.35)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SelectableText(
+                  resultValue,
+                  style: TextStyle(
+                    fontFamily: 'Courier New',
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: activeColor,
+                  ),
+                ),
+                if (onCopy != null) ...[
+                  const SizedBox(width: 6),
+                  InkWell(
+                    onTap: onCopy,
+                    child: Icon(Icons.copy_rounded,
+                        size: 15, color: activeColor),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildWarningCard() {
     return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(color: Colors.amber.shade50, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.amber.shade200)),
-      child: Row(children: [Icon(Icons.info_outline, color: Colors.amber.shade900), const SizedBox(width: 12), const Expanded(child: Text("Complete the key generation to enable encryption.", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500)))]),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.amber.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.amber.shade200),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.info_outline, color: Colors.amber.shade900),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Text(
+              "Complete Step 1 (or tap 'Auto Primes') to unlock Encryption and Decryption.",
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
