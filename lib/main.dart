@@ -20,9 +20,14 @@ void main() {
 enum WorkbenchFilter {
   all,
   math,
+  symmetric,
+  asymmetric,
+}
+
+enum SymmetricSubFilter {
+  all,
   substitution,
   transposition,
-  asymmetric,
 }
 
 class CryptographyApp extends StatelessWidget {
@@ -55,6 +60,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   WorkbenchFilter _selectedFilter = WorkbenchFilter.all;
+  SymmetricSubFilter _symmetricSubFilter = SymmetricSubFilter.all;
 
   @override
   Widget build(BuildContext context) {
@@ -67,11 +73,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     final bool showMath = _selectedFilter == WorkbenchFilter.all ||
         _selectedFilter == WorkbenchFilter.math;
-    final bool showSubstitution = _selectedFilter == WorkbenchFilter.all ||
-        _selectedFilter == WorkbenchFilter.substitution;
-    final bool showTransposition = _selectedFilter == WorkbenchFilter.all ||
-        _selectedFilter == WorkbenchFilter.transposition;
-    final bool showSymmetricHeader = showSubstitution || showTransposition;
+    final bool showSymmetricSection = _selectedFilter == WorkbenchFilter.all ||
+        _selectedFilter == WorkbenchFilter.symmetric;
+    final bool showSubstitution = showSymmetricSection &&
+        (_selectedFilter == WorkbenchFilter.all ||
+            _symmetricSubFilter == SymmetricSubFilter.all ||
+            _symmetricSubFilter == SymmetricSubFilter.substitution);
+    final bool showTransposition = showSymmetricSection &&
+        (_selectedFilter == WorkbenchFilter.all ||
+            _symmetricSubFilter == SymmetricSubFilter.all ||
+            _symmetricSubFilter == SymmetricSubFilter.transposition);
     final bool showAsymmetric = _selectedFilter == WorkbenchFilter.all ||
         _selectedFilter == WorkbenchFilter.asymmetric;
 
@@ -161,7 +172,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
 
               // 3. SYMMETRIC CIPHERS SECTION (SUBSTITUTION + TRANSPOSITION)
-              if (showSymmetricHeader) ...[
+              if (showSymmetricSection) ...[
                 _buildSectionTitle(
                   context,
                   title: "Symmetric Ciphers",
@@ -170,6 +181,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ? "6 Ciphers"
                       : "3 Ciphers",
                 ),
+                if (_selectedFilter == WorkbenchFilter.symmetric) ...[
+                  _buildSymmetricSubFilterBar(
+                    context,
+                    purpleColor: purpleColor,
+                    transColor: transColor,
+                  ),
+                  const SizedBox(height: 10),
+                ],
                 if (showSubstitution)
                   _buildSubSectionGroup(
                     context,
@@ -309,21 +328,42 @@ class _DashboardScreenState extends State<DashboardScreen> {
     required Color purpleColor,
     required Color transColor,
   }) {
+    final bool isDark = AppTheme.isDark(context);
+
+    // Harmonious multi-stop theme gradient tailored for Light & Dark modes
+    final List<Color> headerGradient = isDark
+        ? const [
+            Color(0xFF172554), // Deep royal midnight navy
+            Color(0xFF1E293B), // Rich slate surface
+            Color(0xFF112A34), // Subtle deep teal-slate accent
+          ]
+        : const [
+            Color(0xFFE0E7FF), // Soft royal indigo-navy mist
+            Color(0xFFEFF6FF), // Airy ice-blue center
+            Color(0xFFE0F2FE), // Soft sky-teal glow
+          ];
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
       decoration: BoxDecoration(
-        color: AppTheme.cardBg(context),
+        gradient: LinearGradient(
+          colors: headerGradient,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: brandAccent.withValues(alpha: 0.22),
+          color: brandAccent.withValues(alpha: isDark ? 0.38 : 0.25),
           width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: brandAccent.withValues(alpha: 0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.3)
+                : brandAccent.withValues(alpha: 0.08),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
@@ -344,6 +384,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(11),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF1E3A8A).withValues(alpha: 0.25),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: const Icon(
                   Icons.handyman_rounded,
@@ -359,7 +406,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Text(
                       "Algorithm Workbench",
                       style: TextStyle(
-                        fontSize: 19,
+                        fontSize: 18.5,
                         fontWeight: FontWeight.bold,
                         color: brandAccent,
                         letterSpacing: 0.2,
@@ -367,10 +414,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      "Select a tool or filter by category below",
+                      "Select a tool or filter by main category",
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 11.5,
                         color: AppTheme.textSecondary(context),
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -379,8 +427,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                 decoration: BoxDecoration(
-                  color: brandAccent.withValues(alpha: 0.12),
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.white.withValues(alpha: 0.85),
                   borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: brandAccent.withValues(alpha: 0.25),
+                  ),
                 ),
                 child: Text(
                   "11 Tools",
@@ -394,51 +447,124 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _buildFilterChip(
+          // 4 Main Category Chips fitted across the full width with zero scrolling
+          Row(
+            children: [
+              Expanded(
+                child: _buildFilterChip(
                   context,
                   label: "All",
                   filter: WorkbenchFilter.all,
                   activeColor: brandAccent,
                   icon: Icons.apps_rounded,
                 ),
-                const SizedBox(width: 6),
-                _buildFilterChip(
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: _buildFilterChip(
                   context,
                   label: "Math",
                   filter: WorkbenchFilter.math,
                   activeColor: tealColor,
                   icon: Icons.functions_rounded,
                 ),
-                const SizedBox(width: 6),
-                _buildFilterChip(
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: _buildFilterChip(
                   context,
-                  label: "Substitution",
-                  filter: WorkbenchFilter.substitution,
+                  label: "Symmetric",
+                  filter: WorkbenchFilter.symmetric,
                   activeColor: purpleColor,
-                  icon: Icons.find_replace_rounded,
+                  icon: Icons.vpn_key_rounded,
                 ),
-                const SizedBox(width: 6),
-                _buildFilterChip(
-                  context,
-                  label: "Transposition",
-                  filter: WorkbenchFilter.transposition,
-                  activeColor: transColor,
-                  icon: Icons.route_rounded,
-                ),
-                const SizedBox(width: 6),
-                _buildFilterChip(
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: _buildFilterChip(
                   context,
                   label: "Asymmetric",
                   filter: WorkbenchFilter.asymmetric,
                   activeColor: brandAccent,
                   icon: Icons.security_rounded,
                 ),
-              ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSymmetricSubFilterBar(
+    BuildContext context, {
+    required Color purpleColor,
+    required Color transColor,
+  }) {
+    final bool isDark = AppTheme.isDark(context);
+
+    Widget subPill({
+      required String label,
+      required SymmetricSubFilter subFilter,
+      required Color color,
+    }) {
+      final bool selected = _symmetricSubFilter == subFilter;
+      final Color activeText =
+          isDark && color.computeLuminance() > 0.45
+              ? const Color(0xFF0F172A)
+              : Colors.white;
+      return Expanded(
+        child: GestureDetector(
+          onTap: () => setState(() => _symmetricSubFilter = subFilter),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 160),
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: selected ? color : Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
             ),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: selected
+                      ? activeText
+                      : AppTheme.textSecondary(context),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: AppTheme.cardBg(context),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppTheme.borderSubtle(context)),
+      ),
+      child: Row(
+        children: [
+          subPill(
+            label: "All Symmetric (6)",
+            subFilter: SymmetricSubFilter.all,
+            color: purpleColor,
+          ),
+          subPill(
+            label: "Substitution (3)",
+            subFilter: SymmetricSubFilter.substitution,
+            color: purpleColor,
+          ),
+          subPill(
+            label: "Transposition (3)",
+            subFilter: SymmetricSubFilter.transposition,
+            color: transColor,
           ),
         ],
       ),
@@ -456,7 +582,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final bool isDark = AppTheme.isDark(context);
     final Color chipFill = isSelected
         ? activeColor
-        : (isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9));
+        : (isDark
+            ? const Color(0xFF0F172A).withValues(alpha: 0.75)
+            : Colors.white.withValues(alpha: 0.85));
     final Color activeTextColor =
         isDark && activeColor.computeLuminance() > 0.45
             ? const Color(0xFF0F172A)
@@ -464,46 +592,56 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Material(
       color: chipFill,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: () => setState(() => _selectedFilter = filter),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(12),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
+          alignment: Alignment.center,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSelected
                   ? activeColor
-                  : AppTheme.borderSubtle(context),
+                  : brandAccentOrSubtleBorder(context, isDark),
             ),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                size: 13,
-                color: isSelected
-                    ? activeTextColor
-                    : AppTheme.textSecondary(context),
-              ),
-              const SizedBox(width: 5),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.bold,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon,
+                  size: 13,
                   color: isSelected
                       ? activeTextColor
-                      : AppTheme.textPrimary(context),
+                      : AppTheme.textSecondary(context),
                 ),
-              ),
-            ],
+                const SizedBox(width: 4),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.bold,
+                    color: isSelected
+                        ? activeTextColor
+                        : AppTheme.textPrimary(context),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  Color brandAccentOrSubtleBorder(BuildContext context, bool isDark) {
+    return isDark
+        ? Colors.white.withValues(alpha: 0.12)
+        : const Color(0xFFCBD5E1);
   }
 
   Widget _buildSectionTitle(
@@ -731,51 +869,46 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
                 const SizedBox(width: 13),
 
-                // Title + Formula Badge + Subtitle
+                // Line 1: Title, Line 2: Math Symbol Badge, Line 3: Subtitle
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Wrap(
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        spacing: 6,
-                        runSpacing: 3,
-                        children: [
-                          Text(
-                            title,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14.5,
-                              color: AppTheme.textPrimary(context),
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 1.5,
-                            ),
-                            decoration: BoxDecoration(
-                              color:
-                                  color.withValues(alpha: isDark ? 0.16 : 0.1),
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(
-                                color: color.withValues(
-                                    alpha: isDark ? 0.4 : 0.25),
-                              ),
-                            ),
-                            child: Text(
-                              formulaBadge,
-                              style: TextStyle(
-                                fontFamily: 'Courier New',
-                                fontSize: 9.5,
-                                fontWeight: FontWeight.bold,
-                                color: color,
-                              ),
-                            ),
-                          ),
-                        ],
+                      Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: AppTheme.textPrimary(context),
+                        ),
                       ),
-                      const SizedBox(height: 3),
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 7,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: color.withValues(alpha: isDark ? 0.16 : 0.1),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color:
+                                color.withValues(alpha: isDark ? 0.4 : 0.25),
+                          ),
+                        ),
+                        child: Text(
+                          formulaBadge,
+                          style: TextStyle(
+                            fontFamily: 'Courier New',
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: color,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
                       Text(
                         subtitle,
                         style: TextStyle(

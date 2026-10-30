@@ -172,7 +172,7 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -407,128 +407,114 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
     final int lastIndex = tableRows.length - 1;
     final Color divisionColor = primaryColor;
     final Color coeffColor = AppTheme.purpleAccent(context);
+    const double stepW = 28;
 
-    // Size columns to fit the largest number
-    int maxLen = 1;
-    for (final row in tableRows) {
-      for (final k in ['q', 'a', 'b', 'r', 'x', 'y', 'z']) {
-        final s = row[k].toString();
-        if (s.length > maxLen) maxLen = s.length;
-      }
-    }
-    final double minCell = (maxLen * 9.0 + 18).clamp(48.0, 400.0);
-    const double stepW = 38;
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final double cellW = ((constraints.maxWidth - stepW - 2) / 7)
-            .clamp(minCell, double.infinity);
-        final double totalW = stepW + cellW * 7;
-
-        Widget headerCell(String t, Color bg) => Container(
-              width: cellW,
-              padding: const EdgeInsets.symmetric(vertical: 9),
-              color: bg,
-              alignment: Alignment.center,
-              child: Text(
-                t,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                ),
-              ),
-            );
-
-        Widget groupCell(String t, int cols, Color bg) => Container(
-              width: cellW * cols,
-              padding: const EdgeInsets.symmetric(vertical: 5),
-              color: bg,
-              alignment: Alignment.center,
-              child: Text(
-                t,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 10.5,
-                  letterSpacing: 1.0,
-                ),
-              ),
-            );
-
-        final Color divDark = Color.alphaBlend(
-            Colors.black.withValues(alpha: 0.28), divisionColor);
-        final Color coeffDark =
-            Color.alphaBlend(Colors.black.withValues(alpha: 0.28), coeffColor);
-
-        final List<Widget> children = [
-          // Group headers
-          Row(
-            children: [
-              SizedBox(width: stepW, child: Container(color: divDark)),
-              groupCell('DIVISION', 4, divDark),
-              groupCell('COEFFICIENTS', 3, coeffDark),
-            ],
-          ),
-          // Column headers
-          Row(
-            children: [
-              Container(
-                width: stepW,
-                padding: const EdgeInsets.symmetric(vertical: 9),
-                color: divisionColor.withValues(alpha: 0.9),
-                alignment: Alignment.center,
-                child: const Text(
-                  '#',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                  ),
-                ),
-              ),
-              headerCell('Q', divisionColor.withValues(alpha: 0.9)),
-              headerCell('A', divisionColor.withValues(alpha: 0.9)),
-              headerCell('B', divisionColor.withValues(alpha: 0.9)),
-              headerCell('R', divisionColor.withValues(alpha: 0.9)),
-              headerCell('𝑥', coeffColor.withValues(alpha: 0.9)),
-              headerCell('𝑦', coeffColor.withValues(alpha: 0.9)),
-              headerCell('𝑧', coeffColor.withValues(alpha: 0.9)),
-            ],
-          ),
-        ];
-
-        for (int i = 0; i < tableRows.length; i++) {
-          children.add(_buildRow(context, i, lastIndex, cellW, stepW));
-          if (_expandedRows.contains(i)) {
-            children.add(_buildExpandedFormula(context, i, lastIndex, totalW));
-          }
-        }
-
-        return Container(
-          decoration: BoxDecoration(
-            color: AppTheme.cardBg(context),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: AppTheme.borderMedium(context)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 10,
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(9),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SizedBox(
-                width: totalW,
-                child: Column(children: children),
+    Widget headerCell(String t, Color bg) => Expanded(
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 9),
+            color: bg,
+            alignment: Alignment.center,
+            child: Text(
+              t,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 12.5,
               ),
             ),
           ),
         );
-      },
+
+    Widget groupCell(String t, int flexCols, Color bg) => Expanded(
+          flex: flexCols,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 5),
+            color: bg,
+            alignment: Alignment.center,
+            child: Text(
+              t,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 10,
+                letterSpacing: 0.8,
+              ),
+            ),
+          ),
+        );
+
+    final Color divDark =
+        Color.alphaBlend(Colors.black.withValues(alpha: 0.28), divisionColor);
+    final Color coeffDark =
+        Color.alphaBlend(Colors.black.withValues(alpha: 0.28), coeffColor);
+
+    final List<Widget> children = [
+      // Group headers
+      IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(width: stepW, color: divDark),
+            groupCell('DIVISION', 4, divDark),
+            groupCell('COEFFICIENTS', 3, coeffDark),
+          ],
+        ),
+      ),
+      // Column headers
+      Row(
+        children: [
+          Container(
+            width: stepW,
+            padding: const EdgeInsets.symmetric(vertical: 9),
+            color: divisionColor.withValues(alpha: 0.9),
+            alignment: Alignment.center,
+            child: const Text(
+              '#',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 12.5,
+              ),
+            ),
+          ),
+          headerCell('Q', divisionColor.withValues(alpha: 0.9)),
+          headerCell('A', divisionColor.withValues(alpha: 0.9)),
+          headerCell('B', divisionColor.withValues(alpha: 0.9)),
+          headerCell('R', divisionColor.withValues(alpha: 0.9)),
+          headerCell('𝑥', coeffColor.withValues(alpha: 0.9)),
+          headerCell('𝑦', coeffColor.withValues(alpha: 0.9)),
+          headerCell('𝑧', coeffColor.withValues(alpha: 0.9)),
+        ],
+      ),
+    ];
+
+    for (int i = 0; i < tableRows.length; i++) {
+      children.add(_buildRow(context, i, lastIndex, stepW));
+      if (_expandedRows.contains(i)) {
+        children.add(_buildExpandedFormula(context, i, lastIndex));
+      }
+    }
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppTheme.cardBg(context),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppTheme.borderMedium(context)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(9),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: children,
+        ),
+      ),
     );
   }
 
@@ -536,7 +522,6 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
     BuildContext context,
     int i,
     int lastIndex,
-    double cellW,
     double stepW,
   ) {
     final row = tableRows[i];
@@ -561,40 +546,45 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
     }) {
       final Color? tint =
           chain != null ? _chainColor(context, chain) : null;
-      return Container(
-        width: cellW,
-        height: tag != null ? 48 : 40,
-        alignment: Alignment.center,
+      return Expanded(
         child: Container(
-          constraints: BoxConstraints(minWidth: cellW - 14),
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-          decoration: BoxDecoration(
-            color: tint?.withValues(alpha: 0.18),
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                text,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'Courier New',
-                  fontSize: 13.5,
-                  fontWeight: bold ? FontWeight.bold : FontWeight.w600,
-                  color: tint ?? AppTheme.textPrimary(context),
-                ),
-              ),
-              if (tag != null)
-                Text(
-                  tag,
-                  style: TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.bold,
-                    color: tagColor ?? AppTheme.textMuted(context),
+          height: tag != null ? 46 : 38,
+          padding: const EdgeInsets.symmetric(horizontal: 2),
+          alignment: Alignment.center,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 3),
+            decoration: BoxDecoration(
+              color: tint?.withValues(alpha: 0.18),
+              borderRadius: BorderRadius.circular(5),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    text,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'Courier New',
+                      fontSize: 13,
+                      fontWeight: bold ? FontWeight.bold : FontWeight.w600,
+                      color: tint ?? AppTheme.textPrimary(context),
+                    ),
                   ),
                 ),
-            ],
+                if (tag != null)
+                  Text(
+                    tag,
+                    style: TextStyle(
+                      fontSize: 8.5,
+                      fontWeight: FontWeight.bold,
+                      color: tagColor ?? AppTheme.textMuted(context),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       );
@@ -634,7 +624,7 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
               child: Text(
                 '${i + 1}',
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 10.5,
                   fontWeight: FontWeight.bold,
                   color: AppTheme.textMuted(context),
                 ),
@@ -671,13 +661,12 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
     BuildContext context,
     int i,
     int lastIndex,
-    double totalW,
   ) {
     final row = tableRows[i];
     final bool isLast = i == lastIndex;
     final TextStyle style = TextStyle(
       fontFamily: 'Courier New',
-      fontSize: 12.5,
+      fontSize: 12,
       fontWeight: FontWeight.w600,
       color: AppTheme.textSecondary(context),
     );
@@ -698,8 +687,8 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
     }
 
     return Container(
-      width: totalW,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       color: _accent(context).withValues(alpha: 0.08),
       child: Align(
         alignment: Alignment.centerLeft,
