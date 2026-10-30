@@ -258,7 +258,10 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Result copied to clipboard!'),
+        content: Text(tr(
+          'Result copied to clipboard!',
+          'تم نسخ النتيجة إلى الحافظة!',
+        )),
         backgroundColor: primaryColor,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
@@ -270,16 +273,34 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
     switch (_selectedPattern) {
       case RoutePattern.spiralClockwise:
         return _selectedMode == RouteCipherMode.encrypt
-            ? 'Write row-by-row ➔ Read clockwise inward spiral'
-            : 'Write clockwise spiral ➔ Read row-by-row';
+            ? tr(
+                'Write row-by-row ➔ Read clockwise inward spiral',
+                'الكتابة صفاً بصف ➔ القراءة بمسار حلزوني للداخل',
+              )
+            : tr(
+                'Write clockwise spiral ➔ Read row-by-row',
+                'الكتابة بمسار حلزوني ➔ القراءة صفاً بصف',
+              );
       case RoutePattern.snakeVertical:
         return _selectedMode == RouteCipherMode.encrypt
-            ? 'Write row-by-row ➔ Read alternating Cols ⬇⬆'
-            : 'Write alternating Cols ⬇⬆ ➔ Read row-by-row';
+            ? tr(
+                'Write row-by-row ➔ Read alternating Cols ⬇⬆',
+                'الكتابة صفاً بصف ➔ القراءة بأعمدة متناوبة ⬇⬆',
+              )
+            : tr(
+                'Write alternating Cols ⬇⬆ ➔ Read row-by-row',
+                'الكتابة بأعمدة متناوبة ⬇⬆ ➔ القراءة صفاً بصف',
+              );
       case RoutePattern.snakeHorizontal:
         return _selectedMode == RouteCipherMode.encrypt
-            ? 'Write row-by-row ➔ Read alternating Rows ⇄'
-            : 'Write alternating Rows ⇄ ➔ Read row-by-row';
+            ? tr(
+                'Write row-by-row ➔ Read alternating Rows ⇄',
+                'الكتابة صفاً بصف ➔ القراءة بصفوف متناوبة ⇄',
+              )
+            : tr(
+                'Write alternating Rows ⇄ ➔ Read row-by-row',
+                'الكتابة بصفوف متناوبة ⇄ ➔ القراءة صفاً بصف',
+              );
     }
   }
 
@@ -288,17 +309,22 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBg(context),
       appBar: AppBar(
-        title: const Text(
-          'Route Cipher',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            tr('Route Cipher', 'تشفير المسار (Route)'),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
         ),
         centerTitle: true,
         backgroundColor: AppTheme.transpositionAppBar(context),
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
+          AppTheme.buildLanguageToggleButton(context),
           IconButton(
             onPressed: _clearAll,
+            tooltip: tr('Reset', 'إعادة تعيين'),
             icon: const Icon(Icons.refresh),
           ),
         ],
@@ -351,8 +377,8 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
               onChanged: (_) => _processCipher(),
               style: TextStyle(fontSize: 14, color: AppTheme.textPrimary(context)),
               decoration: InputDecoration(
-                labelText: 'Input Message',
-                hintText: 'e.g., WE ARE DISCOVERED',
+                labelText: tr('Input Message', 'النص المدخل'),
+                hintText: tr('e.g., WE ARE DISCOVERED', 'مثال: WE ARE DISCOVERED'),
                 isDense: true,
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -389,7 +415,7 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 4),
                         child: Text(
-                          'Cols:',
+                          tr('Cols:', 'أعمدة:'),
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
@@ -419,8 +445,10 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
                   ),
                   child: Row(
                     children: [
-                      _buildModePill('Encrypt', RouteCipherMode.encrypt),
-                      _buildModePill('Decrypt', RouteCipherMode.decrypt),
+                      _buildModePill(
+                          tr('Encrypt', 'تشفير'), RouteCipherMode.encrypt),
+                      _buildModePill(
+                          tr('Decrypt', 'فك التشفير'), RouteCipherMode.decrypt),
                     ],
                   ),
                 ),
@@ -440,10 +468,13 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
             ),
             child: Row(
               children: [
-                _buildPatternPill('Spiral ↻', RoutePattern.spiralClockwise),
-                _buildPatternPill('Snake Cols ⇅', RoutePattern.snakeVertical),
                 _buildPatternPill(
-                    'Snake Rows ⇄', RoutePattern.snakeHorizontal),
+                    tr('Spiral ↻', 'حلزوني ↻'), RoutePattern.spiralClockwise),
+                _buildPatternPill(
+                    tr('Snake Cols ⇅', 'أعمدة ⇅'), RoutePattern.snakeVertical),
+                _buildPatternPill(
+                    tr('Snake Rows ⇄', 'صفوف ⇄'),
+                    RoutePattern.snakeHorizontal),
               ],
             ),
           ),
@@ -498,6 +529,7 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
         },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 4),
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: isSelected
@@ -505,12 +537,17 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(7),
           ),
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: isSelected ? Colors.white : AppTheme.textSecondary(context),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: isSelected
+                    ? Colors.white
+                    : AppTheme.textSecondary(context),
+              ),
             ),
           ),
         ),
@@ -530,6 +567,7 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
         },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 4),
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: isSelected
@@ -540,12 +578,17 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
               color: isSelected ? primaryColor : Colors.transparent,
             ),
           ),
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-              color: isSelected ? primaryColor : AppTheme.textSecondary(context),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: isSelected
+                    ? primaryColor
+                    : AppTheme.textSecondary(context),
+              ),
             ),
           ),
         ),
@@ -580,7 +623,7 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Route Matrix ($rows×$cols)",
+                tr("Route Matrix ($rows×$cols)", "مصفوفة المسار ($rows×$cols)"),
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
@@ -606,103 +649,106 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Left: Compact 180x175 Route Matrix with Step Order Badges
-              SizedBox(
-                width: 180,
-                height: 175,
-                child: Column(
-                  children: List.generate(rows, (r) {
-                    return Expanded(
-                      child: Row(
-                        children: List.generate(cols, (c) {
-                          final String ch = _grid[r][c];
-                          final int stepNum = _stepOrderGrid[r][c];
-                          final bool isHighlighted =
-                              _highlightedStep != null &&
-                                  stepNum == _highlightedStep;
-                          final bool isVisitedBefore =
-                              _highlightedStep != null &&
-                                  stepNum < _highlightedStep!;
+              // Left: Compact 180x175 Route Matrix with Step Order Badges (always LTR)
+              Directionality(
+                textDirection: TextDirection.ltr,
+                child: SizedBox(
+                  width: 180,
+                  height: 175,
+                  child: Column(
+                    children: List.generate(rows, (r) {
+                      return Expanded(
+                        child: Row(
+                          children: List.generate(cols, (c) {
+                            final String ch = _grid[r][c];
+                            final int stepNum = _stepOrderGrid[r][c];
+                            final bool isHighlighted =
+                                _highlightedStep != null &&
+                                    stepNum == _highlightedStep;
+                            final bool isVisitedBefore =
+                                _highlightedStep != null &&
+                                    stepNum < _highlightedStep!;
 
-                          Color bgColor = AppTheme.surfaceSubtle(context);
-                          Color borderColor = AppTheme.borderMedium(context);
-                          Color textColor = primaryColor;
+                            Color bgColor = AppTheme.surfaceSubtle(context);
+                            Color borderColor = AppTheme.borderMedium(context);
+                            Color textColor = primaryColor;
 
-                          if (isHighlighted) {
-                            bgColor = Colors.amber.shade600;
-                            borderColor = Colors.amber.shade900;
-                            textColor = Colors.white;
-                          } else if (isVisitedBefore) {
-                            bgColor = primaryColor.withValues(alpha: 0.14);
-                            borderColor = primaryColor.withValues(alpha: 0.45);
-                            textColor = primaryColor;
-                          } else if (ch.isNotEmpty) {
-                            bgColor = isDark
-                                ? const Color(0xFF0284C7)
-                                : primaryColor;
-                            borderColor = primaryColor;
-                            textColor = Colors.white;
-                          }
+                            if (isHighlighted) {
+                              bgColor = Colors.amber.shade600;
+                              borderColor = Colors.amber.shade900;
+                              textColor = Colors.white;
+                            } else if (isVisitedBefore) {
+                              bgColor = primaryColor.withValues(alpha: 0.14);
+                              borderColor = primaryColor.withValues(alpha: 0.45);
+                              textColor = primaryColor;
+                            } else if (ch.isNotEmpty) {
+                              bgColor = isDark
+                                  ? const Color(0xFF0284C7)
+                                  : primaryColor;
+                              borderColor = primaryColor;
+                              textColor = Colors.white;
+                            }
 
-                          return Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                setState(() => _highlightedStep = stepNum);
-                              },
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 160),
-                                margin: const EdgeInsets.all(2),
-                                decoration: BoxDecoration(
-                                  color: bgColor,
-                                  borderRadius: BorderRadius.circular(7),
-                                  border: Border.all(
-                                    color: borderColor,
-                                    width: isHighlighted ? 2.0 : 1.0,
-                                  ),
-                                ),
-                                child: Stack(
-                                  children: [
-                                    // Top-left step order number badge
-                                    Positioned(
-                                      top: 2,
-                                      left: 3,
-                                      child: Text(
-                                        '$stepNum',
-                                        style: TextStyle(
-                                          fontSize: 8.5,
-                                          fontWeight: FontWeight.bold,
-                                          color: isHighlighted ||
-                                                  (ch.isNotEmpty &&
-                                                      !isVisitedBefore)
-                                              ? Colors.white70
-                                              : AppTheme.textSecondary(context),
-                                        ),
-                                      ),
+                            return Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() => _highlightedStep = stepNum);
+                                },
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 160),
+                                  margin: const EdgeInsets.all(2),
+                                  decoration: BoxDecoration(
+                                    color: bgColor,
+                                    borderRadius: BorderRadius.circular(7),
+                                    border: Border.all(
+                                      color: borderColor,
+                                      width: isHighlighted ? 2.0 : 1.0,
                                     ),
-                                    // Centered Character
-                                    Center(
-                                      child: Padding(
-                                        padding: const EdgeInsets.only(top: 5),
+                                  ),
+                                  child: Stack(
+                                    children: [
+                                      // Top-left step order number badge
+                                      Positioned(
+                                        top: 2,
+                                        left: 3,
                                         child: Text(
-                                          ch.isEmpty ? '·' : ch,
+                                          '$stepNum',
                                           style: TextStyle(
-                                            fontFamily: 'Courier New',
-                                            fontSize: rows > 5 ? 11 : 14,
+                                            fontSize: 8.5,
                                             fontWeight: FontWeight.bold,
-                                            color: textColor,
+                                            color: isHighlighted ||
+                                                    (ch.isNotEmpty &&
+                                                        !isVisitedBefore)
+                                                ? Colors.white70
+                                                : AppTheme.textSecondary(context),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                      // Centered Character
+                                      Center(
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(top: 5),
+                                          child: Text(
+                                            ch.isEmpty ? '·' : ch,
+                                            style: TextStyle(
+                                              fontFamily: 'Courier New',
+                                              fontSize: rows > 5 ? 11 : 14,
+                                              fontWeight: FontWeight.bold,
+                                              color: textColor,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          );
-                        }),
-                      ),
-                    );
-                  }),
+                            );
+                          }),
+                        ),
+                      );
+                    }),
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
@@ -721,7 +767,10 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
                           ),
                           child: Center(
                             child: Text(
-                              "Numbers 1–${rows * cols} show the route path.\n\nType a message above to trace each step!",
+                              tr(
+                                "Numbers 1–${rows * cols} show the route path.\n\nType a message above to trace each step!",
+                                "الأرقام 1–${rows * cols} توضح ترتيب المسار.\n\nاكتب نصاً بالأعلى لتتبع كل خطوة!",
+                              ),
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 11,
@@ -745,8 +794,11 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
                               child: Text(
                                 _highlightedStep != null &&
                                         _highlightedStep! <= _routeSteps.length
-                                    ? "Step #$_highlightedStep: '${_routeSteps[_highlightedStep! - 1].char}' at (R${_routeSteps[_highlightedStep! - 1].row + 1}, C${_routeSteps[_highlightedStep! - 1].col + 1})"
-                                    : "Tap any step to trace path",
+                                    ? tr(
+                                        "Step #$_highlightedStep: '${_routeSteps[_highlightedStep! - 1].char}' at (R${_routeSteps[_highlightedStep! - 1].row + 1}, C${_routeSteps[_highlightedStep! - 1].col + 1})",
+                                        "خطوة #$_highlightedStep: '${_routeSteps[_highlightedStep! - 1].char}' عند (صف ${_routeSteps[_highlightedStep! - 1].row + 1}، عمود ${_routeSteps[_highlightedStep! - 1].col + 1})",
+                                      )
+                                    : tr("Tap any step to trace path", "اضغط على أي خطوة لتتبع المسار"),
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 11,
@@ -757,7 +809,7 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              "Route Order (Tap to trace):",
+                              tr("Route Order (Tap to trace):", "ترتيب المسار (اضغط للتتبع):"),
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
@@ -795,15 +847,18 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
                                                     alpha: 0.3),
                                           ),
                                         ),
-                                        child: Text(
-                                          "${step.stepNumber}:${step.char}",
-                                          style: TextStyle(
-                                            fontFamily: 'Courier New',
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.bold,
-                                            color: isSelected
-                                                ? Colors.white
-                                                : primaryColor,
+                                        child: Directionality(
+                                          textDirection: TextDirection.ltr,
+                                          child: Text(
+                                            "${step.stepNumber}:${step.char}",
+                                            style: TextStyle(
+                                              fontFamily: 'Courier New',
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                              color: isSelected
+                                                  ? Colors.white
+                                                  : primaryColor,
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -839,12 +894,12 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
             children: [
               const SizedBox(width: 28),
               Text(
-                "OUTPUT RESULT",
+                tr("OUTPUT RESULT", "النتيجة النهائية"),
                 style: TextStyle(
                   color: primaryColor,
                   fontWeight: FontWeight.bold,
                   fontSize: 11,
-                  letterSpacing: 1.2,
+                  letterSpacing: isArabic ? 0 : 1.2,
                 ),
               ),
               if (result.isNotEmpty)
@@ -863,14 +918,17 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
           ),
           const SizedBox(height: 8),
           SelectableText(
-            result.isEmpty ? 'Waiting for input...' : result,
+            result.isEmpty
+                ? tr('Waiting for input...', 'بانتظار إدخال النص...')
+                : result,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
               color: result.isEmpty ? Colors.grey : primaryColor,
-              fontFamily: 'Courier New',
-              letterSpacing: 2.0,
+              fontFamily:
+                  result.isEmpty && isArabic ? 'Cairo' : 'Courier New',
+              letterSpacing: result.isEmpty && isArabic ? 0 : 2.0,
             ),
           ),
         ],

@@ -146,11 +146,20 @@ class _RsaScreenState extends State<RsaScreen> {
       if (!pPrime || !qPrime) {
         String msg;
         if (!pPrime && !qPrime) {
-          msg = 'Both p ($p) and q ($q) must be prime numbers.';
+          msg = tr(
+            'Both p ($p) and q ($q) must be prime numbers.',
+            'يجب أن يكون كل من p ($p) و q ($q) عددين أوليين.',
+          );
         } else if (!pPrime) {
-          msg = 'p = $p is not a prime number.';
+          msg = tr(
+            'p = $p is not a prime number.',
+            'العدد p = $p ليس عدداً أولياً.',
+          );
         } else {
-          msg = 'q = $q is not a prime number.';
+          msg = tr(
+            'q = $q is not a prime number.',
+            'العدد q = $q ليس عدداً أولياً.',
+          );
         }
         setState(() {
           isPrimesValid = false;
@@ -173,8 +182,10 @@ class _RsaScreenState extends State<RsaScreen> {
           phiController.clear();
           dController.clear();
           _suggestedEValues = [];
-          _primeValidationMessage =
-              'Primes p and q must be distinct (p ≠ q) for RSA.';
+          _primeValidationMessage = tr(
+            'Primes p and q must be distinct (p ≠ q) for RSA.',
+            'يجب أن يكون العددان الأوليان مختلفين (p ≠ q) في RSA.',
+          );
           _eValidationMessage = null;
         });
         return;
@@ -202,7 +213,10 @@ class _RsaScreenState extends State<RsaScreen> {
         phiController.clear();
         dController.clear();
         _suggestedEValues = [];
-        _primeValidationMessage = 'Please enter valid integer primes.';
+        _primeValidationMessage = tr(
+          'Please enter valid integer primes.',
+          'يرجى إدخال أعداد أولية صحيحة.',
+        );
       });
     }
   }
@@ -210,7 +224,10 @@ class _RsaScreenState extends State<RsaScreen> {
   void _suggestE() {
     if (!isPrimesValid || phiController.text.isEmpty) {
       setState(() {
-        _primeValidationMessage = 'Please enter valid primes p and q first.';
+        _primeValidationMessage = tr(
+          'Please enter valid primes p and q first.',
+          'يرجى إدخال العددين الأوليين p و q أولاً.',
+        );
       });
       return;
     }
@@ -259,8 +276,10 @@ class _RsaScreenState extends State<RsaScreen> {
         setState(() {
           isEncryptionReady = false;
           dController.clear();
-          _eValidationMessage =
-              'Public exponent e must satisfy 1 < e < φ(n) ($phi).';
+          _eValidationMessage = tr(
+            'Public exponent e must satisfy 1 < e < φ(n) ($phi).',
+            'يجب أن يحقق الأس العام الشرط: 1 < e < φ(n) ($phi).',
+          );
         });
         return;
       }
@@ -270,8 +289,10 @@ class _RsaScreenState extends State<RsaScreen> {
         setState(() {
           isEncryptionReady = false;
           dController.clear();
-          _eValidationMessage =
-              'gcd($e, $phi) = $g ≠ 1. e must be coprime to φ(n).';
+          _eValidationMessage = tr(
+            'gcd($e, $phi) = $g ≠ 1. e must be coprime to φ(n).',
+            'gcd($e, $phi) = $g ≠ 1. يجب أن يكون e أولياً نسبياً مع φ(n).',
+          );
         });
         return;
       }
@@ -286,7 +307,10 @@ class _RsaScreenState extends State<RsaScreen> {
       setState(() {
         isEncryptionReady = false;
         dController.clear();
-        _eValidationMessage = 'Invalid number format for e.';
+        _eValidationMessage = tr(
+          'Invalid number format for e.',
+          'صيغة الرقم e غير صالحة.',
+        );
       });
     }
   }
@@ -297,7 +321,10 @@ class _RsaScreenState extends State<RsaScreen> {
 
     if (messageController.text.trim().isEmpty) {
       setState(() {
-        _encryptErrorMessage = 'Please enter a numeric Message (M) to encrypt.';
+        _encryptErrorMessage = tr(
+          'Please enter a numeric Message (M) to encrypt.',
+          'يرجى إدخال الرسالة الرقمية (M) لتشفيرها.',
+        );
       });
       return;
     }
@@ -309,8 +336,10 @@ class _RsaScreenState extends State<RsaScreen> {
 
       if (m < BigInt.zero || m >= n) {
         setState(() {
-          _encryptErrorMessage =
-              'Message (M) must be between 0 and ${n - BigInt.one} (M < n).';
+          _encryptErrorMessage = tr(
+            'Message (M) must be between 0 and ${n - BigInt.one} (M < n).',
+            'يجب أن تكون الرسالة (M) بين 0 و ${n - BigInt.one} (أصغر من n).',
+          );
         });
         return;
       }
@@ -324,7 +353,10 @@ class _RsaScreenState extends State<RsaScreen> {
       });
     } catch (e) {
       setState(() {
-        _encryptErrorMessage = 'Invalid message input.';
+        _encryptErrorMessage = tr(
+          'Invalid message input.',
+          'مدخل الرسالة غير صالح.',
+        );
       });
     }
   }
@@ -335,8 +367,10 @@ class _RsaScreenState extends State<RsaScreen> {
 
     if (encryptedController.text.trim().isEmpty) {
       setState(() {
-        _decryptErrorMessage =
-            'Enter Ciphertext (C) (or encrypt a message in Step 2).';
+        _decryptErrorMessage = tr(
+          'Enter Ciphertext (C) (or encrypt a message in Step 2).',
+          'أدخل النص المشفر (C) (أو قم بتشفير رسالة في الخطوة 2).',
+        );
       });
       return;
     }
@@ -348,8 +382,10 @@ class _RsaScreenState extends State<RsaScreen> {
 
       if (c < BigInt.zero || c >= n) {
         setState(() {
-          _decryptErrorMessage =
-              'Ciphertext (C) must be less than Modulus n ($n).';
+          _decryptErrorMessage = tr(
+            'Ciphertext (C) must be less than Modulus n ($n).',
+            'يجب أن يكون النص المشفر (C) أصغر من المعيار n ($n).',
+          );
         });
         return;
       }
@@ -361,7 +397,10 @@ class _RsaScreenState extends State<RsaScreen> {
       });
     } catch (e) {
       setState(() {
-        _decryptErrorMessage = 'Decryption failed: check ciphertext input.';
+        _decryptErrorMessage = tr(
+          'Decryption failed: check ciphertext input.',
+          'فشل فك التشفير: تحقق من قيمة النص المشفر.',
+        );
       });
     }
   }
@@ -371,7 +410,10 @@ class _RsaScreenState extends State<RsaScreen> {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('$label copied to clipboard!'),
+        content: Text(tr(
+          '$label copied to clipboard!',
+          'تم نسخ $label إلى الحافظة!',
+        )),
         backgroundColor: Colors.green.shade700,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
@@ -403,18 +445,22 @@ class _RsaScreenState extends State<RsaScreen> {
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBgAlt(context),
       appBar: AppBar(
-        title: const Text(
-          'RSA Algorithm',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            tr('RSA Algorithm', 'خوارزمية RSA'),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
         ),
         centerTitle: true,
         backgroundColor: AppTheme.navyAppBar(context),
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
+          AppTheme.buildLanguageToggleButton(context),
           IconButton(
             onPressed: _clearAll,
-            tooltip: 'Reset All',
+            tooltip: tr('Reset All', 'إعادة تعيين الكل'),
             icon: const Icon(Icons.refresh),
           ),
         ],
@@ -453,13 +499,22 @@ class _RsaScreenState extends State<RsaScreen> {
         : 'q−1';
 
     return _buildStepCard(
-      title: "1. Key Generation",
-      subtitle: "Public Key: {e, n}  •  Private Key: {d, n}",
+      title: tr("1. Key Generation", "1. توليد المفاتيح"),
+      subtitle: tr(
+        "Public Key: {e, n}  •  Private Key: {d, n}",
+        "المفتاح العام: {e, n}  •  المفتاح الخاص: {d, n}",
+      ),
       icon: Icons.settings_suggest_rounded,
       trailing: TextButton.icon(
         onPressed: _generatePrimes,
         icon: const Icon(Icons.auto_awesome, size: 16),
-        label: const Text("Auto Primes", style: TextStyle(fontSize: 12)),
+        label: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            tr("Auto Primes", "تلقائي"),
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+          ),
+        ),
         style: TextButton.styleFrom(
           foregroundColor: AppTheme.tealAccent(context),
           backgroundColor: AppTheme.tealAccent(context).withValues(alpha: 0.12),
@@ -476,7 +531,7 @@ class _RsaScreenState extends State<RsaScreen> {
               Expanded(
                 child: _buildInput(
                   pController,
-                  "Prime (p)",
+                  tr("Prime (p)", "العدد الأولي (p)"),
                   onChanged: (_) => _onPrimeFieldsChanged(),
                 ),
               ),
@@ -484,7 +539,7 @@ class _RsaScreenState extends State<RsaScreen> {
               Expanded(
                 child: _buildInput(
                   qController,
-                  "Prime (q)",
+                  tr("Prime (q)", "العدد الأولي (q)"),
                   onChanged: (_) => _onPrimeFieldsChanged(),
                 ),
               ),
@@ -504,7 +559,7 @@ class _RsaScreenState extends State<RsaScreen> {
               children: [
                 Expanded(
                   child: _buildCompactCalcRow(
-                    label: "Modulus (n)",
+                    label: tr("Modulus (n)", "المعيار (n)"),
                     symbolicFormula: "p × q",
                     substitutedFormula:
                         "${pController.text} × ${qController.text}",
@@ -514,7 +569,7 @@ class _RsaScreenState extends State<RsaScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: _buildCompactCalcRow(
-                    label: "Totient φ(n)",
+                    label: tr("Totient φ(n)", "دالة أويلر φ(n)"),
                     symbolicFormula: "(p−1)(q−1)",
                     substitutedFormula: "$pMinus1 × $qMinus1",
                     resultValue: phiController.text,
@@ -530,7 +585,7 @@ class _RsaScreenState extends State<RsaScreen> {
                 Expanded(
                   child: _buildInput(
                     eController,
-                    "Public Exponent (e)",
+                    tr("Public Exponent (e)", "الأس العام (e)"),
                     icon: Icons.public_rounded,
                     onChanged: (_) => _onEFieldChanged(),
                   ),
@@ -542,12 +597,15 @@ class _RsaScreenState extends State<RsaScreen> {
                     onPressed: _suggestE,
                     icon: const Icon(Icons.lightbulb_outline_rounded,
                         color: Colors.white, size: 18),
-                    label: const Text(
-                      "Suggest e",
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold),
+                    label: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        tr("Suggest e", "اقتراح e"),
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold),
+                      ),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.amber.shade700,
@@ -569,7 +627,7 @@ class _RsaScreenState extends State<RsaScreen> {
                 child: Row(
                   children: [
                     Text(
-                      "Valid coprime e: ",
+                      tr("Valid coprime e: ", "قيم e المقترحة: "),
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
@@ -580,7 +638,7 @@ class _RsaScreenState extends State<RsaScreen> {
                       final bool isSelected =
                           eController.text.trim() == val.toString();
                       return Padding(
-                        padding: const EdgeInsets.only(right: 6),
+                        padding: const EdgeInsetsDirectional.only(end: 6),
                         child: GestureDetector(
                           onTap: () {
                             setState(() {
@@ -629,7 +687,7 @@ class _RsaScreenState extends State<RsaScreen> {
             if (isEncryptionReady) ...[
               const SizedBox(height: 12),
               _buildCompactCalcRow(
-                label: "Private Exponent (d)",
+                label: tr("Private Exponent (d)", "الأس الخاص (d)"),
                 symbolicFormula: "d = e⁻¹ mod φ(n)",
                 substitutedFormula:
                     "${eController.text}⁻¹ mod ${phiController.text}",
@@ -646,32 +704,35 @@ class _RsaScreenState extends State<RsaScreen> {
                   border:
                       Border.all(color: primaryColor.withValues(alpha: 0.2)),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        "Public Key PU = {${eController.text}, ${nController.text}}",
-                        style: TextStyle(
-                          fontFamily: 'Courier New',
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: primaryColor,
+                child: Directionality(
+                  textDirection: TextDirection.ltr,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          "PU = {${eController.text}, ${nController.text}}",
+                          style: TextStyle(
+                            fontFamily: 'Courier New',
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: primaryColor,
+                          ),
                         ),
                       ),
-                    ),
-                    Flexible(
-                      child: Text(
-                        "Private Key PR = {${dController.text}, ${nController.text}}",
-                        style: TextStyle(
-                          fontFamily: 'Courier New',
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: accentColor,
+                      Flexible(
+                        child: Text(
+                          "PR = {${dController.text}, ${nController.text}}",
+                          style: TextStyle(
+                            fontFamily: 'Courier New',
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: accentColor,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -683,15 +744,18 @@ class _RsaScreenState extends State<RsaScreen> {
 
   Widget _buildEncryptionCard() {
     return _buildStepCard(
-      title: "2. Encryption",
-      subtitle: "Encrypts Message M < ${nController.text} using Public Key {e, n}",
+      title: tr("2. Encryption", "2. عملية التشفير"),
+      subtitle: tr(
+        "Encrypts Message M < ${nController.text} using Public Key {e, n}",
+        "تشفير الرسالة M < ${nController.text} باستخدام المفتاح العام {e, n}",
+      ),
       icon: Icons.lock_outline_rounded,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildInput(
             messageController,
-            "Plaintext Message (M)",
+            tr("Plaintext Message (M)", "الرسالة الأصلية الرقمية (M)"),
             icon: Icons.tag_rounded,
           ),
           if (_encryptErrorMessage != null) ...[
@@ -709,9 +773,12 @@ class _RsaScreenState extends State<RsaScreen> {
           ElevatedButton.icon(
             onPressed: _encryptMessage,
             icon: const Icon(Icons.lock_rounded, size: 18),
-            label: const Text(
-              "ENCRYPT (C = M^e mod n)",
-              style: TextStyle(fontWeight: FontWeight.bold),
+            label: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                tr("ENCRYPT (C = M^e mod n)", "تشفير (C = M^e mod n)"),
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF1E3A8A),
@@ -724,7 +791,7 @@ class _RsaScreenState extends State<RsaScreen> {
           if (isEncrypted) ...[
             const Divider(height: 22),
             _buildCompactCalcRow(
-              label: "Ciphertext Calculation",
+              label: tr("Ciphertext Calculation", "حساب النص المشفر"),
               symbolicFormula: "C = M^e mod n",
               substitutedFormula:
                   "${messageController.text}^${eController.text} mod ${nController.text}",
@@ -740,8 +807,11 @@ class _RsaScreenState extends State<RsaScreen> {
 
   Widget _buildDecryptionCard() {
     return _buildStepCard(
-      title: "3. Decryption",
-      subtitle: "Recovers M from Ciphertext C using Private Key {d, n}",
+      title: tr("3. Decryption", "3. عملية فك التشفير"),
+      subtitle: tr(
+        "Recovers M from Ciphertext C using Private Key {d, n}",
+        "استرجاع الرسالة M من النص المشفر C باستخدام المفتاح الخاص {d, n}",
+      ),
       icon: Icons.lock_open_rounded,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -749,7 +819,7 @@ class _RsaScreenState extends State<RsaScreen> {
           // Editable Ciphertext (C) so students can also solve Decryption-only exam problems!
           _buildInput(
             encryptedController,
-            "Ciphertext (C)",
+            tr("Ciphertext (C)", "النص المشفر (C)"),
             icon: Icons.enhanced_encryption_outlined,
             onChanged: (_) => setState(() => isDecrypted = false),
           ),
@@ -768,9 +838,12 @@ class _RsaScreenState extends State<RsaScreen> {
           ElevatedButton.icon(
             onPressed: _decryptMessage,
             icon: const Icon(Icons.lock_open_rounded, size: 18),
-            label: const Text(
-              "DECRYPT (M = C^d mod n)",
-              style: TextStyle(fontWeight: FontWeight.bold),
+            label: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                tr("DECRYPT (M = C^d mod n)", "فك التشفير (M = C^d mod n)"),
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blueGrey.shade800,
@@ -783,7 +856,7 @@ class _RsaScreenState extends State<RsaScreen> {
           if (isDecrypted) ...[
             const Divider(height: 22),
             _buildCompactCalcRow(
-              label: "Plaintext Recovery",
+              label: tr("Plaintext Recovery", "استرجاع النص الأصلي"),
               symbolicFormula: "M = C^d mod n",
               substitutedFormula:
                   "${encryptedController.text}^${dController.text} mod ${nController.text}",
@@ -806,41 +879,48 @@ class _RsaScreenState extends State<RsaScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Icon(Icons.verified_user_rounded,
-                          color: AppTheme.successText(context), size: 22),
-                      const SizedBox(width: 10),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Recovered Original Message (M)",
-                            style: TextStyle(
-                              color: AppTheme.successText(context),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 11.5,
-                            ),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Icon(Icons.verified_user_rounded,
+                            color: AppTheme.successText(context), size: 22),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                tr(
+                                  "Recovered Original Message (M)",
+                                  "الرسالة الأصلية المسترجعة (M)",
+                                ),
+                                style: TextStyle(
+                                  color: AppTheme.successText(context),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11.5,
+                                ),
+                              ),
+                              SelectableText(
+                                decryptedController.text,
+                                style: TextStyle(
+                                  fontFamily: 'Courier New',
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.successText(context),
+                                ),
+                              ),
+                            ],
                           ),
-                          SelectableText(
-                            decryptedController.text,
-                            style: TextStyle(
-                              fontFamily: 'Courier New',
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.successText(context),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
                   IconButton(
                     onPressed: () => _copyText(
                         decryptedController.text, 'Recovered Message M'),
                     icon: Icon(Icons.copy_rounded,
                         color: AppTheme.successText(context), size: 20),
-                    tooltip: 'Copy M',
+                    tooltip: tr('Copy M', 'نسخ M'),
                   ),
                 ],
               ),
@@ -970,7 +1050,7 @@ class _RsaScreenState extends State<RsaScreen> {
         ),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(fontFamily: 'Roboto', fontSize: 12),
+          labelStyle: const TextStyle(fontSize: 12),
           isDense: true,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -1031,25 +1111,31 @@ class _RsaScreenState extends State<RsaScreen> {
                         color: activeColor.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: Text(
-                        symbolicFormula,
-                        style: TextStyle(
-                          fontFamily: 'Courier New',
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.bold,
-                          color: activeColor,
+                      child: Directionality(
+                        textDirection: TextDirection.ltr,
+                        child: Text(
+                          symbolicFormula,
+                          style: TextStyle(
+                            fontFamily: 'Courier New',
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.bold,
+                            color: activeColor,
+                          ),
                         ),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  "= $substitutedFormula",
-                  style: TextStyle(
-                    fontFamily: 'Courier New',
-                    fontSize: 11.5,
-                    color: AppTheme.textSecondary(context),
+                Directionality(
+                  textDirection: TextDirection.ltr,
+                  child: Text(
+                    "= $substitutedFormula",
+                    style: TextStyle(
+                      fontFamily: 'Courier New',
+                      fontSize: 11.5,
+                      color: AppTheme.textSecondary(context),
+                    ),
                   ),
                 ),
               ],
@@ -1105,7 +1191,10 @@ class _RsaScreenState extends State<RsaScreen> {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              "Complete Step 1 (or tap 'Auto Primes') to unlock Encryption and Decryption.",
+              tr(
+                "Complete Step 1 (or tap 'Auto Primes') to unlock Encryption and Decryption.",
+                "أكمل الخطوة 1 (أو اضغط على 'تلقائي') لفتح التشفير وفك التشفير.",
+              ),
               style: TextStyle(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w600,

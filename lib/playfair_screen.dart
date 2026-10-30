@@ -262,7 +262,10 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Result copied to clipboard!'),
+        content: Text(tr(
+          'Result copied to clipboard!',
+          'تم نسخ النتيجة إلى الحافظة!',
+        )),
         backgroundColor: primaryColor,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
@@ -270,22 +273,45 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
     );
   }
 
+  String _localizeRule(String rule) {
+    if (!isArabic) return rule;
+    switch (rule) {
+      case 'Same Row ➔ Shift Right':
+        return 'نفس الصف ➔ إزاحة لليمين';
+      case 'Same Row ➔ Shift Left':
+        return 'نفس الصف ➔ إزاحة لليسار';
+      case 'Same Col ➔ Shift Down':
+        return 'نفس العمود ➔ إزاحة للأسفل';
+      case 'Same Col ➔ Shift Up':
+        return 'نفس العمود ➔ إزاحة للأعلى';
+      case 'Rectangle ➔ Swap Columns':
+        return 'مستطيل ➔ تبديل الأعمدة';
+      default:
+        return rule;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBg(context),
       appBar: AppBar(
-        title: const Text(
-          'Playfair Cipher',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            tr('Playfair Cipher', 'تشفير بلايفير (Playfair)'),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
         ),
         centerTitle: true,
         backgroundColor: AppTheme.purpleAppBar(context),
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
+          AppTheme.buildLanguageToggleButton(context),
           IconButton(
             onPressed: _clearAll,
+            tooltip: tr('Reset', 'إعادة تعيين'),
             icon: const Icon(Icons.refresh),
           ),
         ],
@@ -338,8 +364,8 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
               onChanged: (_) => _processCipher(),
               style: TextStyle(fontSize: 14, color: AppTheme.textPrimary(context)),
               decoration: InputDecoration(
-                labelText: 'Message',
-                hintText: 'e.g., INSTRUMENTS',
+                labelText: tr('Message', 'النص (الرسالة)'),
+                hintText: tr('e.g., INSTRUMENTS', 'مثال: INSTRUMENTS'),
                 isDense: true,
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -369,8 +395,8 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
                     onChanged: (_) => _processCipher(),
                     style: TextStyle(fontSize: 14, color: AppTheme.textPrimary(context)),
                     decoration: InputDecoration(
-                      labelText: 'Keyword',
-                      hintText: 'e.g., MONARCHY',
+                      labelText: tr('Keyword', 'الكلمة المفتاحية'),
+                      hintText: tr('e.g., MONARCHY', 'مثال: MONARCHY'),
                       isDense: true,
                       contentPadding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 10),
@@ -400,8 +426,10 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
                   ),
                   child: Row(
                     children: [
-                      _buildModePill('Encrypt', PlayfairMode.encrypt),
-                      _buildModePill('Decrypt', PlayfairMode.decrypt),
+                      _buildModePill(
+                          tr('Encrypt', 'تشفير'), PlayfairMode.encrypt),
+                      _buildModePill(
+                          tr('Decrypt', 'فك التشفير'), PlayfairMode.decrypt),
                     ],
                   ),
                 ),
@@ -425,17 +453,23 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
         },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 160),
+          padding: const EdgeInsets.symmetric(horizontal: 4),
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: isSelected ? Colors.deepPurple.shade600 : Colors.transparent,
             borderRadius: BorderRadius.circular(7),
           ),
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: isSelected ? Colors.white : AppTheme.textSecondary(context),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: isSelected
+                    ? Colors.white
+                    : AppTheme.textSecondary(context),
+              ),
             ),
           ),
         ),
@@ -470,25 +504,38 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                "5×5 Key Matrix & Digraphs",
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: primaryColor,
+              Expanded(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text(
+                    tr("5×5 Key Matrix & Digraphs", "مصفوفة المفتاح 5×5 والأزواج"),
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: primaryColor,
+                    ),
+                  ),
                 ),
               ),
+              const SizedBox(width: 6),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _buildLegendDot(
-                      primaryColor.withValues(alpha: 0.25), "Key", primaryColor),
-                  const SizedBox(width: 8),
+                      primaryColor.withValues(alpha: 0.25),
+                      tr("Key", "مفتاح"),
+                      primaryColor),
+                  const SizedBox(width: 6),
                   _buildLegendDot(
-                      Colors.amber.shade600, "In", Colors.amber.shade800),
-                  const SizedBox(width: 8),
+                      Colors.amber.shade600,
+                      tr("In", "دخول"),
+                      Colors.amber.shade800),
+                  const SizedBox(width: 6),
                   _buildLegendDot(
-                      Colors.teal.shade600, "Out", Colors.teal.shade800),
+                      Colors.teal.shade600,
+                      tr("Out", "خروج"),
+                      Colors.teal.shade800),
                 ],
               ),
             ],
@@ -499,75 +546,78 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Left: Compact 175x175 5x5 Matrix
-              SizedBox(
-                width: 175,
-                height: 175,
-                child: Column(
-                  children: List.generate(5, (r) {
-                    return Expanded(
-                      child: Row(
-                        children: List.generate(5, (c) {
-                          final String ch = _matrix[r][c];
-                          final bool isFromKeyword = _keywordChars.contains(ch);
+              // Left: Compact 175x175 5x5 Matrix (always LTR so columns 0..4 match Shift Right/Left)
+              Directionality(
+                textDirection: TextDirection.ltr,
+                child: SizedBox(
+                  width: 175,
+                  height: 175,
+                  child: Column(
+                    children: List.generate(5, (r) {
+                      return Expanded(
+                        child: Row(
+                          children: List.generate(5, (c) {
+                            final String ch = _matrix[r][c];
+                            final bool isFromKeyword = _keywordChars.contains(ch);
 
-                          final bool isInputCell = activeStep != null &&
-                              ((activeStep.r1 == r && activeStep.c1 == c) ||
-                                  (activeStep.r2 == r && activeStep.c2 == c));
-                          final bool isOutputCell = activeStep != null &&
-                              ((activeStep.outR1 == r &&
-                                      activeStep.outC1 == c) ||
-                                  (activeStep.outR2 == r &&
-                                      activeStep.outC2 == c));
+                            final bool isInputCell = activeStep != null &&
+                                ((activeStep.r1 == r && activeStep.c1 == c) ||
+                                    (activeStep.r2 == r && activeStep.c2 == c));
+                            final bool isOutputCell = activeStep != null &&
+                                ((activeStep.outR1 == r &&
+                                        activeStep.outC1 == c) ||
+                                    (activeStep.outR2 == r &&
+                                        activeStep.outC2 == c));
 
-                          Color bgColor = AppTheme.surfaceSubtle(context);
-                          Color borderColor = AppTheme.borderMedium(context);
-                          Color textColor = AppTheme.textPrimary(context);
+                            Color bgColor = AppTheme.surfaceSubtle(context);
+                            Color borderColor = AppTheme.borderMedium(context);
+                            Color textColor = AppTheme.textPrimary(context);
 
-                          if (isOutputCell) {
-                            bgColor = Colors.teal.shade600;
-                            borderColor = Colors.teal.shade800;
-                            textColor = Colors.white;
-                          } else if (isInputCell) {
-                            bgColor = Colors.amber.shade600;
-                            borderColor = Colors.amber.shade800;
-                            textColor = Colors.white;
-                          } else if (isFromKeyword) {
-                            bgColor = primaryColor.withValues(alpha: 0.14);
-                            borderColor = primaryColor.withValues(alpha: 0.45);
-                            textColor = primaryColor;
-                          }
+                            if (isOutputCell) {
+                              bgColor = Colors.teal.shade600;
+                              borderColor = Colors.teal.shade800;
+                              textColor = Colors.white;
+                            } else if (isInputCell) {
+                              bgColor = Colors.amber.shade600;
+                              borderColor = Colors.amber.shade800;
+                              textColor = Colors.white;
+                            } else if (isFromKeyword) {
+                              bgColor = primaryColor.withValues(alpha: 0.14);
+                              borderColor = primaryColor.withValues(alpha: 0.45);
+                              textColor = primaryColor;
+                            }
 
-                          return Expanded(
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 180),
-                              margin: const EdgeInsets.all(2),
-                              decoration: BoxDecoration(
-                                color: bgColor,
-                                borderRadius: BorderRadius.circular(7),
-                                border: Border.all(
-                                  color: borderColor,
-                                  width:
-                                      (isInputCell || isOutputCell) ? 1.8 : 1.0,
+                            return Expanded(
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 180),
+                                margin: const EdgeInsets.all(2),
+                                decoration: BoxDecoration(
+                                  color: bgColor,
+                                  borderRadius: BorderRadius.circular(7),
+                                  border: Border.all(
+                                    color: borderColor,
+                                    width:
+                                        (isInputCell || isOutputCell) ? 1.8 : 1.0,
+                                  ),
                                 ),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  ch == 'I' ? 'I/J' : ch,
-                                  style: TextStyle(
-                                    fontFamily: 'Courier New',
-                                    fontSize: ch == 'I' ? 10.5 : 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: textColor,
+                                child: Center(
+                                  child: Text(
+                                    ch == 'I' ? 'I/J' : ch,
+                                    style: TextStyle(
+                                      fontFamily: 'Courier New',
+                                      fontSize: ch == 'I' ? 10.5 : 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: textColor,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          );
-                        }),
-                      ),
-                    );
-                  }),
+                            );
+                          }),
+                        ),
+                      );
+                    }),
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
@@ -586,7 +636,10 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
                           ),
                           child: Center(
                             child: Text(
-                              "Type a message above to see digraph pairs & matrix rules.",
+                              tr(
+                                "Type a message above to see digraph pairs & matrix rules.",
+                                "اكتب نصاً بالأعلى لعرض أزواج الحروف وقواعد المصفوفة.",
+                              ),
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 11.5,
@@ -611,17 +664,20 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
                                 ),
                                 child: Column(
                                   children: [
-                                    Text(
-                                      "'${activeStep.inputPair}' ➔ '${activeStep.outputPair}'",
-                                      style: TextStyle(
-                                        fontFamily: 'Courier New',
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppTheme.warningText(context),
+                                    Directionality(
+                                      textDirection: TextDirection.ltr,
+                                      child: Text(
+                                        "'${activeStep.inputPair}' ➔ '${activeStep.outputPair}'",
+                                        style: TextStyle(
+                                          fontFamily: 'Courier New',
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppTheme.warningText(context),
+                                        ),
                                       ),
                                     ),
                                     Text(
-                                      activeStep.ruleName,
+                                      _localizeRule(activeStep.ruleName),
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         fontSize: 10,
@@ -634,7 +690,7 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
                               ),
                             const SizedBox(height: 6),
                             Text(
-                              "Tap a pair to inspect:",
+                              tr("Tap a pair to inspect:", "اضغط على أي زوج للمعاينة:"),
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
@@ -676,15 +732,18 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
                                                     alpha: 0.3),
                                           ),
                                         ),
-                                        child: Text(
-                                          "${step.inputPair}➔${step.outputPair}",
-                                          style: TextStyle(
-                                            fontFamily: 'Courier New',
-                                            fontSize: 11.5,
-                                            fontWeight: FontWeight.bold,
-                                            color: isSelected
-                                                ? Colors.white
-                                                : primaryColor,
+                                        child: Directionality(
+                                          textDirection: TextDirection.ltr,
+                                          child: Text(
+                                            "${step.inputPair}➔${step.outputPair}",
+                                            style: TextStyle(
+                                              fontFamily: 'Courier New',
+                                              fontSize: 11.5,
+                                              fontWeight: FontWeight.bold,
+                                              color: isSelected
+                                                  ? Colors.white
+                                                  : primaryColor,
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -754,13 +813,13 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const SizedBox(width: 28),
-              const Text(
-                "OUTPUT RESULT",
+              Text(
+                tr("OUTPUT RESULT", "النتيجة النهائية"),
                 style: TextStyle(
                   color: Colors.white70,
                   fontWeight: FontWeight.bold,
                   fontSize: 11,
-                  letterSpacing: 1.2,
+                  letterSpacing: isArabic ? 0 : 1.2,
                 ),
               ),
               if (result.isNotEmpty)
@@ -779,24 +838,27 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
           ),
           const SizedBox(height: 6),
           SelectableText(
-            result.isEmpty ? 'Waiting for input...' : result,
+            result.isEmpty
+                ? tr('Waiting for input...', 'بانتظار إدخال النص...')
+                : result,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
               color: Colors.white,
-              fontFamily: 'Courier New',
-              letterSpacing: 1.5,
+              fontFamily:
+                  result.isEmpty && isArabic ? 'Cairo' : 'Courier New',
+              letterSpacing: result.isEmpty && isArabic ? 0 : 1.5,
             ),
           ),
           if (pairedResult.isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(
-              "Pairs: $pairedResult",
+              tr("Pairs: $pairedResult", "الأزواج: $pairedResult"),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12,
-                fontFamily: 'Courier New',
+                fontFamily: AppTheme.monoFont(),
                 color: Colors.white.withValues(alpha: 0.85),
                 fontWeight: FontWeight.w600,
               ),

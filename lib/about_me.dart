@@ -35,6 +35,10 @@ class AboutMeScreen extends StatelessWidget {
               pinned: true,
               backgroundColor: headerTop,
               iconTheme: const IconThemeData(color: Colors.white),
+              actions: [
+                AppTheme.buildLanguageToggleButton(context),
+                const SizedBox(width: 4),
+              ],
               flexibleSpace: FlexibleSpaceBar(
                 background: Container(
                   decoration: const BoxDecoration(
@@ -54,17 +58,17 @@ class AboutMeScreen extends StatelessWidget {
                         child: Icon(Icons.person, size: 50, color: Colors.white),
                       ),
                       const SizedBox(height: 10),
-                      const Text(
-                        "Sultan Alfalah",
+                      Text(
+                        tr("Sultan Alfalah", "سلطان الفلاح"),
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
-                          letterSpacing: 1,
+                          letterSpacing: isArabic ? 0 : 1,
                         ),
                       ),
                       Text(
-                        "Junior Enthusiast Programmer",
+                        tr("Junior Enthusiast Programmer", "مبرمج شغوف بتطوير البرمجيات"),
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.8),
                           fontSize: 14,
@@ -82,17 +86,19 @@ class AboutMeScreen extends StatelessWidget {
                   children: [
                     _buildSectionCard(
                       context,
-                      title: "About The App",
+                      title: tr("About The App", "حول التطبيق"),
                       icon: Icons.info_outline,
                       color: primaryColor,
-                      content:
-                          "This application is an educational tool designed to help students understand encryption algorithms (RSA, Diffie-Hellman, etc.) and the mathematical operations associated with them in a simple and interactive way.",
+                      content: tr(
+                        "This application is an educational tool designed to help students understand encryption algorithms (RSA, Diffie-Hellman, etc.) and the mathematical operations associated with them in a simple and interactive way.",
+                        "هذا التطبيق هو أداة تعليمية مصممة لمساعدة الطلاب على فهم خوارزميات التشفير (مثل RSA و Diffie-Hellman وغيرها) والعمليات الرياضية المرتبطة بها بطريقة مبسطة وتفاعلية.",
+                      ),
                     ),
                     const SizedBox(height: 25),
                     Align(
-                      alignment: Alignment.centerLeft,
+                      alignment: AlignmentDirectional.centerStart,
                       child: Text(
-                        "  Connect with me",
+                        tr("  Connect with me", "  تواصل معي"),
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
@@ -104,7 +110,7 @@ class AboutMeScreen extends StatelessWidget {
                     _buildContactCard(
                       context,
                       icon: Icons.alternate_email_rounded,
-                      label: "Email",
+                      label: tr("Email", "البريد الإلكتروني"),
                       value: "sultan1rashid@gmail.com",
                       color: isDark
                           ? const Color(0xFFF87171)
@@ -115,7 +121,7 @@ class AboutMeScreen extends StatelessWidget {
                     _buildContactCard(
                       context,
                       icon: Icons.chat_bubble_outline_rounded,
-                      label: "WhatsApp",
+                      label: tr("WhatsApp", "واتساب"),
                       value: "+966 55 721 6567",
                       color: isDark
                           ? const Color(0xFF4ADE80)
@@ -124,7 +130,7 @@ class AboutMeScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 50),
                     Text(
-                      "Version 2.1.0",
+                      tr("Version 2.1.0", "الإصدار 2.1.0"),
                       style: TextStyle(
                         fontSize: 12,
                         color: AppTheme.textMuted(context),
@@ -236,12 +242,15 @@ class AboutMeScreen extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Text(
-                    value,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      color: AppTheme.textPrimary(context),
+                  Directionality(
+                    textDirection: TextDirection.ltr,
+                    child: Text(
+                      value,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: AppTheme.textPrimary(context),
+                      ),
                     ),
                   ),
                 ],

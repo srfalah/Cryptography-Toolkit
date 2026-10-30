@@ -181,7 +181,10 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
         setState(() {
           isKeyReady = false;
           yaController.clear();
-          _keyValidationMessage = 'Prime (q) must be a prime number > 3.';
+          _keyValidationMessage = tr(
+            'Prime (q) must be a prime number > 3.',
+            'يجب أن يكون العدد (q) عدداً أولياً أكبر من 3.',
+          );
         });
         return;
       }
@@ -192,8 +195,10 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
           isKeyReady = false;
           yaController.clear();
           _suggestedAlpha = suggestion;
-          _keyValidationMessage =
-              'α = $alpha is not a primitive root of q = $q.';
+          _keyValidationMessage = tr(
+            'α = $alpha is not a primitive root of q = $q.',
+            'القيمة α = $alpha ليست جذراً بدائياً للعدد الأولي q = $q.',
+          );
         });
         return;
       }
@@ -202,8 +207,10 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
         setState(() {
           isKeyReady = false;
           yaController.clear();
-          _keyValidationMessage =
-              'Private key X_A must be between 2 and ${q - BigInt.two}.';
+          _keyValidationMessage = tr(
+            'Private key X_A must be between 2 and ${q - BigInt.two}.',
+            'المفتاح الخاص X_A يجب أن يكون بين 2 و ${q - BigInt.two}.',
+          );
         });
         return;
       }
@@ -218,7 +225,10 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
       setState(() {
         isKeyReady = false;
         yaController.clear();
-        _keyValidationMessage = 'Please enter valid integer numbers.';
+        _keyValidationMessage = tr(
+          'Please enter valid integer numbers.',
+          'يرجى إدخال أعداد صحيحة صالحة.',
+        );
       });
     }
   }
@@ -247,7 +257,10 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
     if (messageController.text.trim().isEmpty ||
         kRandomController.text.trim().isEmpty) {
       setState(() {
-        _encryptErrorMessage = 'Please enter both Message (M) and Random (k).';
+        _encryptErrorMessage = tr(
+          'Please enter both Message (M) and Random (k).',
+          'يرجى إدخال كل من الرسالة (M) والعدد العشوائي (k).',
+        );
       });
       return;
     }
@@ -261,16 +274,20 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
 
       if (m < BigInt.zero || m >= q) {
         setState(() {
-          _encryptErrorMessage =
-              'Message (M) must be between 0 and ${q - BigInt.one} (M < q).';
+          _encryptErrorMessage = tr(
+            'Message (M) must be between 0 and ${q - BigInt.one} (M < q).',
+            'يجب أن تكون الرسالة (M) بين 0 و ${q - BigInt.one} (أصغر من q).',
+          );
         });
         return;
       }
 
       if (k < BigInt.one || k >= q) {
         setState(() {
-          _encryptErrorMessage =
-              'Random (k) must be between 1 and ${q - BigInt.one}.';
+          _encryptErrorMessage = tr(
+            'Random (k) must be between 1 and ${q - BigInt.one}.',
+            'العدد العشوائي (k) يجب أن يكون بين 1 و ${q - BigInt.one}.',
+          );
         });
         return;
       }
@@ -292,7 +309,10 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
       });
     } catch (e) {
       setState(() {
-        _encryptErrorMessage = 'Encryption error: check your numerical inputs.';
+        _encryptErrorMessage = tr(
+          'Encryption error: check your numerical inputs.',
+          'خطأ في التشفير: تحقق من القيم الرقمية المدخلة.',
+        );
       });
     }
   }
@@ -303,8 +323,10 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
 
     if (c1Controller.text.trim().isEmpty || c2Controller.text.trim().isEmpty) {
       setState(() {
-        _decryptErrorMessage =
-            'Enter Ciphertext C1 and C2 (or encrypt a message above).';
+        _decryptErrorMessage = tr(
+          'Enter Ciphertext C1 and C2 (or encrypt a message above).',
+          'أدخل النص المشفر C1 و C2 (أو قم بتشفير رسالة بالأعلى).',
+        );
       });
       return;
     }
@@ -317,7 +339,10 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
 
       if (c1 <= BigInt.zero || c1 >= q || c2 < BigInt.zero || c2 >= q) {
         setState(() {
-          _decryptErrorMessage = 'C1 and C2 must be less than prime q ($q).';
+          _decryptErrorMessage = tr(
+            'C1 and C2 must be less than prime q ($q).',
+            'يجب أن تكون قيمتا C1 و C2 أصغر من العدد الأولي q ($q).',
+          );
         });
         return;
       }
@@ -334,7 +359,10 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
       });
     } catch (e) {
       setState(() {
-        _decryptErrorMessage = 'Decryption error: C1 must be coprime to q.';
+        _decryptErrorMessage = tr(
+          'Decryption error: C1 must be coprime to q.',
+          'خطأ في فك التشفير: يجب أن يكون C1 أولياً نسبياً مع q.',
+        );
       });
     }
   }
@@ -344,7 +372,10 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('$label copied to clipboard!'),
+        content: Text(tr(
+          '$label copied to clipboard!',
+          'تم نسخ $label إلى الحافظة!',
+        )),
         backgroundColor: Colors.green.shade700,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
@@ -373,18 +404,22 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBgAlt(context),
       appBar: AppBar(
-        title: const Text(
-          'El-Gamal Cipher',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            tr('El-Gamal Cipher', 'تشفير الجمل (El-Gamal)'),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
         ),
         centerTitle: true,
         backgroundColor: AppTheme.navyAppBar(context),
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
+          AppTheme.buildLanguageToggleButton(context),
           IconButton(
             onPressed: _clearAll,
-            tooltip: 'Reset All',
+            tooltip: tr('Reset All', 'إعادة تعيين الكل'),
             icon: const Icon(Icons.refresh),
           ),
         ],
@@ -416,13 +451,22 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
 
   Widget _buildKeyGenerationCard() {
     return _buildStepCard(
-      title: "1. Key Generation (Alice)",
-      subtitle: "Public Key: {q, α, Y_A}  •  Private Key: X_A",
+      title: tr("1. Key Generation (Alice)", "1. توليد المفاتيح (Alice)"),
+      subtitle: tr(
+        "Public Key: {q, α, Y_A}  •  Private Key: X_A",
+        "المفتاح العام: {q, α, Y_A}  •  المفتاح الخاص: X_A",
+      ),
       icon: Icons.vpn_key_rounded,
       trailing: TextButton.icon(
         onPressed: _generateGlobalParams,
         icon: const Icon(Icons.auto_awesome, size: 16),
-        label: const Text("Auto Fill", style: TextStyle(fontSize: 12)),
+        label: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            tr("Auto Fill", "تلقائي"),
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+          ),
+        ),
         style: TextButton.styleFrom(
           foregroundColor: AppTheme.tealAccent(context),
           backgroundColor: AppTheme.tealAccent(context).withValues(alpha: 0.12),
@@ -438,7 +482,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
               Expanded(
                 child: _buildInput(
                   qController,
-                  "Prime (q)",
+                  tr("Prime (q)", "الأولي (q)"),
                   onChanged: (_) => _calculatePublicKey(),
                 ),
               ),
@@ -446,7 +490,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
               Expanded(
                 child: _buildInput(
                   alphaController,
-                  "Root (α)",
+                  tr("Root (α)", "الجذر (α)"),
                   onChanged: (_) => _calculatePublicKey(),
                 ),
               ),
@@ -454,7 +498,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
               Expanded(
                 child: _buildInput(
                   xaController,
-                  "Private (X_A)",
+                  tr("Private (X_A)", "الخاص (X_A)"),
                   color: accentColor,
                   onChanged: (_) => _calculatePublicKey(),
                 ),
@@ -502,7 +546,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                       child: Text(
-                        "Use α = $_suggestedAlpha",
+                        tr("Use α = $_suggestedAlpha", "استخدم α = $_suggestedAlpha"),
                         style: const TextStyle(
                             fontSize: 11, fontWeight: FontWeight.bold),
                       ),
@@ -516,7 +560,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
           if (isKeyReady) ...[
             const SizedBox(height: 14),
             _buildCompactCalcRow(
-              label: "Public Key (Y_A)",
+              label: tr("Public Key (Y_A)", "المفتاح العام (Y_A)"),
               symbolicFormula: "Y_A = α^(X_A) mod q",
               substitutedFormula:
                   "${alphaController.text}^${xaController.text} mod ${qController.text}",
@@ -531,30 +575,33 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: primaryColor.withValues(alpha: 0.2)),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Flexible(
-                    child: Text(
-                      "Public Key PU = {${qController.text}, ${alphaController.text}, ${yaController.text}}",
+              child: Directionality(
+                textDirection: TextDirection.ltr,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        "PU = {${qController.text}, ${alphaController.text}, ${yaController.text}}",
+                        style: TextStyle(
+                          fontFamily: 'Courier New',
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: primaryColor,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      "PR = {${xaController.text}}",
                       style: TextStyle(
                         fontFamily: 'Courier New',
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: primaryColor,
+                        color: accentColor,
                       ),
                     ),
-                  ),
-                  Text(
-                    "PR = {${xaController.text}}",
-                    style: TextStyle(
-                      fontFamily: 'Courier New',
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: accentColor,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
@@ -565,8 +612,11 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
 
   Widget _buildEncryptionCard() {
     return _buildStepCard(
-      title: "2. Encryption (Bob)",
-      subtitle: "Encrypts Message M < ${qController.text} with random k",
+      title: tr("2. Encryption (Bob)", "2. عملية التشفير (Bob)"),
+      subtitle: tr(
+        "Encrypts Message M < ${qController.text} with random k",
+        "تشفير الرسالة M < ${qController.text} باستخدام العدد العشوائي k",
+      ),
       icon: Icons.lock_outline_rounded,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -576,7 +626,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
               Expanded(
                 child: _buildInput(
                   messageController,
-                  "Message (M)",
+                  tr("Message (M)", "الرسالة (M)"),
                   icon: Icons.tag_rounded,
                 ),
               ),
@@ -584,11 +634,11 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
               Expanded(
                 child: _buildInput(
                   kRandomController,
-                  "Random (k)",
+                  tr("Random (k)", "العشوائي (k)"),
                   suffixIcon: IconButton(
                     icon: Icon(Icons.casino_outlined,
                         color: primaryColor, size: 20),
-                    tooltip: 'Random k',
+                    tooltip: tr('Random k', 'توليد k عشوائي'),
                     onPressed: _generateRandomK,
                   ),
                 ),
@@ -610,9 +660,12 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
           ElevatedButton.icon(
             onPressed: _encryptMessage,
             icon: const Icon(Icons.lock_rounded, size: 18),
-            label: const Text(
-              "ENCRYPT MESSAGE",
-              style: TextStyle(fontWeight: FontWeight.bold),
+            label: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                tr("ENCRYPT MESSAGE", "تشفير الرسالة"),
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF1E3A8A),
@@ -626,7 +679,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
           if (isEncrypted) ...[
             const Divider(height: 24),
             _buildCompactCalcRow(
-              label: "1. One-Time Shared Key (K)",
+              label: tr("1. One-Time Shared Key (K)", "1. المفتاح المشترك المؤقت (K)"),
               symbolicFormula: "K = (Y_A)^k mod q",
               substitutedFormula:
                   "${yaController.text}^${kRandomController.text} mod ${qController.text}",
@@ -634,7 +687,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
             ),
             const SizedBox(height: 8),
             _buildCompactCalcRow(
-              label: "2. First Ciphertext (C1)",
+              label: tr("2. First Ciphertext (C1)", "2. الجزء الأول من التشفير (C1)"),
               symbolicFormula: "C1 = α^k mod q",
               substitutedFormula:
                   "${alphaController.text}^${kRandomController.text} mod ${qController.text}",
@@ -642,7 +695,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
             ),
             const SizedBox(height: 8),
             _buildCompactCalcRow(
-              label: "3. Second Ciphertext (C2)",
+              label: tr("3. Second Ciphertext (C2)", "3. الجزء الثاني من التشفير (C2)"),
               symbolicFormula: "C2 = (K × M) mod q",
               substitutedFormula:
                   "(${kEncryptController.text} × ${messageController.text}) mod ${qController.text}",
@@ -658,8 +711,11 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
 
   Widget _buildDecryptionCard() {
     return _buildStepCard(
-      title: "3. Decryption (Alice)",
-      subtitle: "Recovers M from (C1, C2) using Private Key X_A",
+      title: tr("3. Decryption (Alice)", "3. عملية فك التشفير (Alice)"),
+      subtitle: tr(
+        "Recovers M from (C1, C2) using Private Key X_A",
+        "استرجاع الرسالة M من الزوج (C1, C2) باستخدام المفتاح الخاص X_A",
+      ),
       icon: Icons.lock_open_rounded,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -670,7 +726,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
               Expanded(
                 child: _buildInput(
                   c1Controller,
-                  "Cipher 1 (C1)",
+                  tr("Cipher 1 (C1)", "المشفر الأول (C1)"),
                   onChanged: (_) => setState(() => isDecrypted = false),
                 ),
               ),
@@ -678,7 +734,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
               Expanded(
                 child: _buildInput(
                   c2Controller,
-                  "Cipher 2 (C2)",
+                  tr("Cipher 2 (C2)", "المشفر الثاني (C2)"),
                   onChanged: (_) => setState(() => isDecrypted = false),
                 ),
               ),
@@ -699,9 +755,12 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
           ElevatedButton.icon(
             onPressed: _decryptMessage,
             icon: const Icon(Icons.lock_open_rounded, size: 18),
-            label: const Text(
-              "DECRYPT CIPHERTEXT",
-              style: TextStyle(fontWeight: FontWeight.bold),
+            label: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                tr("DECRYPT CIPHERTEXT", "فك تشفير النص"),
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blueGrey.shade800,
@@ -715,7 +774,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
           if (isDecrypted) ...[
             const Divider(height: 24),
             _buildCompactCalcRow(
-              label: "1. Recover Shared Key (K)",
+              label: tr("1. Recover Shared Key (K)", "1. استرجاع المفتاح المشترك (K)"),
               symbolicFormula: "K = (C1)^(X_A) mod q",
               substitutedFormula:
                   "${c1Controller.text}^${xaController.text} mod ${qController.text}",
@@ -723,7 +782,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
             ),
             const SizedBox(height: 8),
             _buildCompactCalcRow(
-              label: "2. Modular Inverse (K⁻¹)",
+              label: tr("2. Modular Inverse (K⁻¹)", "2. المعكوس الضربي (K⁻¹)"),
               symbolicFormula: "K⁻¹ mod q",
               substitutedFormula:
                   "${kDecryptController.text}⁻¹ mod ${qController.text}",
@@ -731,7 +790,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
             ),
             const SizedBox(height: 8),
             _buildCompactCalcRow(
-              label: "3. Recover Plaintext (M)",
+              label: tr("3. Recover Plaintext (M)", "3. استرجاع النص الأصلي (M)"),
               symbolicFormula: "M = (C2 × K⁻¹) mod q",
               substitutedFormula:
                   "(${c2Controller.text} × ${kInverseController.text}) mod ${qController.text}",
@@ -840,7 +899,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
         ),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(fontFamily: 'Roboto', fontSize: 12),
+          labelStyle: const TextStyle(fontSize: 12),
           isDense: true,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -900,25 +959,31 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
                         color: activeColor.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: Text(
-                        symbolicFormula,
-                        style: TextStyle(
-                          fontFamily: 'Courier New',
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.bold,
-                          color: activeColor,
+                      child: Directionality(
+                        textDirection: TextDirection.ltr,
+                        child: Text(
+                          symbolicFormula,
+                          style: TextStyle(
+                            fontFamily: 'Courier New',
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.bold,
+                            color: activeColor,
+                          ),
                         ),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  "= $substitutedFormula",
-                  style: TextStyle(
-                    fontFamily: 'Courier New',
-                    fontSize: 12,
-                    color: AppTheme.textSecondary(context),
+                Directionality(
+                  textDirection: TextDirection.ltr,
+                  child: Text(
+                    "= $substitutedFormula",
+                    style: TextStyle(
+                      fontFamily: 'Courier New',
+                      fontSize: 12,
+                      color: AppTheme.textSecondary(context),
+                    ),
                   ),
                 ),
               ],
@@ -964,7 +1029,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Final Ciphertext Tuple (C1, C2)",
+                tr("Final Ciphertext Tuple (C1, C2)", "زوج النص المشفر النهائي (C1, C2)"),
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
@@ -972,13 +1037,16 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
                 ),
               ),
               const SizedBox(height: 2),
-              SelectableText(
-                tupleStr,
-                style: TextStyle(
-                  fontSize: 19,
-                  fontWeight: FontWeight.bold,
-                  color: primaryColor,
-                  fontFamily: 'Courier New',
+              Directionality(
+                textDirection: TextDirection.ltr,
+                child: SelectableText(
+                  tupleStr,
+                  style: TextStyle(
+                    fontSize: 19,
+                    fontWeight: FontWeight.bold,
+                    color: primaryColor,
+                    fontFamily: 'Courier New',
+                  ),
                 ),
               ),
             ],
@@ -986,7 +1054,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
           IconButton(
             onPressed: () => _copyText(tupleStr, 'Ciphertext $tupleStr'),
             icon: Icon(Icons.copy_rounded, color: primaryColor, size: 20),
-            tooltip: 'Copy (C1, C2)',
+            tooltip: tr('Copy (C1, C2)', 'نسخ (C1, C2)'),
           ),
         ],
       ),
@@ -1007,7 +1075,10 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              "Complete Step 1 (or tap 'Auto Fill') to unlock Encryption and Decryption.",
+              tr(
+                "Complete Step 1 (or tap 'Auto Fill') to unlock Encryption and Decryption.",
+                "أكمل الخطوة 1 (أو اضغط على 'تلقائي') لفتح التشفير وفك التشفير.",
+              ),
               style: TextStyle(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w600,
@@ -1031,41 +1102,48 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              Icon(Icons.verified_user_rounded,
-                  color: AppTheme.successText(context), size: 22),
-              const SizedBox(width: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Recovered Original Message (M)",
-                    style: TextStyle(
-                      color: AppTheme.successText(context),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 11.5,
-                    ),
+          Expanded(
+            child: Row(
+              children: [
+                Icon(Icons.verified_user_rounded,
+                    color: AppTheme.successText(context), size: 22),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        tr(
+                          "Recovered Original Message (M)",
+                          "الرسالة الأصلية المسترجعة (M)",
+                        ),
+                        style: TextStyle(
+                          color: AppTheme.successText(context),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 11.5,
+                        ),
+                      ),
+                      SelectableText(
+                        decryptedController.text,
+                        style: TextStyle(
+                          fontFamily: 'Courier New',
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.successText(context),
+                        ),
+                      ),
+                    ],
                   ),
-                  SelectableText(
-                    decryptedController.text,
-                    style: TextStyle(
-                      fontFamily: 'Courier New',
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.successText(context),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
           IconButton(
             onPressed: () =>
                 _copyText(decryptedController.text, 'Recovered Message M'),
             icon: Icon(Icons.copy_rounded,
                 color: AppTheme.successText(context), size: 20),
-            tooltip: 'Copy M',
+            tooltip: tr('Copy M', 'نسخ M'),
           ),
         ],
       ),

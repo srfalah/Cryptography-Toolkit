@@ -4,15 +4,102 @@ import 'package:flutter/material.dart';
 final ValueNotifier<ThemeMode> appThemeNotifier =
     ValueNotifier<ThemeMode>(ThemeMode.light);
 
+/// Global notifier controlling English (false) vs Arabic (true) UI language.
+final ValueNotifier<bool> appArabicNotifier = ValueNotifier<bool>(false);
+
+bool get isArabic => appArabicNotifier.value;
+
 void toggleAppTheme() {
   appThemeNotifier.value = appThemeNotifier.value == ThemeMode.light
       ? ThemeMode.dark
       : ThemeMode.light;
 }
 
+void toggleAppLanguage() {
+  appArabicNotifier.value = !appArabicNotifier.value;
+}
+
+/// Returns [ar] when Arabic mode is active, otherwise [en].
+String tr(String en, String ar) => appArabicNotifier.value ? ar : en;
+
+/// InheritedNotifier so every screen in the Navigator stack rebuilds on language change.
+class AppLanguageScope extends InheritedNotifier<ValueNotifier<bool>> {
+  const AppLanguageScope({
+    super.key,
+    required ValueNotifier<bool> super.notifier,
+    required super.child,
+  });
+
+  static bool watch(BuildContext context) {
+    return context
+            .dependOnInheritedWidgetOfExactType<AppLanguageScope>()
+            ?.notifier
+            ?.value ??
+        appArabicNotifier.value;
+  }
+}
+
 class AppTheme {
-  static bool isDark(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark;
+  static bool isDark(BuildContext context) {
+    // Also subscribe the calling widget to language changes so all screens rebuild.
+    AppLanguageScope.watch(context);
+    return Theme.of(context).brightness == Brightness.dark;
+  }
+
+  static bool isAr(BuildContext context) => AppLanguageScope.watch(context);
+
+  /// Returns 'Cairo' in Arabic mode and 'Courier New' in English mode for code/formula blocks
+  /// that may contain localized text.
+  static String monoFont() => isArabic ? 'Cairo' : 'Courier New';
+
+  /// Compact AppBar button showing 'ع' in English mode and 'E' in Arabic mode.
+  static Widget buildLanguageToggleButton(BuildContext context) {
+    final bool ar = isAr(context);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+        child: Tooltip(
+          message: ar ? 'Switch to English' : 'التحويل إلى العربية',
+          child: Material(
+            color: Colors.white.withValues(alpha: 0.16),
+            borderRadius: BorderRadius.circular(10),
+            child: InkWell(
+              onTap: toggleAppLanguage,
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                width: 36,
+                height: 34,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.35),
+                    width: 1.1,
+                  ),
+                ),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 180),
+                  transitionBuilder: (child, anim) =>
+                      ScaleTransition(scale: anim, child: child),
+                  child: Text(
+                    ar ? 'E' : 'ع',
+                    key: ValueKey<bool>(ar),
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      color: Colors.white,
+                      fontSize: ar ? 15 : 17,
+                      fontWeight: FontWeight.bold,
+                      height: 1.0,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   // ===========================================================================
   // CORE SURFACE & TEXT PALETTE
@@ -130,11 +217,13 @@ class AppTheme {
   // ===========================================================================
 
   static ThemeData lightTheme() {
+    final String activeFont = isArabic ? 'Cairo' : 'Roboto';
     return ThemeData(
       brightness: Brightness.light,
       primaryColor: const Color(0xFF1E3A8A),
       scaffoldBackgroundColor: const Color(0xFFF8FAFC),
-      fontFamily: 'Roboto',
+      fontFamily: activeFont,
+      fontFamilyFallback: const ['Cairo'],
       cardColor: Colors.white,
       dividerColor: Colors.grey.shade200,
       colorScheme: ColorScheme.light(
@@ -145,8 +234,14 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.white,
-        labelStyle: TextStyle(color: Colors.blueGrey.shade700),
-        hintStyle: TextStyle(color: Colors.grey.shade400),
+        labelStyle: TextStyle(
+          color: Colors.blueGrey.shade700,
+          fontFamily: activeFont,
+        ),
+        hintStyle: TextStyle(
+          color: Colors.grey.shade400,
+          fontFamily: activeFont,
+        ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -160,11 +255,13 @@ class AppTheme {
   }
 
   static ThemeData darkTheme() {
+    final String activeFont = isArabic ? 'Cairo' : 'Roboto';
     return ThemeData(
       brightness: Brightness.dark,
       primaryColor: const Color(0xFF60A5FA),
       scaffoldBackgroundColor: const Color(0xFF0B1120),
-      fontFamily: 'Roboto',
+      fontFamily: activeFont,
+      fontFamilyFallback: const ['Cairo'],
       cardColor: const Color(0xFF1E293B),
       dividerColor: const Color(0xFF334155),
       colorScheme: const ColorScheme.dark(
@@ -175,8 +272,14 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: const Color(0xFF0F172A),
-        labelStyle: const TextStyle(color: Color(0xFF94A3B8)),
-        hintStyle: const TextStyle(color: Color(0xFF475569)),
+        labelStyle: TextStyle(
+          color: const Color(0xFF94A3B8),
+          fontFamily: activeFont,
+        ),
+        hintStyle: TextStyle(
+          color: const Color(0xFF475569),
+          fontFamily: activeFont,
+        ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(color: Color(0xFF334155)),

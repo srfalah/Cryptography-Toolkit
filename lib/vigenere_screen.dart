@@ -90,15 +90,23 @@ class _VigenereScreenState extends State<VigenereScreen> {
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBg(context),
       appBar: AppBar(
-        title: const Text(
-          'Vigenère Cipher',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            tr('Vigenère Cipher', 'تشفير فيجينير (Vigenère)'),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
         ),
         centerTitle: true,
         backgroundColor: AppTheme.purpleAppBar(context),
         foregroundColor: Colors.white,
         actions: [
-          IconButton(onPressed: _clearAll, icon: const Icon(Icons.refresh)),
+          AppTheme.buildLanguageToggleButton(context),
+          IconButton(
+            onPressed: _clearAll,
+            tooltip: tr('Reset', 'إعادة تعيين'),
+            icon: const Icon(Icons.refresh),
+          ),
         ],
       ),
       body: SafeArea(
@@ -110,7 +118,7 @@ class _VigenereScreenState extends State<VigenereScreen> {
               _buildInputField(
                 context,
                 messageController,
-                "Message",
+                tr("Message", "النص (الرسالة)"),
                 Icons.message_outlined,
                 3,
                 primaryColor,
@@ -119,7 +127,7 @@ class _VigenereScreenState extends State<VigenereScreen> {
               _buildInputField(
                 context,
                 keywordController,
-                "Keyword (Letters Only)",
+                tr("Keyword (Letters Only)", "الكلمة المفتاحية (حروف إنجليزية فقط)"),
                 Icons.vpn_key_outlined,
                 1,
                 primaryColor,
@@ -157,39 +165,47 @@ class _VigenereScreenState extends State<VigenereScreen> {
                 color: AppTheme.warningText(context),
               ),
               const SizedBox(width: 8),
-              Text(
-                "How it works (Key Alignment):",
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.warningText(context),
+              Expanded(
+                child: Text(
+                  tr(
+                    "How it works (Key Alignment):",
+                    "طريقة العمل (محاذاة وتكرار المفتاح مع النص):",
+                  ),
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.warningText(context),
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 10),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "MSG: ${messageController.text}",
-                  style: TextStyle(
-                    fontFamily: 'Courier New',
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.textPrimary(context),
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "MSG: ${messageController.text}",
+                    style: TextStyle(
+                      fontFamily: 'Courier New',
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimary(context),
+                    ),
                   ),
-                ),
-                Text(
-                  "KEY: $repeatedKeyDisplay",
-                  style: TextStyle(
-                    fontFamily: 'Courier New',
-                    color: primaryColor,
-                    fontWeight: FontWeight.bold,
+                  Text(
+                    "KEY: $repeatedKeyDisplay",
+                    style: TextStyle(
+                      fontFamily: 'Courier New',
+                      color: primaryColor,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
@@ -234,22 +250,32 @@ class _VigenereScreenState extends State<VigenereScreen> {
         children: [
           Expanded(
             child: RadioListTile<VigenereMode>(
-              title: Text(
-                "Encrypt",
-                style: TextStyle(color: AppTheme.textPrimary(context)),
+              title: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: AlignmentDirectional.centerStart,
+                child: Text(
+                  tr("Encrypt", "تشفير"),
+                  style: TextStyle(color: AppTheme.textPrimary(context)),
+                ),
               ),
               value: VigenereMode.encrypt,
               activeColor: primaryColor,
+              contentPadding: EdgeInsets.zero,
             ),
           ),
           Expanded(
             child: RadioListTile<VigenereMode>(
-              title: Text(
-                "Decrypt",
-                style: TextStyle(color: AppTheme.textPrimary(context)),
+              title: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: AlignmentDirectional.centerStart,
+                child: Text(
+                  tr("Decrypt", "فك التشفير"),
+                  style: TextStyle(color: AppTheme.textPrimary(context)),
+                ),
               ),
               value: VigenereMode.decrypt,
               activeColor: primaryColor,
+              contentPadding: EdgeInsets.zero,
             ),
           ),
         ],
@@ -275,9 +301,9 @@ class _VigenereScreenState extends State<VigenereScreen> {
       ),
       child: Column(
         children: [
-          const Text(
-            "RESULT",
-            style: TextStyle(
+          Text(
+            tr("RESULT", "النتيجة"),
+            style: const TextStyle(
               color: Colors.white70,
               fontWeight: FontWeight.bold,
               fontSize: 12,

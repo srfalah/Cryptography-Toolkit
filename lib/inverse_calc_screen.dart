@@ -52,7 +52,10 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
     });
 
     if (eController.text.trim().isEmpty || phiController.text.trim().isEmpty) {
-      setState(() => _inputError = 'Please enter both e and φ(n).');
+      setState(() => _inputError = tr(
+            'Please enter both e and φ(n).',
+            'يرجى إدخال كل من القيمة e والمعيار φ(n).',
+          ));
       return;
     }
 
@@ -108,12 +111,17 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
         _rawX = x;
         _inverse = d;
         if (e >= phi) {
-          _inputWarning =
-              'e is not smaller than φ(n). The table still works, but usually 1 < e < φ(n).';
+          _inputWarning = tr(
+            'e is not smaller than φ(n). The table still works, but usually 1 < e < φ(n).',
+            'القيمة e ليست أصغر من φ(n). الجدول يعمل، لكن عادةً 1 < e < φ(n).',
+          );
         }
       });
     } catch (err) {
-      setState(() => _inputError = 'Please enter valid numerical values.');
+      setState(() => _inputError = tr(
+            'Please enter valid numerical values.',
+            'يرجى إدخال قيم رقمية صحيحة.',
+          ));
     }
   }
 
@@ -141,7 +149,10 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('d = $_inverse copied to clipboard!'),
+        content: Text(tr(
+          'd = $_inverse copied to clipboard!',
+          'تم نسخ المعكوس d = $_inverse إلى الحافظة!',
+        )),
         backgroundColor: Colors.green.shade700,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
@@ -155,17 +166,21 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBg(context),
       appBar: AppBar(
-        title: const Text(
-          'Extended Euclidean',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            tr('Extended Euclidean', 'خوارزمية إقليدس المطولة'),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
         ),
         centerTitle: true,
         backgroundColor: AppTheme.tealAppBar(context),
         foregroundColor: Colors.white,
         actions: [
+          AppTheme.buildLanguageToggleButton(context),
           IconButton(
             onPressed: _resetFields,
-            tooltip: 'Reset',
+            tooltip: tr('Reset', 'إعادة تعيين'),
             icon: const Icon(Icons.refresh),
           ),
         ],
@@ -179,7 +194,7 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
               _buildGoalBadge(context, primaryColor),
               const SizedBox(height: 16),
               Text(
-                "Inputs",
+                tr("Inputs", "المدخلات"),
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -198,8 +213,8 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
                     child: _buildTextField(
                       context,
                       eController,
-                      'Value (e)',
-                      'e.g. 7',
+                      tr('Value (e)', 'القيمة (e)'),
+                      tr('e.g. 7', 'مثال: 7'),
                       primaryColor,
                     ),
                   ),
@@ -208,8 +223,8 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
                     child: _buildTextField(
                       context,
                       phiController,
-                      'Modulus φ(n)',
-                      'e.g. 40',
+                      tr('Modulus φ(n)', 'المعيار φ(n)'),
+                      tr('e.g. 40', 'مثال: 40'),
                       primaryColor,
                     ),
                   ),
@@ -246,16 +261,20 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: const Text(
-                    "CALCULATE STEPS",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      tr("CALCULATE STEPS", "احسب الخطوات"),
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
               ),
               const SizedBox(height: 28),
               if (tableRows.isNotEmpty) ...[
                 Text(
-                  "Calculation Steps",
+                  tr("Calculation Steps", "جدول خطوات الحساب"),
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -264,7 +283,10 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Tap any row to see its formulas with the numbers plugged in.',
+                  tr(
+                    'Tap any row to see its formulas with the numbers plugged in.',
+                    'اضغط على أي صف لعرض المعادلات الرياضية بالتعويض الرقمي.',
+                  ),
                   style: TextStyle(
                     fontSize: 11.5,
                     color: AppTheme.textMuted(context),
@@ -295,24 +317,27 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
       child: Column(
         children: [
           Text(
-            'GOAL',
+            tr('GOAL', 'الهدف الرياضي'),
             style: TextStyle(
               fontSize: 10,
-              letterSpacing: 1.2,
+              letterSpacing: isArabic ? 0 : 1.2,
               fontWeight: FontWeight.bold,
               color: AppTheme.textMuted(context),
             ),
           ),
           const SizedBox(height: 4),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              'd ≡ e⁻¹ (mod φ(n))   ⇔   e · d ≡ 1 (mod φ(n))',
-              style: TextStyle(
-                fontFamily: 'Courier New',
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: primaryColor,
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                'd ≡ e⁻¹ (mod φ(n))   ⇔   e · d ≡ 1 (mod φ(n))',
+                style: TextStyle(
+                  fontFamily: 'Courier New',
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: primaryColor,
+                ),
               ),
             ),
           ),
@@ -428,16 +453,19 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
     Widget groupCell(String t, int flexCols, Color bg) => Expanded(
           flex: flexCols,
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
             color: bg,
             alignment: Alignment.center,
-            child: Text(
-              t,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 10,
-                letterSpacing: 0.8,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                t,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 10,
+                  letterSpacing: isArabic ? 0 : 0.8,
+                ),
               ),
             ),
           ),
@@ -455,8 +483,8 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Container(width: stepW, color: divDark),
-            groupCell('DIVISION', 4, divDark),
-            groupCell('COEFFICIENTS', 3, coeffDark),
+            groupCell(tr('DIVISION', 'القسمة'), 4, divDark),
+            groupCell(tr('COEFFICIENTS', 'المعاملات'), 3, coeffDark),
           ],
         ),
       ),
@@ -508,11 +536,14 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(9),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: children,
+      child: Directionality(
+        textDirection: TextDirection.ltr,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(9),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: children,
+          ),
         ),
       ),
     );
@@ -665,7 +696,7 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
     final row = tableRows[i];
     final bool isLast = i == lastIndex;
     final TextStyle style = TextStyle(
-      fontFamily: 'Courier New',
+      fontFamily: AppTheme.monoFont(),
       fontSize: 12,
       fontWeight: FontWeight.w600,
       color: AppTheme.textSecondary(context),
@@ -674,33 +705,50 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
     List<String> lines;
     if (isLast) {
       lines = [
-        'B reached 0, so the algorithm stops.',
+        tr(
+          'B reached 0, so the algorithm stops.',
+          'وصلت B إلى 0، لذا تتوقف الخوارزمية هنا.',
+        ),
         'gcd(e, φ(n)) = A = ${row['a']}',
-        'raw inverse x = ${row['x']}',
+        tr(
+          'raw inverse x = ${row['x']}',
+          'المعكوس الأولي x = ${row['x']}',
+        ),
       ];
     } else {
       lines = [
         'A = Q × B + R   →   ${row['a']} = ${row['q']} × ${row['b']} + ${row['r']}',
         'z = x − Q × y   →   ${row['z']} = ${row['x']} − ${row['q']} × ${row['y']}',
-        'Next row: A←B, B←R, x←y, y←z',
+        tr(
+          'Next row: A←B, B←R, x←y, y←z',
+          'الصف التالي: A←B ، B←R ، x←y ، y←z',
+        ),
       ];
     }
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      color: _accent(context).withValues(alpha: 0.08),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            for (final l in lines)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 2),
-                child: Text(l, style: style),
-              ),
-          ],
+    return Directionality(
+      textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        color: _accent(context).withValues(alpha: 0.08),
+        child: Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (final l in lines)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Directionality(
+                    textDirection: RegExp(r'[\u0600-\u06FF]').hasMatch(l)
+                        ? TextDirection.rtl
+                        : TextDirection.ltr,
+                    child: Text(l, style: style),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -714,7 +762,7 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
           Container(
             width: 12,
             height: 12,
-            margin: const EdgeInsets.only(right: 4),
+            margin: const EdgeInsetsDirectional.only(end: 4),
             decoration: BoxDecoration(
               color: c.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(3),
@@ -723,7 +771,10 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
         const SizedBox(width: 4),
         Expanded(
           child: Text(
-            'Same colour = same number moving diagonally (R→B→A and z→y→x).',
+            tr(
+              'Same colour = same number moving diagonally (R→B→A and z→y→x).',
+              'نفس اللون = نفس الرقم ينتقل قطرياً عبر الصفوف (R→B→A و z→y→x).',
+            ),
             style: TextStyle(
               fontSize: 11,
               color: AppTheme.textMuted(context),
@@ -743,7 +794,7 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
         : AppTheme.errorText(context);
 
     final TextStyle detail = TextStyle(
-      fontFamily: 'Courier New',
+      fontFamily: AppTheme.monoFont(),
       fontSize: 13,
       fontWeight: FontWeight.w600,
       color: fg,
@@ -759,7 +810,10 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
 
       content.addAll([
         Text(
-          'Multiplicative Inverse (d) = $d',
+          tr(
+            'Multiplicative Inverse (d) = $d',
+            'المعكوس الضربي (d) = $d',
+          ),
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: fg),
         ),
@@ -768,16 +822,28 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
         const SizedBox(height: 12),
         Text(
           x < BigInt.zero
-              ? 'x = $x is negative, so  d = x + φ(n) = $x + $phi = $d'
-              : 'x = $x is not negative, so  d = x = $d',
+              ? tr(
+                  'x = $x is negative, so  d = x + φ(n) = $x + $phi = $d',
+                  'بما أن x = $x سالبة، نضيف φ(n):  d = $x + $phi = $d',
+                )
+              : tr(
+                  'x = $x is not negative, so  d = x = $d',
+                  'بما أن x = $x موجبة، فإن:  d = x = $d',
+                ),
           textAlign: TextAlign.center,
           style: detail,
         ),
         const SizedBox(height: 8),
         Text(
           check == BigInt.one
-              ? 'Check: (e × d) mod φ(n) = ($e × $d) mod $phi = 1 ✓'
-              : 'Check: (e × d) mod φ(n) = ($e × $d) mod $phi = $check',
+              ? tr(
+                  'Check: (e × d) mod φ(n) = ($e × $d) mod $phi = 1 ✓',
+                  'التحقق: (e × d) mod φ(n) = ($e × $d) mod $phi = 1 ✓',
+                )
+              : tr(
+                  'Check: (e × d) mod φ(n) = ($e × $d) mod $phi = $check',
+                  'التحقق: (e × d) mod φ(n) = ($e × $d) mod $phi = $check',
+                ),
           textAlign: TextAlign.center,
           style: detail,
         ),
@@ -785,7 +851,7 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
         OutlinedButton.icon(
           onPressed: _copyInverse,
           icon: const Icon(Icons.copy_rounded, size: 16),
-          label: const Text('Copy d'),
+          label: Text(tr('Copy d', 'نسخ d')),
           style: OutlinedButton.styleFrom(
             foregroundColor: fg,
             side: BorderSide(color: fg.withValues(alpha: 0.6)),
@@ -795,13 +861,19 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
     } else {
       content.addAll([
         Text(
-          'No inverse exists (GCD != 1)',
+          tr(
+            'No inverse exists (GCD != 1)',
+            'لا يوجد معكوس ضربي (GCD ≠ 1)',
+          ),
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: fg),
         ),
         const SizedBox(height: 10),
         Text(
-          'gcd(e, φ(n)) = $_gcd ≠ 1, so e and φ(n) share a factor and e⁻¹ mod φ(n) does not exist.',
+          tr(
+            'gcd(e, φ(n)) = $_gcd ≠ 1, so e and φ(n) share a factor and e⁻¹ mod φ(n) does not exist.',
+            'بما أن gcd(e, φ(n)) = $_gcd ≠ 1، فإن العددين غير أوليين نسبياً ولا يوجد معكوس ضربي.',
+          ),
           textAlign: TextAlign.center,
           style: detail,
         ),

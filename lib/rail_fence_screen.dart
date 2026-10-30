@@ -125,16 +125,24 @@ class _RailFenceScreenState extends State<RailFenceScreen> {
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBg(context),
       appBar: AppBar(
-        title: const Text(
-          'Rail Fence Cipher',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            tr('Rail Fence Cipher', 'تشفير السياج (Rail Fence)'),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
         ),
         centerTitle: true,
         backgroundColor: AppTheme.transpositionAppBar(context),
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
-          IconButton(onPressed: _clearAll, icon: const Icon(Icons.refresh)),
+          AppTheme.buildLanguageToggleButton(context),
+          IconButton(
+            onPressed: _clearAll,
+            tooltip: tr('Reset', 'إعادة تعيين'),
+            icon: const Icon(Icons.refresh),
+          ),
         ],
       ),
       body: SafeArea(
@@ -143,14 +151,17 @@ class _RailFenceScreenState extends State<RailFenceScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSectionTitle("Input Message", primaryColor),
+              _buildSectionTitle(
+                tr("Input Message", "النص المدخل"),
+                primaryColor,
+              ),
               TextField(
                 controller: messageController,
                 maxLines: 3,
                 style: TextStyle(color: AppTheme.textPrimary(context)),
                 onChanged: (value) => _processCipher(),
                 decoration: InputDecoration(
-                  hintText: "Enter text here...",
+                  hintText: tr("Enter text here...", "أدخل النص هنا..."),
                   border: const OutlineInputBorder(),
                   focusedBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: primaryColor, width: 2),
@@ -159,7 +170,10 @@ class _RailFenceScreenState extends State<RailFenceScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              _buildSectionTitle("Select Key (Rails)", primaryColor),
+              _buildSectionTitle(
+                tr("Select Key (Rails)", "اختر المفتاح (عدد السكك)"),
+                primaryColor,
+              ),
               RadioGroup<int>(
                 groupValue: _selectedKey,
                 onChanged: (val) {
@@ -172,13 +186,18 @@ class _RailFenceScreenState extends State<RailFenceScreen> {
                 },
                 child: Row(
                   children: [
-                    _buildKeyRadioTile(context, "2 Rails", 2, primaryColor),
-                    _buildKeyRadioTile(context, "3 Rails", 3, primaryColor),
+                    _buildKeyRadioTile(
+                        context, tr("2 Rails", "سكتان (2)"), 2, primaryColor),
+                    _buildKeyRadioTile(
+                        context, tr("3 Rails", "3 سكك"), 3, primaryColor),
                   ],
                 ),
               ),
               const SizedBox(height: 10),
-              _buildSectionTitle("Select Mode", primaryColor),
+              _buildSectionTitle(
+                tr("Select Mode", "اختر العملية"),
+                primaryColor,
+              ),
               RadioGroup<RailFenceMode>(
                 groupValue: _selectedMode,
                 onChanged: (val) {
@@ -192,9 +211,15 @@ class _RailFenceScreenState extends State<RailFenceScreen> {
                 child: Row(
                   children: [
                     _buildModeRadioTile(
-                        context, "Encrypt", RailFenceMode.encrypt, primaryColor),
+                        context,
+                        tr("Encrypt", "تشفير"),
+                        RailFenceMode.encrypt,
+                        primaryColor),
                     _buildModeRadioTile(
-                        context, "Decrypt", RailFenceMode.decrypt, primaryColor),
+                        context,
+                        tr("Decrypt", "فك التشفير"),
+                        RailFenceMode.decrypt,
+                        primaryColor),
                   ],
                 ),
               ),
@@ -218,7 +243,10 @@ class _RailFenceScreenState extends State<RailFenceScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle("Visual Grid", primaryColor),
+        _buildSectionTitle(
+          tr("Visual Grid", "الشبكة التوضيحية (المسار المتعرج)"),
+          primaryColor,
+        ),
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(10),
@@ -227,40 +255,43 @@ class _RailFenceScreenState extends State<RailFenceScreen> {
             border: Border.all(color: primaryColor.withValues(alpha: 0.5)),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: displayGrid.map((row) {
-                return Row(
-                  children: row.map((char) {
-                    bool isEmpty = char == '';
-                    return Container(
-                      width: 35,
-                      height: 35,
-                      margin: const EdgeInsets.all(2),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: isEmpty ? Colors.transparent : filledCellBg,
-                        border: Border.all(
-                          color: isEmpty
-                              ? AppTheme.borderMedium(context)
-                              : primaryColor,
+          child: Directionality(
+            textDirection: TextDirection.ltr,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: displayGrid.map((row) {
+                  return Row(
+                    children: row.map((char) {
+                      bool isEmpty = char == '';
+                      return Container(
+                        width: 35,
+                        height: 35,
+                        margin: const EdgeInsets.all(2),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: isEmpty ? Colors.transparent : filledCellBg,
+                          border: Border.all(
+                            color: isEmpty
+                                ? AppTheme.borderMedium(context)
+                                : primaryColor,
+                          ),
+                          borderRadius: BorderRadius.circular(5),
                         ),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: Text(
-                        char,
-                        style: TextStyle(
-                          color: isEmpty ? Colors.transparent : Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                        child: Text(
+                          char,
+                          style: TextStyle(
+                            color: isEmpty ? Colors.transparent : Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
                         ),
-                      ),
-                    );
-                  }).toList(),
-                );
-              }).toList(),
+                      );
+                    }).toList(),
+                  );
+                }).toList(),
+              ),
             ),
           ),
         ),
@@ -270,7 +301,7 @@ class _RailFenceScreenState extends State<RailFenceScreen> {
 
   Widget _buildSectionTitle(String title, Color primaryColor) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10, left: 5),
+      padding: const EdgeInsetsDirectional.only(bottom: 10, start: 5),
       child: Text(
         title,
         style: TextStyle(
@@ -290,11 +321,15 @@ class _RailFenceScreenState extends State<RailFenceScreen> {
   ) {
     return Expanded(
       child: RadioListTile<int>(
-        title: Text(
-          title,
-          style: TextStyle(
-            fontSize: 14,
-            color: AppTheme.textPrimary(context),
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: AlignmentDirectional.centerStart,
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: 14,
+              color: AppTheme.textPrimary(context),
+            ),
           ),
         ),
         value: value,
@@ -312,11 +347,15 @@ class _RailFenceScreenState extends State<RailFenceScreen> {
   ) {
     return Expanded(
       child: RadioListTile<RailFenceMode>(
-        title: Text(
-          title,
-          style: TextStyle(
-            fontSize: 14,
-            color: AppTheme.textPrimary(context),
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: AlignmentDirectional.centerStart,
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: 14,
+              color: AppTheme.textPrimary(context),
+            ),
           ),
         ),
         value: mode,
@@ -338,17 +377,19 @@ class _RailFenceScreenState extends State<RailFenceScreen> {
       child: Column(
         children: [
           Text(
-            "OUTPUT RESULT",
+            tr("OUTPUT RESULT", "النتيجة النهائية"),
             style: TextStyle(
               color: primaryColor,
               fontWeight: FontWeight.bold,
               fontSize: 12,
-              letterSpacing: 1.2,
+              letterSpacing: isArabic ? 0 : 1.2,
             ),
           ),
           const SizedBox(height: 15),
           SelectableText(
-            result.isEmpty ? 'Waiting for input...' : result,
+            result.isEmpty
+                ? tr('Waiting for input...', 'بانتظار إدخال النص...')
+                : result,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 20,
@@ -356,7 +397,7 @@ class _RailFenceScreenState extends State<RailFenceScreen> {
               color: result.isEmpty
                   ? AppTheme.textMuted(context)
                   : primaryColor,
-              letterSpacing: 2.0,
+              letterSpacing: result.isEmpty && isArabic ? 0 : 2.0,
             ),
           ),
         ],

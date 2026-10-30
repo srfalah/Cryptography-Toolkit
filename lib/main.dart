@@ -38,13 +38,28 @@ class CryptographyApp extends StatelessWidget {
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: appThemeNotifier,
       builder: (context, currentMode, _) {
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          title: 'Crypto Toolkit',
-          theme: AppTheme.lightTheme(),
-          darkTheme: AppTheme.darkTheme(),
-          themeMode: currentMode,
-          home: const DashboardScreen(),
+        return ValueListenableBuilder<bool>(
+          valueListenable: appArabicNotifier,
+          builder: (context, isAr, _) {
+            return MaterialApp(
+              debugShowCheckedModeBanner: false,
+              title: isAr ? 'أدوات التشفير' : 'Crypto Toolkit',
+              theme: AppTheme.lightTheme(),
+              darkTheme: AppTheme.darkTheme(),
+              themeMode: currentMode,
+              builder: (context, child) {
+                return AppLanguageScope(
+                  notifier: appArabicNotifier,
+                  child: Directionality(
+                    textDirection:
+                        isAr ? TextDirection.rtl : TextDirection.ltr,
+                    child: child ?? const SizedBox.shrink(),
+                  ),
+                );
+              },
+              home: const DashboardScreen(),
+            );
+          },
         );
       },
     );
@@ -90,9 +105,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBg(context),
       appBar: AppBar(
-        title: const Text(
-          'Cryptography Toolkit',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        leading: AppTheme.buildLanguageToggleButton(context),
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            tr('Cryptography Toolkit', 'حقيبة أدوات التشفير'),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
         ),
         centerTitle: true,
         backgroundColor: AppTheme.navyAppBar(context),
@@ -101,7 +120,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         actions: [
           // Dark / Light Mode Toggle Button (left of About Me button)
           IconButton(
-            tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+            tooltip: isDark
+                ? tr('Switch to Light Mode', 'الوضع الفاتح')
+                : tr('Switch to Dark Mode', 'الوضع الداكن'),
             onPressed: toggleAppTheme,
             icon: AnimatedSwitcher(
               duration: const Duration(milliseconds: 220),
@@ -116,7 +137,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           // About Developer Button
           IconButton(
-            tooltip: 'About Developer',
+            tooltip: tr('About Developer', 'حول المطور'),
             icon: const Icon(Icons.person_pin_rounded),
             onPressed: () => Navigator.push(
               context,
@@ -147,25 +168,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
               if (showMath) ...[
                 _buildSectionTitle(
                   context,
-                  title: "Mathematical Tools",
+                  title: tr("Mathematical Tools", "الأدوات الرياضية"),
                   icon: Icons.calculate_outlined,
-                  countLabel: "2 Tools",
+                  countLabel: tr("2 Tools", "أداتان"),
                 ),
                 _buildToolCollection([
                   _buildToolItem(
                     context,
-                    title: "Extended Euclidean",
+                    title: tr("Extended Euclidean", "خوارزمية إقليدس المطولة"),
                     formulaBadge: "a⁻¹ mod n",
-                    subtitle: "Find Modular Inverse & GCD step-by-step",
+                    subtitle: tr(
+                      "Find Modular Inverse & GCD step-by-step",
+                      "إيجاد المعكوس الضربي والقاسم المشترك خطوة بخطوة",
+                    ),
                     icon: Icons.view_comfortable_rounded,
                     color: tealColor,
                     destination: const InverseCalcScreen(),
                   ),
                   _buildToolItem(
                     context,
-                    title: "Crypto Calculator",
+                    title: tr("Crypto Calculator", "حاسبة التشفير"),
                     formulaBadge: "a^b mod n",
-                    subtitle: "Modular power, inverse, GCD, primes & roots",
+                    subtitle: tr(
+                      "Modular power, inverse, GCD, primes & roots",
+                      "الأس المعياري، المعكوس، القاسم، الأعداد الأولية والجذور",
+                    ),
                     icon: Icons.calculate_rounded,
                     color: orangeColor,
                     destination: const ModCalculatorScreen(),
@@ -178,11 +205,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               if (showSymmetricSection) ...[
                 _buildSectionTitle(
                   context,
-                  title: "Symmetric Ciphers",
+                  title: tr("Symmetric Ciphers", "التشفير المتماثل"),
                   icon: Icons.vpn_key_rounded,
                   countLabel: showSubstitution && showTransposition
-                      ? "6 Ciphers"
-                      : "3 Ciphers",
+                      ? tr("6 Ciphers", "6 خوارزميات")
+                      : tr("3 Ciphers", "3 خوارزميات"),
                 ),
                 if (_selectedFilter == WorkbenchFilter.symmetric) ...[
                   _buildSymmetricSubFilterBar(
@@ -195,17 +222,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 if (showSubstitution)
                   _buildSubSectionGroup(
                     context,
-                    title: "Substitution",
-                    subtitle: "Replace characters or digraphs using a key",
+                    title: tr("Substitution", "تشفير الإبدال (Substitution)"),
+                    subtitle: tr(
+                      "Replace characters or digraphs using a key",
+                      "استبدال الحروف أو الأزواج النصية باستخدام مفتاح",
+                    ),
                     icon: Icons.find_replace_rounded,
                     color: purpleColor,
                     children: [
                       _buildToolItem(
                         context,
                         isSubItem: true,
-                        title: "Caesar Cipher",
+                        title: tr("Caesar Cipher", "تشفير قيصر (Caesar)"),
                         formulaBadge: "(P + K) mod 26",
-                        subtitle: "Classic monoalphabetic shift cipher",
+                        subtitle: tr(
+                          "Classic monoalphabetic shift cipher",
+                          "إزاحة الحروف الأبجدية بمقدار مفتاح ثابت",
+                        ),
                         icon: Icons.text_fields_rounded,
                         color: purpleColor,
                         destination: const CaesarScreen(),
@@ -213,9 +246,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       _buildToolItem(
                         context,
                         isSubItem: true,
-                        title: "Vigenère Cipher",
+                        title: tr("Vigenère Cipher", "تشفير فيجينير (Vigenère)"),
                         formulaBadge: "(Pᵢ + Kᵢ) mod 26",
-                        subtitle: "Polyalphabetic keyword shift method",
+                        subtitle: tr(
+                          "Polyalphabetic keyword shift method",
+                          "تشفير متعدد الأبجديات باستخدام كلمة مفتاحية",
+                        ),
                         icon: Icons.lock_open_rounded,
                         color: purpleColor,
                         destination: const VigenereScreen(),
@@ -224,9 +260,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         context,
                         isSubItem: true,
                         isLastInGroup: true,
-                        title: "Playfair Cipher",
-                        formulaBadge: "5×5 Matrix",
-                        subtitle: "Digraph substitution on a 5×5 key grid",
+                        title: tr("Playfair Cipher", "تشفير بلايفير (Playfair)"),
+                        formulaBadge: tr("5×5 Matrix", "مصفوفة 5×5"),
+                        subtitle: tr(
+                          "Digraph substitution on a 5×5 key grid",
+                          "تشفير أزواج الحروف عبر شبكة مفتاح 5×5",
+                        ),
                         icon: Icons.grid_on_rounded,
                         color: purpleColor,
                         destination: const PlayfairScreen(),
@@ -238,18 +277,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 if (showTransposition)
                   _buildSubSectionGroup(
                     context,
-                    title: "Transposition",
-                    subtitle:
-                        "Rearrange character positions via geometric paths",
+                    title: tr("Transposition", "تشفير النقل (Transposition)"),
+                    subtitle: tr(
+                      "Rearrange character positions via geometric paths",
+                      "إعادة ترتيب مواقع الحروف عبر مسارات وشبكات هندسية",
+                    ),
                     icon: Icons.swap_calls_rounded,
                     color: transColor,
                     children: [
                       _buildToolItem(
                         context,
                         isSubItem: true,
-                        title: "Rail-Fence Cipher",
-                        formulaBadge: "Zigzag Rails",
-                        subtitle: "Diagonal wave transposition across rails",
+                        title:
+                            tr("Rail-Fence Cipher", "تشفير السياج (Rail-Fence)"),
+                        formulaBadge: tr("Zigzag Rails", "مسار متعرج"),
+                        subtitle: tr(
+                          "Diagonal wave transposition across rails",
+                          "ترتيب الحروف قطرياً عبر أسطر متعرجة",
+                        ),
                         icon: Icons.fence_rounded,
                         color: transColor,
                         destination: const RailFenceScreen(),
@@ -257,9 +302,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       _buildToolItem(
                         context,
                         isSubItem: true,
-                        title: "Row Transposition",
-                        formulaBadge: "Keyed Columns",
-                        subtitle: "Columnar readout ordered by numeric key",
+                        title: tr(
+                            "Row Transposition", "النقل بالصفوف (Row Transposition)"),
+                        formulaBadge: tr("Keyed Columns", "أعمدة مرقمة"),
+                        subtitle: tr(
+                          "Columnar readout ordered by numeric key",
+                          "قراءة الأعمدة حسب ترتيب المفتاح الرقمي",
+                        ),
                         icon: Icons.view_column_rounded,
                         color: transColor,
                         destination: const RowTranspositionScreen(),
@@ -268,9 +317,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         context,
                         isSubItem: true,
                         isLastInGroup: true,
-                        title: "Route Cipher",
-                        formulaBadge: "Spiral & Snake",
-                        subtitle: "Spiral ↻ and snake ⇅ grid path traversal",
+                        title: tr("Route Cipher", "تشفير المسار (Route)"),
+                        formulaBadge: tr("Spiral & Snake", "حلزوني وثعباني"),
+                        subtitle: tr(
+                          "Spiral ↻ and snake ⇅ grid path traversal",
+                          "قراءة الشبكة بمسار حلزوني ↻ أو متعرج ⇅",
+                        ),
                         icon: Icons.route_rounded,
                         color: transColor,
                         destination: const RouteCipherScreen(),
@@ -284,35 +336,44 @@ class _DashboardScreenState extends State<DashboardScreen> {
               if (showAsymmetric) ...[
                 _buildSectionTitle(
                   context,
-                  title: "Asymmetric Encryption",
+                  title:
+                      tr("Asymmetric Encryption", "التشفير غير المتماثل (المفتاح العام)"),
                   icon: Icons.security_rounded,
-                  countLabel: "3 Protocols",
+                  countLabel: tr("3 Protocols", "3 بروتوكولات"),
                 ),
                 _buildToolCollection([
                   _buildToolItem(
                     context,
-                    title: "RSA Algorithm",
+                    title: tr("RSA Algorithm", "خوارزمية RSA"),
                     formulaBadge: "C = M^e mod n",
-                    subtitle: "Prime key generation, encryption & decryption",
+                    subtitle: tr(
+                      "Prime key generation, encryption & decryption",
+                      "توليد المفاتيح الأولية والتشفير وفك التشفير",
+                    ),
                     icon: Icons.key_rounded,
                     color: brandAccent,
                     destination: const RsaScreen(),
                   ),
                   _buildToolItem(
                     context,
-                    title: "Diffie-Hellman",
+                    title: tr("Diffie-Hellman", "تبادل مفاتيح ديفي-هيلمان (D-H)"),
                     formulaBadge: "K = Y^X mod q",
-                    subtitle: "Visual public-channel key exchange crossover",
+                    subtitle: tr(
+                      "Visual public-channel key exchange crossover",
+                      "تمثيل مرئي لتبادل المفاتيح عبر القناة العامة",
+                    ),
                     icon: Icons.swap_horizontal_circle_rounded,
                     color: brandAccent,
                     destination: const DiffieHellmanScreen(),
                   ),
                   _buildToolItem(
                     context,
-                    title: "El-Gamal Cipher",
-                    formulaBadge: "(C₁, C₂) Pair",
-                    subtitle:
-                        "Probabilistic public-key encryption & discrete logs",
+                    title: tr("El-Gamal Cipher", "تشفير الجمل (El-Gamal)"),
+                    formulaBadge: tr("(C₁, C₂) Pair", "زوج (C₁, C₂)"),
+                    subtitle: tr(
+                      "Probabilistic public-key encryption & discrete logs",
+                      "التشفير الاحتمالي بالمفتاح العام واللوغاريتم المتقطع",
+                    ),
                     icon: Icons.shield_outlined,
                     color: brandAccent,
                     destination: const ElGamalScreen(),
@@ -408,18 +469,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "Algorithm Workbench",
-                      style: TextStyle(
-                        fontSize: 18.5,
-                        fontWeight: FontWeight.bold,
-                        color: brandAccent,
-                        letterSpacing: 0.2,
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: AlignmentDirectional.centerStart,
+                      child: Text(
+                        tr("Algorithm Workbench", "منصة خوارزميات التشفير"),
+                        style: TextStyle(
+                          fontSize: 18.5,
+                          fontWeight: FontWeight.bold,
+                          color: brandAccent,
+                          letterSpacing: isArabic ? 0 : 0.2,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      "Select a tool or filter by main category",
+                      tr(
+                        "Select a tool or filter by main category",
+                        "اختر أداة أو صنّف حسب الفئة الرئيسية",
+                      ),
                       style: TextStyle(
                         fontSize: 11.5,
                         color: AppTheme.textSecondary(context),
@@ -447,7 +515,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     _buildViewModeButton(
                       context,
                       icon: Icons.view_agenda_rounded,
-                      tooltip: 'List View',
+                      tooltip: tr('List View', 'عرض قائمة'),
                       selected: !_isGridView,
                       brandAccent: brandAccent,
                       isDark: isDark,
@@ -457,7 +525,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     _buildViewModeButton(
                       context,
                       icon: Icons.grid_view_rounded,
-                      tooltip: '2-Column Grid View',
+                      tooltip: tr('2-Column Grid View', 'عرض شبكي (عمودين)'),
                       selected: _isGridView,
                       brandAccent: brandAccent,
                       isDark: isDark,
@@ -475,7 +543,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Expanded(
                 child: _buildFilterChip(
                   context,
-                  label: "All",
+                  label: tr("All", "الكل"),
                   filter: WorkbenchFilter.all,
                   activeColor: brandAccent,
                   icon: Icons.apps_rounded,
@@ -485,7 +553,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Expanded(
                 child: _buildFilterChip(
                   context,
-                  label: "Math",
+                  label: tr("Math", "رياضيات"),
                   filter: WorkbenchFilter.math,
                   activeColor: tealColor,
                   icon: Icons.functions_rounded,
@@ -495,7 +563,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Expanded(
                 child: _buildFilterChip(
                   context,
-                  label: "Symmetric",
+                  label: tr("Symmetric", "متماثل"),
                   filter: WorkbenchFilter.symmetric,
                   activeColor: purpleColor,
                   icon: Icons.vpn_key_rounded,
@@ -505,7 +573,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Expanded(
                 child: _buildFilterChip(
                   context,
-                  label: "Asymmetric",
+                  label: tr("Asymmetric", "غير متماثل"),
                   filter: WorkbenchFilter.asymmetric,
                   activeColor: brandAccent,
                   icon: Icons.security_rounded,
@@ -540,7 +608,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           onTap: () => setState(() => _symmetricSubFilter = subFilter),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 160),
-            padding: const EdgeInsets.symmetric(vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: selected ? color : Colors.transparent,
@@ -574,17 +642,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Row(
         children: [
           subPill(
-            label: "All Symmetric (6)",
+            label: tr("All Symmetric (6)", "الكل (6)"),
             subFilter: SymmetricSubFilter.all,
             color: purpleColor,
           ),
           subPill(
-            label: "Substitution (3)",
+            label: tr("Substitution (3)", "إبدال (3)"),
             subFilter: SymmetricSubFilter.substitution,
             color: purpleColor,
           ),
           subPill(
-            label: "Transposition (3)",
+            label: tr("Transposition (3)", "النقل (3)"),
             subFilter: SymmetricSubFilter.transposition,
             color: transColor,
           ),
@@ -690,8 +758,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             bannerStart.withValues(alpha: 0.85),
             bannerEnd,
           ],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
+          begin: AlignmentDirectional.centerStart,
+          end: AlignmentDirectional.centerEnd,
         ),
         borderRadius: BorderRadius.circular(10),
       ),
@@ -701,12 +769,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              title.toUpperCase(),
-              style: const TextStyle(
+              isArabic ? title : title.toUpperCase(),
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
-                letterSpacing: 1.2,
+                letterSpacing: isArabic ? 0 : 1.2,
               ),
             ),
           ),
@@ -742,8 +810,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }) {
     final bool isDark = AppTheme.isDark(context);
     return Container(
-      margin: const EdgeInsets.only(left: 4),
-      padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
+      margin: const EdgeInsetsDirectional.only(start: 4),
+      padding: const EdgeInsetsDirectional.fromSTEB(12, 10, 10, 10),
       decoration: BoxDecoration(
         color: color.withValues(alpha: isDark ? 0.06 : 0.035),
         borderRadius: BorderRadius.circular(14),
@@ -780,12 +848,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title.toUpperCase(),
+                      isArabic ? title : title.toUpperCase(),
                       style: TextStyle(
                         fontSize: 11.5,
                         fontWeight: FontWeight.bold,
                         color: color,
-                        letterSpacing: 1.1,
+                        letterSpacing: isArabic ? 0 : 1.1,
                       ),
                     ),
                     Text(
@@ -1036,15 +1104,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       color: color.withValues(alpha: isDark ? 0.4 : 0.25),
                     ),
                   ),
-                  child: Text(
-                    formulaBadge,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontFamily: 'Courier New',
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.bold,
-                      color: color,
+                  child: Directionality(
+                    textDirection:
+                        RegExp(r'[\u0600-\u06FF]').hasMatch(formulaBadge)
+                            ? TextDirection.rtl
+                            : TextDirection.ltr,
+                    child: Text(
+                      formulaBadge,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: AppTheme.monoFont(),
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.bold,
+                        color: color,
+                      ),
                     ),
                   ),
                 ),
@@ -1167,13 +1241,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 color.withValues(alpha: isDark ? 0.4 : 0.25),
                           ),
                         ),
-                        child: Text(
-                          formulaBadge,
-                          style: TextStyle(
-                            fontFamily: 'Courier New',
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: color,
+                        child: Directionality(
+                          textDirection:
+                              RegExp(r'[\u0600-\u06FF]').hasMatch(formulaBadge)
+                                  ? TextDirection.rtl
+                                  : TextDirection.ltr,
+                          child: Text(
+                            formulaBadge,
+                            style: TextStyle(
+                              fontFamily: AppTheme.monoFont(),
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: color,
+                            ),
                           ),
                         ),
                       ),

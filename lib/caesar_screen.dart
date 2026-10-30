@@ -69,16 +69,24 @@ class _CaesarScreenState extends State<CaesarScreen> {
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBg(context),
       appBar: AppBar(
-        title: const Text(
-          'Caesar Cipher',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            tr('Caesar Cipher', 'تشفير قيصر (Caesar)'),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
         ),
         centerTitle: true,
         backgroundColor: AppTheme.purpleAppBar(context),
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
-          IconButton(onPressed: _clearAll, icon: const Icon(Icons.refresh)),
+          AppTheme.buildLanguageToggleButton(context),
+          IconButton(
+            onPressed: _clearAll,
+            tooltip: tr('Reset', 'إعادة تعيين'),
+            icon: const Icon(Icons.refresh),
+          ),
         ],
       ),
       body: SafeArea(
@@ -87,14 +95,20 @@ class _CaesarScreenState extends State<CaesarScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildSectionTitle("1. Message", primaryColor),
+              _buildSectionTitle(
+                tr("1. Message", "1. النص (الرسالة)"),
+                primaryColor,
+              ),
               TextField(
                 controller: messageController,
                 maxLines: 3,
                 style: TextStyle(color: AppTheme.textPrimary(context)),
                 onChanged: (value) => _processCipher(),
                 decoration: InputDecoration(
-                  hintText: 'Type your message here...',
+                  hintText: tr(
+                    'Type your message here...',
+                    'اكتب النص بالإنجليزية هنا...',
+                  ),
                   border: const OutlineInputBorder(),
                   focusedBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: primaryColor, width: 2),
@@ -106,7 +120,10 @@ class _CaesarScreenState extends State<CaesarScreen> {
               ),
               const SizedBox(height: 25),
               _buildSectionTitle(
-                "2. Shift Key: ${_shiftValue.toInt()}",
+                tr(
+                  "2. Shift Key: ${_shiftValue.toInt()}",
+                  "2. مفتاح الإزاحة: ${_shiftValue.toInt()}",
+                ),
                 primaryColor,
               ),
               Container(
@@ -158,7 +175,10 @@ class _CaesarScreenState extends State<CaesarScreen> {
                 ),
               ),
               const SizedBox(height: 25),
-              _buildSectionTitle("3. Operation", primaryColor),
+              _buildSectionTitle(
+                tr("3. Operation", "3. العملية"),
+                primaryColor,
+              ),
               RadioGroup<CaesarMode>(
                 groupValue: _selectedMode,
                 onChanged: (value) {
@@ -172,9 +192,15 @@ class _CaesarScreenState extends State<CaesarScreen> {
                 child: Row(
                   children: [
                     _buildRadioTile(
-                        context, "Encrypt", CaesarMode.encrypt, primaryColor),
+                        context,
+                        tr("Encrypt", "تشفير"),
+                        CaesarMode.encrypt,
+                        primaryColor),
                     _buildRadioTile(
-                        context, "Decrypt", CaesarMode.decrypt, primaryColor),
+                        context,
+                        tr("Decrypt", "فك التشفير"),
+                        CaesarMode.decrypt,
+                        primaryColor),
                   ],
                 ),
               ),
@@ -189,7 +215,7 @@ class _CaesarScreenState extends State<CaesarScreen> {
 
   Widget _buildSectionTitle(String title, Color primaryColor) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10, left: 5),
+      padding: const EdgeInsetsDirectional.only(bottom: 10, start: 5),
       child: Text(
         title,
         style: TextStyle(
@@ -209,15 +235,20 @@ class _CaesarScreenState extends State<CaesarScreen> {
   ) {
     return Expanded(
       child: RadioListTile<CaesarMode>(
-        title: Text(
-          title,
-          style: TextStyle(
-            fontSize: 14,
-            color: AppTheme.textPrimary(context),
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: AlignmentDirectional.centerStart,
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: 14,
+              color: AppTheme.textPrimary(context),
+            ),
           ),
         ),
         value: mode,
         activeColor: primaryColor,
+        contentPadding: EdgeInsets.zero,
       ),
     );
   }
@@ -233,23 +264,26 @@ class _CaesarScreenState extends State<CaesarScreen> {
       child: Column(
         children: [
           Text(
-            "OUTPUT RESULT",
+            tr("OUTPUT RESULT", "النتيجة النهائية"),
             style: TextStyle(
               color: primaryColor,
               fontWeight: FontWeight.bold,
               fontSize: 12,
-              letterSpacing: 1.2,
+              letterSpacing: isArabic ? 0 : 1.2,
             ),
           ),
           const SizedBox(height: 15),
           SelectableText(
-            result.isEmpty ? 'Waiting for input...' : result,
+            result.isEmpty
+                ? tr('Waiting for input...', 'بانتظار إدخال النص...')
+                : result,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
               color: primaryColor,
-              fontFamily: 'Courier New',
+              fontFamily:
+                  result.isEmpty && isArabic ? 'Cairo' : 'Courier New',
             ),
           ),
         ],

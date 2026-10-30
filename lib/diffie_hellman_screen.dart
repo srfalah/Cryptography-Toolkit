@@ -117,13 +117,19 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
         final BigInt alpha = BigInt.parse(alphaController.text.trim());
 
         if (q <= BigInt.from(3) || !_isPrime(q)) {
-          errorMessage = 'Prime (q) must be a prime number > 3.';
+          errorMessage = tr(
+            'Prime (q) must be a prime number > 3.',
+            'يجب أن يكون العدد (q) عدداً أولياً أكبر من 3.',
+          );
           return;
         }
 
         if (!_isPrimitiveRoot(alpha, q)) {
           _suggestedAlpha = _findSmallestPrimitiveRoot(q);
-          errorMessage = 'α = $alpha is not a primitive root of q = $q.';
+          errorMessage = tr(
+            'α = $alpha is not a primitive root of q = $q.',
+            'القيمة α = $alpha ليست جذراً بدائياً للعدد الأولي q = $q.',
+          );
           return;
         }
 
@@ -134,8 +140,10 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
         if (privateAController.text.trim().isNotEmpty) {
           final BigInt xA = BigInt.parse(privateAController.text.trim());
           if (xA <= BigInt.zero || xA >= q) {
-            errorMessage =
-                'Alice\'s Private Key (X_A) must be between 1 and ${q - BigInt.one}.';
+            errorMessage = tr(
+              'Alice\'s Private Key (X_A) must be between 1 and ${q - BigInt.one}.',
+              'مفتاح Alice الخاص (X_A) يجب أن يكون بين 1 و ${q - BigInt.one}.',
+            );
             return;
           }
           _xAVal = xA;
@@ -146,8 +154,10 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
         if (privateBController.text.trim().isNotEmpty) {
           final BigInt xB = BigInt.parse(privateBController.text.trim());
           if (xB <= BigInt.zero || xB >= q) {
-            errorMessage =
-                'Bob\'s Private Key (X_B) must be between 1 and ${q - BigInt.one}.';
+            errorMessage = tr(
+              'Bob\'s Private Key (X_B) must be between 1 and ${q - BigInt.one}.',
+              'مفتاح Bob الخاص (X_B) يجب أن يكون بين 1 و ${q - BigInt.one}.',
+            );
             return;
           }
           _xBVal = xB;
@@ -234,7 +244,10 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Shared Secret K = $sharedA copied to clipboard!'),
+        content: Text(tr(
+          'Shared Secret K = $sharedA copied to clipboard!',
+          'تم نسخ المفتاح السري المشترك K = $sharedA إلى الحافظة!',
+        )),
         backgroundColor: successColor,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
@@ -247,18 +260,22 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBgAlt(context),
       appBar: AppBar(
-        title: const Text(
-          'D-H Key Exchange',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            tr('D-H Key Exchange', 'تبادل مفاتيح ديفي-هيلمان (D-H)'),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
         ),
         centerTitle: true,
         backgroundColor: AppTheme.navyAppBar(context),
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
+          AppTheme.buildLanguageToggleButton(context),
           IconButton(
             onPressed: _clearAll,
-            tooltip: 'Reset All',
+            tooltip: tr('Reset All', 'إعادة تعيين الكل'),
             icon: const Icon(Icons.refresh),
           ),
         ],
@@ -331,7 +348,7 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
                     const SizedBox(width: 8),
                     Flexible(
                       child: Text(
-                        "Global Parameters (q, α)",
+                        tr("Global Parameters (q, α)", "المعاملات العامة (q, α)"),
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
@@ -347,11 +364,14 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
               TextButton.icon(
                 onPressed: _generateGlobalParams,
                 icon: const Icon(Icons.auto_awesome, size: 14),
-                label: const Text(
-                  "Auto Demo",
-                  style: TextStyle(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.bold,
+                label: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    tr("Auto Demo", "مثال تلقائي"),
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 style: TextButton.styleFrom(
@@ -374,7 +394,7 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
               Expanded(
                 child: _buildCompactField(
                   controller: qController,
-                  label: "Prime (q)",
+                  label: tr("Prime (q)", "العدد الأولي (q)"),
                   color: primaryColor,
                 ),
               ),
@@ -382,7 +402,7 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
               Expanded(
                 child: _buildCompactField(
                   controller: alphaController,
-                  label: "Primitive Root (α)",
+                  label: tr("Primitive Root (α)", "الجذر البدائي (α)"),
                   color: primaryColor,
                 ),
               ),
@@ -427,7 +447,7 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                       child: Text(
-                        "Use α = $_suggestedAlpha",
+                        tr("Use α = $_suggestedAlpha", "استخدم α = $_suggestedAlpha"),
                         style: const TextStyle(
                             fontSize: 11, fontWeight: FontWeight.bold),
                       ),
@@ -442,31 +462,41 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
   }
 
   Widget _buildStage1LocalKeysRow() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: _buildParticipantStage1Card(
-            name: "Alice",
-            keySuffix: "A",
-            color: aliceColor,
-            privateCtrl: privateAController,
-            privateVal: _xAVal,
-            publicVal: publicA,
+    // Keep Alice on Left and Bob on Right so Stage 1, Stage 2 Crossover Arrows, and Stage 3 align
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Directionality(
+              textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
+              child: _buildParticipantStage1Card(
+                name: "Alice",
+                keySuffix: "A",
+                color: aliceColor,
+                privateCtrl: privateAController,
+                privateVal: _xAVal,
+                publicVal: publicA,
+              ),
+            ),
           ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildParticipantStage1Card(
-            name: "Bob",
-            keySuffix: "B",
-            color: bobColor,
-            privateCtrl: privateBController,
-            privateVal: _xBVal,
-            publicVal: publicB,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Directionality(
+              textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
+              child: _buildParticipantStage1Card(
+                name: "Bob",
+                keySuffix: "B",
+                color: bobColor,
+                privateCtrl: privateBController,
+                privateVal: _xBVal,
+                publicVal: publicB,
+              ),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -546,7 +576,7 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
                       Icon(Icons.casino_outlined, size: 12, color: color),
                       const SizedBox(width: 3),
                       Text(
-                        "Rand",
+                        tr("Rand", "عشوائي"),
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
@@ -564,7 +594,7 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
           // Private Key Input (Secret)
           _buildCompactField(
             controller: privateCtrl,
-            label: "Private X_$keySuffix (Secret)",
+            label: tr("Private X_$keySuffix (Secret)", "المفتاح الخاص X_$keySuffix"),
             color: color,
           ),
           const SizedBox(height: 10),
@@ -584,7 +614,7 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
             child: Column(
               children: [
                 Text(
-                  "Public Key Y_$keySuffix",
+                  tr("Public Key Y_$keySuffix", "المفتاح العام Y_$keySuffix"),
                   style: TextStyle(
                     fontSize: 10.5,
                     fontWeight: FontWeight.bold,
@@ -592,13 +622,16 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
                   ),
                 ),
                 const SizedBox(height: 2),
-                Text(
-                  substituted,
-                  style: TextStyle(
-                    fontFamily: 'Courier New',
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.textSecondary(context),
+                Directionality(
+                  textDirection: TextDirection.ltr,
+                  child: Text(
+                    substituted,
+                    style: TextStyle(
+                      fontFamily: 'Courier New',
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textSecondary(context),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -611,15 +644,20 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
                         : AppTheme.pillBg(context),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Text(
-                    publicVal != null ? "Y_$keySuffix = $publicVal" : "Y_$keySuffix = ?",
-                    style: TextStyle(
-                      fontFamily: 'Courier New',
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: publicVal != null
-                          ? Colors.white
-                          : AppTheme.textMuted(context),
+                  child: Directionality(
+                    textDirection: TextDirection.ltr,
+                    child: Text(
+                      publicVal != null
+                          ? "Y_$keySuffix = $publicVal"
+                          : "Y_$keySuffix = ?",
+                      style: TextStyle(
+                        fontFamily: 'Courier New',
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: publicVal != null
+                            ? Colors.white
+                            : AppTheme.textMuted(context),
+                      ),
                     ),
                   ),
                 ),
@@ -706,11 +744,11 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
                 ),
                 const SizedBox(width: 5),
                 Text(
-                  "PUBLIC CHANNEL EXCHANGE",
+                  tr("PUBLIC CHANNEL EXCHANGE", "تبادل عبر القناة العامة"),
                   style: TextStyle(
                     fontSize: 9.5,
                     fontWeight: FontWeight.bold,
-                    letterSpacing: 0.6,
+                    letterSpacing: isArabic ? 0 : 0.6,
                     color: hasBothPublic
                         ? primaryColor
                         : AppTheme.textMuted(context),
@@ -726,8 +764,8 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
             bottom: 8,
             child: _buildReceivedLabel(
               text: publicB != null
-                  ? "Alice receives Y_B = $publicB"
-                  : "Alice receives Y_B",
+                  ? tr("Alice receives Y_B = $publicB", "تستلم Alice: Y_B = $publicB")
+                  : tr("Alice receives Y_B", "تستلم Alice: Y_B"),
               color: bobColor,
               isActive: publicB != null,
             ),
@@ -737,8 +775,8 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
             bottom: 8,
             child: _buildReceivedLabel(
               text: publicA != null
-                  ? "Bob receives Y_A = $publicA"
-                  : "Bob receives Y_A",
+                  ? tr("Bob receives Y_A = $publicA", "يستلم Bob: Y_A = $publicA")
+                  : tr("Bob receives Y_A", "يستلم Bob: Y_A"),
               color: aliceColor,
               isActive: publicA != null,
             ),
@@ -768,13 +806,16 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
               ]
             : null,
       ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontFamily: 'Courier New',
-          fontSize: 11,
-          fontWeight: FontWeight.bold,
-          color: isActive ? Colors.white : AppTheme.textMuted(context),
+      child: Directionality(
+        textDirection: TextDirection.ltr,
+        child: Text(
+          label,
+          style: TextStyle(
+            fontFamily: 'Courier New',
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            color: isActive ? Colors.white : AppTheme.textMuted(context),
+          ),
         ),
       ),
     );
@@ -811,35 +852,44 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
 
   // Stage 3: Color-coded Shared Secret cards showing how Received Public Key + Own Private Key = K
   Widget _buildStage3SharedSecretsRow() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: _buildSharedSecretCard(
-            ownerName: "Alice",
-            ownerColor: aliceColor,
-            partnerColor: bobColor,
-            receivedKeySymbol: "Y_B",
-            receivedKeyVal: publicB,
-            ownPrivateSymbol: "X_A",
-            ownPrivateVal: _xAVal,
-            sharedSecretVal: sharedA,
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Directionality(
+              textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
+              child: _buildSharedSecretCard(
+                ownerName: "Alice",
+                ownerColor: aliceColor,
+                partnerColor: bobColor,
+                receivedKeySymbol: "Y_B",
+                receivedKeyVal: publicB,
+                ownPrivateSymbol: "X_A",
+                ownPrivateVal: _xAVal,
+                sharedSecretVal: sharedA,
+              ),
+            ),
           ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildSharedSecretCard(
-            ownerName: "Bob",
-            ownerColor: bobColor,
-            partnerColor: aliceColor,
-            receivedKeySymbol: "Y_A",
-            receivedKeyVal: publicA,
-            ownPrivateSymbol: "X_B",
-            ownPrivateVal: _xBVal,
-            sharedSecretVal: sharedB,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Directionality(
+              textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
+              child: _buildSharedSecretCard(
+                ownerName: "Bob",
+                ownerColor: bobColor,
+                partnerColor: aliceColor,
+                receivedKeySymbol: "Y_A",
+                receivedKeyVal: publicA,
+                ownPrivateSymbol: "X_B",
+                ownPrivateVal: _xBVal,
+                sharedSecretVal: sharedB,
+              ),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -876,46 +926,52 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
       ),
       child: Column(
         children: [
-          Text(
-            "$ownerName Computes Secret K",
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.textPrimary(context),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              tr("$ownerName Computes Secret K", "حساب $ownerName للمفتاح K"),
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimary(context),
+              ),
             ),
           ),
           const SizedBox(height: 6),
 
           // Symbolic formula with color-coded base & exponent
-          RichText(
-            text: TextSpan(
-              style: const TextStyle(
-                fontFamily: 'Courier New',
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: RichText(
+              text: TextSpan(
+                style: const TextStyle(
+                  fontFamily: 'Courier New',
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
+                children: [
+                  TextSpan(
+                    text: "K = (",
+                    style: TextStyle(color: AppTheme.textSecondary(context)),
+                  ),
+                  TextSpan(
+                    text: receivedKeySymbol,
+                    style: TextStyle(color: partnerColor),
+                  ),
+                  TextSpan(
+                    text: ")^",
+                    style: TextStyle(color: AppTheme.textSecondary(context)),
+                  ),
+                  TextSpan(
+                    text: ownPrivateSymbol,
+                    style: TextStyle(color: ownerColor),
+                  ),
+                  TextSpan(
+                    text: " mod q",
+                    style: TextStyle(color: AppTheme.textSecondary(context)),
+                  ),
+                ],
               ),
-              children: [
-                TextSpan(
-                  text: "K = (",
-                  style: TextStyle(color: AppTheme.textSecondary(context)),
-                ),
-                TextSpan(
-                  text: receivedKeySymbol,
-                  style: TextStyle(color: partnerColor),
-                ),
-                TextSpan(
-                  text: ")^",
-                  style: TextStyle(color: AppTheme.textSecondary(context)),
-                ),
-                TextSpan(
-                  text: ownPrivateSymbol,
-                  style: TextStyle(color: ownerColor),
-                ),
-                TextSpan(
-                  text: " mod q",
-                  style: TextStyle(color: AppTheme.textSecondary(context)),
-                ),
-              ],
             ),
           ),
           const SizedBox(height: 6),
@@ -928,58 +984,61 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: AppTheme.borderSubtle(context)),
             ),
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                    decoration: BoxDecoration(
-                      color: partnerColor.withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      receivedKeyVal?.toString() ?? receivedKeySymbol,
-                      style: TextStyle(
-                        fontFamily: 'Courier New',
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: partnerColor,
-                      ),
-                    ),
-                  ),
-                  Transform.translate(
-                    offset: const Offset(1, -5),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 4, vertical: 1),
+            child: Directionality(
+              textDirection: TextDirection.ltr,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                       decoration: BoxDecoration(
-                        color: ownerColor.withValues(alpha: 0.16),
+                        color: partnerColor.withValues(alpha: 0.16),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
-                        ownPrivateVal?.toString() ?? ownPrivateSymbol,
+                        receivedKeyVal?.toString() ?? receivedKeySymbol,
                         style: TextStyle(
                           fontFamily: 'Courier New',
-                          fontSize: 10.5,
+                          fontSize: 13,
                           fontWeight: FontWeight.bold,
-                          color: ownerColor,
+                          color: partnerColor,
                         ),
                       ),
                     ),
-                  ),
-                  Text(
-                    " mod ${_qVal?.toString() ?? 'q'}",
-                    style: TextStyle(
-                      fontFamily: 'Courier New',
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.textSecondary(context),
+                    Transform.translate(
+                      offset: const Offset(1, -5),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 4, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: ownerColor.withValues(alpha: 0.16),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          ownPrivateVal?.toString() ?? ownPrivateSymbol,
+                          style: TextStyle(
+                            fontFamily: 'Courier New',
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.bold,
+                            color: ownerColor,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                    Text(
+                      " mod ${_qVal?.toString() ?? 'q'}",
+                      style: TextStyle(
+                        fontFamily: 'Courier New',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.textSecondary(context),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -995,14 +1054,17 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
                   : AppTheme.surfaceSubtle(context),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Text(
-              isReady ? "K = $sharedSecretVal" : "K = ?",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'Courier New',
-                fontSize: 17,
-                fontWeight: FontWeight.bold,
-                color: isReady ? successColor : AppTheme.textMuted(context),
+            child: Directionality(
+              textDirection: TextDirection.ltr,
+              child: Text(
+                isReady ? "K = $sharedSecretVal" : "K = ?",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Courier New',
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                  color: isReady ? successColor : AppTheme.textMuted(context),
+                ),
               ),
             ),
           ),
@@ -1033,7 +1095,6 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
         decoration: InputDecoration(
           labelText: label,
           labelStyle: TextStyle(
-            fontFamily: 'Roboto',
             fontSize: 11,
             color: color.withValues(alpha: 0.85),
           ),
@@ -1080,7 +1141,10 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Shared Secret Matched!  K = $sharedA",
+                        tr(
+                          "Shared Secret Matched!  K = $sharedA",
+                          "تطابق المفتاح السري المشترك!  K = $sharedA",
+                        ),
                         style: TextStyle(
                           color: successColor,
                           fontSize: 14,
@@ -1088,9 +1152,12 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
                         ),
                       ),
                       Text(
-                        "Both equal α^(X_A × X_B) mod q = $_alphaVal^($_xAVal×$_xBVal) mod $_qVal",
+                        tr(
+                          "Both equal α^(X_A × X_B) mod q = $_alphaVal^($_xAVal×$_xBVal) mod $_qVal",
+                          "كلاهما يساوي α^(X_A × X_B) mod q = $_alphaVal^($_xAVal×$_xBVal) mod $_qVal",
+                        ),
                         style: TextStyle(
-                          fontFamily: 'Courier New',
+                          fontFamily: AppTheme.monoFont(),
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: successColor.withValues(alpha: 0.9),
@@ -1105,7 +1172,7 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
           IconButton(
             onPressed: _copySecret,
             icon: Icon(Icons.copy_rounded, color: successColor, size: 20),
-            tooltip: 'Copy Shared Secret K',
+            tooltip: tr('Copy Shared Secret K', 'نسخ المفتاح المشترك K'),
           ),
         ],
       ),

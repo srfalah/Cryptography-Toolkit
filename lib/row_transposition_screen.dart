@@ -39,8 +39,10 @@ class _RowTranspositionScreenState extends State<RowTranspositionScreen> {
       setState(() {
         result = '';
         displayGrid = [];
-        errorMessage =
-            "Invalid Key: Must be a sequence from 1 to ${key.length} without duplicates.";
+        errorMessage = tr(
+          "Invalid Key: Must be a sequence from 1 to ${key.length} without duplicates.",
+          "مفتاح غير صالح: يجب أن يتكون من الأرقام من 1 إلى ${key.length} بدون تكرار.",
+        );
       });
       return;
     }
@@ -151,16 +153,24 @@ class _RowTranspositionScreenState extends State<RowTranspositionScreen> {
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBg(context),
       appBar: AppBar(
-        title: const Text(
-          'Row Transposition',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            tr('Row Transposition', 'تبديل الصفوف (Row Transposition)'),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
         ),
         centerTitle: true,
         backgroundColor: AppTheme.transpositionAppBar(context),
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
-          IconButton(onPressed: _clearAll, icon: const Icon(Icons.refresh)),
+          AppTheme.buildLanguageToggleButton(context),
+          IconButton(
+            onPressed: _clearAll,
+            tooltip: tr('Reset', 'إعادة تعيين'),
+            icon: const Icon(Icons.refresh),
+          ),
         ],
       ),
       body: SafeArea(
@@ -169,14 +179,17 @@ class _RowTranspositionScreenState extends State<RowTranspositionScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSectionTitle("Input Message", primaryColor),
+              _buildSectionTitle(
+                tr("Input Message", "النص المدخل"),
+                primaryColor,
+              ),
               TextField(
                 controller: messageController,
                 maxLines: 3,
                 style: TextStyle(color: AppTheme.textPrimary(context)),
                 onChanged: (value) => _processCipher(),
                 decoration: InputDecoration(
-                  hintText: "Enter text here...",
+                  hintText: tr("Enter text here...", "أدخل النص هنا..."),
                   border: const OutlineInputBorder(),
                   focusedBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: primaryColor, width: 2),
@@ -185,14 +198,17 @@ class _RowTranspositionScreenState extends State<RowTranspositionScreen> {
                 ),
               ),
               const SizedBox(height: 15),
-              _buildSectionTitle("Numeric Key", primaryColor),
+              _buildSectionTitle(
+                tr("Numeric Key", "المفتاح الرقمي (ترتيب الأعمدة)"),
+                primaryColor,
+              ),
               TextField(
                 controller: keyController,
                 keyboardType: TextInputType.number,
                 style: TextStyle(color: AppTheme.textPrimary(context)),
                 onChanged: (value) => _processCipher(),
                 decoration: InputDecoration(
-                  hintText: "E.g., 4312",
+                  hintText: tr("E.g., 4312", "مثال: 4312"),
                   border: const OutlineInputBorder(),
                   focusedBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: primaryColor, width: 2),
@@ -202,7 +218,7 @@ class _RowTranspositionScreenState extends State<RowTranspositionScreen> {
               ),
               if (errorMessage != null)
                 Padding(
-                  padding: const EdgeInsets.only(top: 8, left: 5),
+                  padding: const EdgeInsetsDirectional.only(top: 8, start: 5),
                   child: Text(
                     errorMessage!,
                     style: TextStyle(
@@ -213,7 +229,10 @@ class _RowTranspositionScreenState extends State<RowTranspositionScreen> {
                   ),
                 ),
               const SizedBox(height: 20),
-              _buildSectionTitle("Select Mode", primaryColor),
+              _buildSectionTitle(
+                tr("Select Mode", "اختر العملية"),
+                primaryColor,
+              ),
               RadioGroup<RowTransMode>(
                 groupValue: _selectedMode,
                 onChanged: (val) {
@@ -227,9 +246,15 @@ class _RowTranspositionScreenState extends State<RowTranspositionScreen> {
                 child: Row(
                   children: [
                     _buildModeRadioTile(
-                        context, "Encrypt", RowTransMode.encrypt, primaryColor),
+                        context,
+                        tr("Encrypt", "تشفير"),
+                        RowTransMode.encrypt,
+                        primaryColor),
                     _buildModeRadioTile(
-                        context, "Decrypt", RowTransMode.decrypt, primaryColor),
+                        context,
+                        tr("Decrypt", "فك التشفير"),
+                        RowTransMode.decrypt,
+                        primaryColor),
                   ],
                 ),
               ),
@@ -249,7 +274,10 @@ class _RowTranspositionScreenState extends State<RowTranspositionScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle("Visual Grid (Key + Matrix)", primaryColor),
+        _buildSectionTitle(
+          tr("Visual Grid (Key + Matrix)", "الشبكة التوضيحية (المفتاح والمصفوفة)"),
+          primaryColor,
+        ),
         LayoutBuilder(
           builder: (context, constraints) {
             int colsCount = displayGrid[0].length + 1;
@@ -265,40 +293,20 @@ class _RowTranspositionScreenState extends State<RowTranspositionScreen> {
                 border: Border.all(color: primaryColor.withValues(alpha: 0.5)),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: displayGrid.asMap().entries.map((entry) {
-                    int rowIndex = entry.key;
-                    List<String> row = entry.value;
-                    bool isHeader = rowIndex == 0;
+              child: Directionality(
+                textDirection: TextDirection.ltr,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: displayGrid.asMap().entries.map((entry) {
+                      int rowIndex = entry.key;
+                      List<String> row = entry.value;
+                      bool isHeader = rowIndex == 0;
 
-                    return Row(
-                      children: [
-                        Container(
-                          width: cellWidth,
-                          height: 40,
-                          margin: const EdgeInsets.all(2),
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: isHeader
-                                ? Colors.blueGrey.shade900
-                                : Colors.blueGrey.shade200,
-                            border: Border.all(color: Colors.blueGrey.shade400),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            isHeader ? '#' : rowIndex.toString(),
-                            style: TextStyle(
-                              color: isHeader ? Colors.white : Colors.black87,
-                              fontWeight: FontWeight.w900,
-                              fontSize: isHeader ? 18 : 14,
-                            ),
-                          ),
-                        ),
-                        ...row.map((char) {
-                          return Container(
+                      return Row(
+                        children: [
+                          Container(
                             width: cellWidth,
                             height: 40,
                             margin: const EdgeInsets.all(2),
@@ -306,29 +314,53 @@ class _RowTranspositionScreenState extends State<RowTranspositionScreen> {
                             decoration: BoxDecoration(
                               color: isHeader
                                   ? Colors.blueGrey.shade900
-                                  : Colors.blueGrey.shade600,
-                              border: Border.all(
-                                color: isHeader
-                                    ? Colors.black
-                                    : Colors.blueGrey.shade300,
-                              ),
+                                  : Colors.blueGrey.shade200,
+                              border:
+                                  Border.all(color: Colors.blueGrey.shade400),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              char,
+                              isHeader ? '#' : rowIndex.toString(),
                               style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: isHeader
-                                    ? FontWeight.w900
-                                    : FontWeight.bold,
-                                fontSize: isHeader ? 18 : 16,
+                                color: isHeader ? Colors.white : Colors.black87,
+                                fontWeight: FontWeight.w900,
+                                fontSize: isHeader ? 18 : 14,
                               ),
                             ),
-                          );
-                        }),
-                      ],
-                    );
-                  }).toList(),
+                          ),
+                          ...row.map((char) {
+                            return Container(
+                              width: cellWidth,
+                              height: 40,
+                              margin: const EdgeInsets.all(2),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: isHeader
+                                    ? Colors.blueGrey.shade900
+                                    : Colors.blueGrey.shade600,
+                                border: Border.all(
+                                  color: isHeader
+                                      ? Colors.black
+                                      : Colors.blueGrey.shade300,
+                                ),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                char,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: isHeader
+                                      ? FontWeight.w900
+                                      : FontWeight.bold,
+                                  fontSize: isHeader ? 18 : 16,
+                                ),
+                              ),
+                            );
+                          }),
+                        ],
+                      );
+                    }).toList(),
+                  ),
                 ),
               ),
             );
@@ -340,7 +372,7 @@ class _RowTranspositionScreenState extends State<RowTranspositionScreen> {
 
   Widget _buildSectionTitle(String title, Color primaryColor) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10, left: 5),
+      padding: const EdgeInsetsDirectional.only(bottom: 10, start: 5),
       child: Text(
         title,
         style: TextStyle(
@@ -360,11 +392,15 @@ class _RowTranspositionScreenState extends State<RowTranspositionScreen> {
   ) {
     return Expanded(
       child: RadioListTile<RowTransMode>(
-        title: Text(
-          title,
-          style: TextStyle(
-            fontSize: 14,
-            color: AppTheme.textPrimary(context),
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: AlignmentDirectional.centerStart,
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: 14,
+              color: AppTheme.textPrimary(context),
+            ),
           ),
         ),
         value: mode,
@@ -386,17 +422,19 @@ class _RowTranspositionScreenState extends State<RowTranspositionScreen> {
       child: Column(
         children: [
           Text(
-            "OUTPUT RESULT",
+            tr("OUTPUT RESULT", "النتيجة النهائية"),
             style: TextStyle(
               color: primaryColor,
               fontWeight: FontWeight.bold,
               fontSize: 12,
-              letterSpacing: 1.2,
+              letterSpacing: isArabic ? 0 : 1.2,
             ),
           ),
           const SizedBox(height: 15),
           SelectableText(
-            result.isEmpty ? 'Waiting for input...' : result,
+            result.isEmpty
+                ? tr('Waiting for input...', 'بانتظار إدخال النص...')
+                : result,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 20,
@@ -404,7 +442,7 @@ class _RowTranspositionScreenState extends State<RowTranspositionScreen> {
               color: result.isEmpty
                   ? AppTheme.textMuted(context)
                   : primaryColor,
-              letterSpacing: 2.0,
+              letterSpacing: result.isEmpty && isArabic ? 0 : 2.0,
             ),
           ),
         ],

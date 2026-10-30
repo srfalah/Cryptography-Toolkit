@@ -158,7 +158,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
         if (commitToHistory) {
           setState(() {
             _isError = true;
-            result = 'Enter both a and modulus n';
+            result = tr('Enter both a and modulus n', 'أدخل كلاً من a والمعامل n');
           });
         } else {
           setState(() {
@@ -177,7 +177,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
         if (n <= BigInt.one) {
           setState(() {
             _isError = true;
-            result = 'Modulus n must be > 1';
+            result = tr('Modulus n must be > 1', 'يجب أن يكون المعامل n > 1');
           });
           return;
         }
@@ -187,7 +187,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
         if (g != BigInt.one) {
           setState(() {
             _isError = true;
-            result = 'No inverse (gcd = $g ≠ 1)';
+            result = tr('No inverse (gcd = $g ≠ 1)', 'لا يوجد معكوس (ق.م.أ = $g ≠ 1)');
           });
           return;
         }
@@ -198,7 +198,10 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
         setState(() {
           _isError = false;
           result = resStr;
-          _helperNote = 'gcd(a,n) = 1 (Coprime)  •  Inverse exists';
+          _helperNote = tr(
+            'gcd(a,n) = 1 (Coprime)  •  Inverse exists',
+            'gcd(a,n) = 1 (أوليان نسبياً)  •  المعكوس موجود',
+          );
           _verifyNote = '($a × $inv) mod $n = 1 ✓';
           if (commitToHistory) {
             _justCalculated = true;
@@ -209,7 +212,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
         setState(() {
           if (commitToHistory) {
             _isError = true;
-            result = 'Invalid input!';
+            result = tr('Invalid input!', 'إدخال غير صالح!');
           } else {
             _isError = false;
             result = '';
@@ -235,7 +238,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
         if (commitToHistory) {
           setState(() {
             _isError = true;
-            result = 'Enter a prime q (and optional α)';
+            result = tr('Enter a prime q (and optional α)', 'أدخل عدداً أولياً q (و α اختياري)');
           });
         } else {
           setState(() {
@@ -256,7 +259,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
         } else if (!hasFirst && hasSecond) {
           setState(() {
             _isError = true;
-            result = 'Enter prime modulus q in the 1st box';
+            result = tr('Enter prime modulus q in the 1st box', 'أدخل العدد الأولي q في الخانة الأولى');
           });
           return;
         }
@@ -268,7 +271,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
         if (q <= BigInt.one) {
           setState(() {
             _isError = true;
-            result = 'q must be a prime > 1';
+            result = tr('q must be a prime > 1', 'يجب أن يكون q عدداً أولياً > 1');
           });
           return;
         }
@@ -277,15 +280,18 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
         if (isPrimeQ == false) {
           setState(() {
             _isError = true;
-            result = 'q = $q is NOT Prime';
-            _helperNote = 'Primitive roots in DH/El-Gamal require a prime q';
+            result = tr('q = $q is NOT Prime', 'q = $q ليس عدداً أولياً');
+            _helperNote = tr(
+              'Primitive roots in DH/El-Gamal require a prime q',
+              'الجذور البدائية في DH/El-Gamal تتطلب عدداً أولياً q',
+            );
           });
           return;
         }
         if (isPrimeQ == null) {
           setState(() {
             _isError = true;
-            result = 'Prime q is too large';
+            result = tr('Prime q is too large', 'العدد الأولي q كبير جداً');
           });
           return;
         }
@@ -293,7 +299,10 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
         if (alpha <= BigInt.zero || alpha >= q) {
           setState(() {
             _isError = true;
-            result = 'α must be between 1 and ${q - BigInt.one} (q−1)';
+            result = tr(
+              'α must be between 1 and ${q - BigInt.one} (q−1)',
+              'يجب أن يكون α بين 1 و ${q - BigInt.one} (q−1)',
+            );
           });
           return;
         }
@@ -302,7 +311,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
         if (factors == null) {
           setState(() {
             _isError = true;
-            result = 'q is too large to factor';
+            result = tr('q is too large to factor', 'العدد q كبير جداً للتحليل');
           });
           return;
         }
@@ -321,8 +330,14 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
           _isError = false;
           result = resStr;
           _helperNote = isRoot
-              ? '✓ α = $alpha is a Primitive Root of q = $q  •  Roots: [$rootsPreview]'
-              : '✗ α = $alpha is NOT a root of q = $q  •  Valid roots: [$rootsPreview]';
+              ? tr(
+                  '✓ α = $alpha is a Primitive Root of q = $q  •  Roots: [$rootsPreview]',
+                  '✓ α = $alpha جذر بدائي لـ q = $q  •  الجذور: [$rootsPreview]',
+                )
+              : tr(
+                  '✗ α = $alpha is NOT a root of q = $q  •  Valid roots: [$rootsPreview]',
+                  '✗ α = $alpha ليس جذراً بدائياً لـ q = $q  •  الجذور: [$rootsPreview]',
+                );
           if (commitToHistory) {
             _justCalculated = true;
             _recordHistory('isRoot(q=$q, α=$alpha)', resStr, _helperNote);
@@ -332,7 +347,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
         setState(() {
           if (commitToHistory) {
             _isError = true;
-            result = 'Invalid input!';
+            result = tr('Invalid input!', 'إدخال غير صالح!');
           } else {
             _isError = false;
             result = '';
@@ -404,7 +419,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
         if (commitToHistory) {
           setState(() {
             _isError = true;
-            result = "Please fill in the required fields";
+            result = tr("Please fill in the required fields", "يرجى ملء جميع الحقول المطلوبة");
           });
         } else {
           setState(() {
@@ -427,7 +442,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
             if (mod <= BigInt.zero) {
               setState(() {
                 _isError = true;
-                result = 'Modulus n must be > 0';
+                result = tr('Modulus n must be > 0', 'يجب أن يكون المعامل n > 0');
               });
               return;
             }
@@ -440,7 +455,10 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
                 if (g != BigInt.one) {
                   setState(() {
                     _isError = true;
-                    result = 'No inverse for negative exponent (gcd = $g ≠ 1)';
+                    result = tr(
+                      'No inverse for negative exponent (gcd = $g ≠ 1)',
+                      'لا يوجد معكوس للأس السالب (ق.م.أ = $g ≠ 1)',
+                    );
                   });
                   return;
                 }
@@ -463,7 +481,10 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
             if (exponent < 0) {
               setState(() {
                 _isError = true;
-                result = 'Tap MOD for negative exponents (a⁻ᵇ mod n)';
+                result = tr(
+                  'Tap MOD for negative exponents (a⁻ᵇ mod n)',
+                  'اضغط MOD للأسس السالبة (a⁻ᵇ mod n)',
+                );
               });
               return;
             }
@@ -471,14 +492,17 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
               return;
             }
             finalResult = base.pow(exponent);
-            _helperNote = '${finalResult.toString().length} digits';
+            _helperNote = tr(
+              '${finalResult.toString().length} digits',
+              '${finalResult.toString().length} خانة',
+            );
             break;
           case CalcMode.modOnly:
             BigInt mod = BigInt.parse(modController.text);
             if (mod <= BigInt.zero) {
               setState(() {
                 _isError = true;
-                result = 'Modulus n must be > 0';
+                result = tr('Modulus n must be > 0', 'يجب أن يكون المعامل n > 0');
               });
               return;
             }
@@ -502,7 +526,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
         setState(() {
           if (commitToHistory) {
             _isError = true;
-            result = "Invalid input!";
+            result = tr("Invalid input!", "إدخال غير صالح!");
           } else {
             _isError = false;
             result = '';
@@ -522,7 +546,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
       if (commitToHistory) {
         setState(() {
           _isError = true;
-          result = "Please fill in the required fields";
+          result = tr("Please fill in the required fields", "يرجى ملء جميع الحقول المطلوبة");
         });
       } else {
         setState(() {
@@ -553,21 +577,30 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
           if (b == BigInt.zero) {
             setState(() {
               _isError = true;
-              result = 'Cannot divide by zero';
+              result = tr('Cannot divide by zero', 'لا يمكن القسمة على صفر');
             });
             return;
           }
           finalResult = a ~/ b;
           final BigInt rem = a.remainder(b);
-          _helperNote = 'Quotient: $finalResult  •  Remainder: $rem';
+          _helperNote = tr(
+            'Quotient: $finalResult  •  Remainder: $rem',
+            'خارج القسمة: $finalResult  •  الباقي: $rem',
+          );
           _verifyNote =
               '$finalResult × $b + $rem = ${finalResult * b + rem} ✓';
           break;
         case MathOp.gcd:
           finalResult = a.abs().gcd(b.abs());
           _helperNote = finalResult == BigInt.one
-              ? 'Coprime (gcd = 1) • Modular inverse exists'
-              : 'Not Coprime (Share factor $finalResult)';
+              ? tr(
+                  'Coprime (gcd = 1) • Modular inverse exists',
+                  'أوليان نسبياً (ق.م.أ = 1) • المعكوس المعياري موجود',
+                )
+              : tr(
+                  'Not Coprime (Share factor $finalResult)',
+                  'ليسا أوليين نسبياً (القاسم المشترك $finalResult)',
+                );
           if (finalResult > BigInt.zero) {
             _verifyNote =
                 '${a.abs()} ÷ $finalResult = ${a.abs() ~/ finalResult} and ${b.abs()} ÷ $finalResult = ${b.abs() ~/ finalResult} (both exact ✓)';
@@ -582,7 +615,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
         if (mod <= BigInt.zero) {
           setState(() {
             _isError = true;
-            result = 'Modulus n must be > 0';
+            result = tr('Modulus n must be > 0', 'يجب أن يكون المعامل n > 0');
           });
           return;
         }
@@ -604,7 +637,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
       setState(() {
         if (commitToHistory) {
           _isError = true;
-          result = "Invalid input!";
+          result = tr("Invalid input!", "إدخال غير صالح!");
         } else {
           _isError = false;
           result = '';
@@ -618,7 +651,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
     if (q <= BigInt.one) {
       setState(() {
         _isError = true;
-        result = 'Enter a prime q > 1';
+        result = tr('Enter a prime q > 1', 'أدخل عدداً أولياً q > 1');
       });
       return;
     }
@@ -627,15 +660,18 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
     if (isPrimeQ == false) {
       setState(() {
         _isError = true;
-        result = '$q is NOT Prime';
-        _helperNote = 'Enter a prime number q to find its primitive roots';
+        result = tr('$q is NOT Prime', '$q ليس عدداً أولياً');
+        _helperNote = tr(
+          'Enter a prime number q to find its primitive roots',
+          'أدخل عدداً أولياً q لإيجاد جذوره البدائية',
+        );
       });
       return;
     }
     if (isPrimeQ == null) {
       setState(() {
         _isError = true;
-        result = 'Prime q is too large';
+        result = tr('Prime q is too large', 'العدد الأولي q كبير جداً');
       });
       return;
     }
@@ -644,7 +680,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
     if (factors == null) {
       setState(() {
         _isError = true;
-        result = 'Prime q is too large';
+        result = tr('Prime q is too large', 'العدد الأولي q كبير جداً');
       });
       return;
     }
@@ -653,7 +689,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
     if (roots.isEmpty) {
       setState(() {
         _isError = true;
-        result = 'No primitive root found';
+        result = tr('No primitive root found', 'لم يتم العثور على جذر بدائي');
       });
       return;
     }
@@ -670,8 +706,10 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
     setState(() {
       _isError = false;
       result = smallestRoot;
-      _helperNote =
-          'Smallest α = $smallestRoot  •  Roots: [$allPreview] (Tap to view all)';
+      _helperNote = tr(
+        'Smallest α = $smallestRoot  •  Roots: [$allPreview] (Tap to view all)',
+        'أصغر جذر α = $smallestRoot  •  الجذور: [$allPreview] (اضغط لعرض الكل)',
+      );
       if (commitToHistory) {
         _justCalculated = true;
         _recordHistory('root($q)', smallestRoot, 'Roots of $q: $allPreview');
@@ -763,8 +801,14 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
       parts.add('$alpha^$e = $v');
     }
     return noneIsOne
-        ? '${parts.join(',  ')}  (none equals 1 → order is q−1 ✓)'
-        : '${parts.join(',  ')}  (one equals 1 → not a primitive root)';
+        ? tr(
+            '${parts.join(',  ')}  (none equals 1 → order is q−1 ✓)',
+            '${parts.join(',  ')}  (لا يساوي 1 ← الرتبة q−1 ✓)',
+          )
+        : tr(
+            '${parts.join(',  ')}  (one equals 1 → not a primitive root)',
+            '${parts.join(',  ')}  (أحدها يساوي 1 ← ليس جذراً بدائياً)',
+          );
   }
 
   // Next / previous prime around n
@@ -777,7 +821,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
       setState(() {
         if (commitToHistory) {
           _isError = true;
-          result = 'Enter a number n';
+          result = tr('Enter a number n', 'أدخل عدداً n');
         } else {
           _isError = false;
           result = '';
@@ -793,7 +837,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
     } catch (_) {
       setState(() {
         _isError = true;
-        result = 'Invalid input!';
+        result = tr('Invalid input!', 'إدخال غير صالح!');
       });
       return;
     }
@@ -802,7 +846,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
     if (n.abs() > limit) {
       setState(() {
         _isError = true;
-        result = 'Number is too large (max 10¹²)';
+        result = tr('Number is too large (max 10¹²)', 'العدد كبير جداً (الحد الأقصى 10¹²)');
       });
       return;
     }
@@ -834,7 +878,9 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
     if (found == null) {
       setState(() {
         _isError = true;
-        result = next ? 'No prime found' : 'No prime below $n';
+        result = next
+            ? tr('No prime found', 'لم يتم العثور على عدد أولي')
+            : tr('No prime below $n', 'لا يوجد عدد أولي أصغر من $n');
       });
       return;
     }
@@ -845,8 +891,14 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
       result = resStr;
       _helperNote = _buildSingleNumberInsight(n);
       _verifyNote = next
-          ? '$found is prime ✓  •  no prime between $n and $found'
-          : '$found is prime ✓  •  no prime between $found and $n';
+          ? tr(
+              '$found is prime ✓  •  no prime between $n and $found',
+              '$found عدد أولي ✓  •  لا يوجد أولي بين $n و $found',
+            )
+          : tr(
+              '$found is prime ✓  •  no prime between $found and $n',
+              '$found عدد أولي ✓  •  لا يوجد أولي بين $found و $n',
+            );
       if (commitToHistory) {
         _justCalculated = true;
         _recordHistory(_buildPlainExpression(), resStr, _helperNote);
@@ -857,8 +909,12 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
   String _buildSingleNumberInsight(BigInt a) {
     if (a <= BigInt.one) return '';
     final bool? prime = _isPrimeQuick(a);
-    if (prime == null) return '${a.toString().length} digits';
-    return prime ? '$a is a Prime number' : '$a is a Composite number';
+    if (prime == null) {
+      return tr('${a.toString().length} digits', '${a.toString().length} خانة');
+    }
+    return prime
+        ? tr('$a is a Prime number', '$a عدد أولي')
+        : tr('$a is a Composite number', '$a عدد غير أولي (مركب)');
   }
 
   String _buildModInsight(BigInt a, BigInt n) {
@@ -866,13 +922,15 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
     final List<String> notes = [];
     final BigInt g = a.abs().gcd(n.abs());
     if (g == BigInt.one) {
-      notes.add('gcd(a,n) = 1 (Coprime)');
+      notes.add(tr('gcd(a,n) = 1 (Coprime)', 'gcd(a,n) = 1 (أوليان نسبياً)'));
     } else {
       notes.add('gcd(a,n) = $g');
     }
     final bool? primeN = _isPrimeQuick(n);
     if (primeN != null) {
-      notes.add(primeN ? 'n is Prime' : 'n is Composite');
+      notes.add(primeN
+          ? tr('n is Prime', 'n عدد أولي')
+          : tr('n is Composite', 'n عدد مركب'));
     }
     return notes.join('  •  ');
   }
@@ -1222,7 +1280,12 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Clipboard does not contain a valid number'),
+          content: Text(
+            tr(
+              'Clipboard does not contain a valid number',
+              'الحافظة لا تحتوي على رقم صالح',
+            ),
+          ),
           backgroundColor: Colors.red.shade700,
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 2),
@@ -1245,10 +1308,10 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
-          children: const [
-            Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
-            SizedBox(width: 10),
-            Text('Result copied to clipboard!'),
+          children: [
+            const Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+            const SizedBox(width: 10),
+            Text(tr('Result copied to clipboard!', 'تم نسخ النتيجة إلى الحافظة!')),
           ],
         ),
         backgroundColor: Colors.green.shade700,
@@ -1282,7 +1345,10 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Primitive Roots of q = $_lastRootPrime',
+                        tr(
+                          'Primitive Roots of q = $_lastRootPrime',
+                          'الجذور البدائية لـ q = $_lastRootPrime',
+                        ),
                         style: TextStyle(
                           color: primaryColor,
                           fontSize: 17,
@@ -1294,7 +1360,10 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Tap any primitive root α below to copy it to your clipboard:',
+                  tr(
+                    'Tap any primitive root α below to copy it to your clipboard:',
+                    'اضغط على أي جذر بدائي α أدناه لنسخه إلى الحافظة:',
+                  ),
                   style: TextStyle(
                       fontSize: 12, color: AppTheme.textSecondary(context)),
                 ),
@@ -1319,7 +1388,9 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
                                 : primaryColor.withValues(alpha: 0.35),
                           ),
                           label: Text(
-                            isSmallest ? '$rootVal (Smallest)' : '$rootVal',
+                            isSmallest
+                                ? tr('$rootVal (Smallest)', '$rootVal (الأصغر)')
+                                : '$rootVal',
                             style: TextStyle(
                               fontFamily: 'Courier New',
                               fontWeight: FontWeight.bold,
@@ -1333,7 +1404,11 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
                             ScaffoldMessenger.of(this.context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                    'Copied primitive root α = $rootVal'),
+                                  tr(
+                                    'Copied primitive root α = $rootVal',
+                                    'تم نسخ الجذر البدائي α = $rootVal',
+                                  ),
+                                ),
                                 backgroundColor: Colors.green.shade700,
                                 behavior: SnackBarBehavior.floating,
                               ),
@@ -1355,37 +1430,47 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
   String _getDetectedOperationTitle() {
     switch (_currentOp) {
       case MathOp.none:
-        return _hasMod ? 'Modulo • a mod n' : 'Crypto Calculator';
+        return _hasMod
+            ? tr('Modulo • a mod n', 'باقي القسمة • a mod n')
+            : tr('Crypto Calculator', 'حاسبة التشفير');
       case MathOp.power:
         return _hasMod
-            ? 'Modular Exponentiation • a^b mod n'
-            : 'Exponentiation • a^b';
+            ? tr('Modular Exponentiation • a^b mod n', 'الأس المعياري • a^b mod n')
+            : tr('Exponentiation • a^b', 'الأس • a^b');
       case MathOp.modInverse:
-        return 'Modular Multiplicative Inverse • a⁻¹ mod n';
+        return tr(
+          'Modular Multiplicative Inverse • a⁻¹ mod n',
+          'المعكوس الضربي المعياري • a⁻¹ mod n',
+        );
       case MathOp.gcd:
-        return 'Greatest Common Divisor • gcd(a, b)';
+        return tr(
+          'Greatest Common Divisor • gcd(a, b)',
+          'القاسم المشترك الأكبر • gcd(a, b)',
+        );
       case MathOp.primitiveRoot:
         return exponentController.text.isEmpty
-            ? 'Find Primitive Roots • root(q)'
-            : 'Verify Primitive Root • isRoot(q, α)';
+            ? tr('Find Primitive Roots • root(q)', 'إيجاد الجذور البدائية • root(q)')
+            : tr('Verify Primitive Root • isRoot(q, α)', 'التحقق من الجذر البدائي • isRoot(q, α)');
       case MathOp.nextPrime:
-        return 'Next Prime • Smallest Prime > n';
+        return tr('Next Prime • Smallest Prime > n', 'الأولي التالي • أصغر أولي > n');
       case MathOp.prevPrime:
-        return 'Previous Prime • Largest Prime < n';
+        return tr('Previous Prime • Largest Prime < n', 'الأولي السابق • أكبر أولي < n');
       case MathOp.add:
-        return _hasMod ? 'Modular Addition • (a + b) mod n' : 'Addition • a + b';
+        return _hasMod
+            ? tr('Modular Addition • (a + b) mod n', 'جمع معياري • (a + b) mod n')
+            : tr('Addition • a + b', 'جمع • a + b');
       case MathOp.subtract:
         return _hasMod
-            ? 'Modular Subtraction • (a − b) mod n'
-            : 'Subtraction • a − b';
+            ? tr('Modular Subtraction • (a − b) mod n', 'طرح معياري • (a − b) mod n')
+            : tr('Subtraction • a − b', 'طرح • a − b');
       case MathOp.multiply:
         return _hasMod
-            ? 'Modular Multiplication • (a × b) mod n'
-            : 'Multiplication • a × b';
+            ? tr('Modular Multiplication • (a × b) mod n', 'ضرب معياري • (a × b) mod n')
+            : tr('Multiplication • a × b', 'ضرب • a × b');
       case MathOp.divide:
         return _hasMod
-            ? 'Integer Division • (a ÷ b) mod n'
-            : 'Integer Division • a ÷ b';
+            ? tr('Integer Division • (a ÷ b) mod n', 'قسمة صحيحة • (a ÷ b) mod n')
+            : tr('Integer Division • a ÷ b', 'قسمة صحيحة • a ÷ b');
     }
   }
 
@@ -1440,15 +1525,24 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
         }
 
         return _StepsData(
-          title: 'Square-and-Multiply Steps',
+          title: tr('Square-and-Multiply Steps', 'خطوات التربيع والضرب (Square-and-Multiply)'),
           intro: [
-            'Expression: $a^$b mod $n',
-            'Exponent in binary: $b = $bits₂ (${bits.length} bits, MSB → LSB)',
-            'Start with result R = 1. For each bit: square R mod $n, and if bit = 1, multiply by ${a != baseMod ? "($a mod $n = $baseMod)" : "$baseMod"} mod $n.',
+            tr('Expression: $a^$b mod $n', 'العملية: $a^$b mod $n'),
+            tr(
+              'Exponent in binary: $b = $bits₂ (${bits.length} bits, MSB → LSB)',
+              'الأس بالنظام الثنائي: $b = $bits₂ (${bits.length} بت)',
+            ),
+            tr(
+              'Start with result R = 1. For each bit: square R mod $n, and if bit = 1, multiply by ${a != baseMod ? "($a mod $n = $baseMod)" : "$baseMod"} mod $n.',
+              'ابدأ بـ R = 1. لكل بت: ربّع R mod $n، وإذا كان البت = 1 اضرب في ${a != baseMod ? "($a mod $n = $baseMod)" : "$baseMod"} mod $n.',
+            ),
           ],
           headers: ['#', 'Bit', 'Square mod n', 'Multiply (if bit=1)', 'R'],
           rows: rows,
-          conclusion: 'Final Answer: $a^$b mod $n = $acc',
+          conclusion: tr(
+            'Final Answer: $a^$b mod $n = $acc',
+            'الناتج النهائي: $a^$b mod $n = $acc',
+          ),
         );
       }
 
@@ -1480,14 +1574,26 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
         }
 
         return _StepsData(
-          title: 'Euclidean Algorithm (GCD Steps)',
+          title: tr('Euclidean Algorithm (GCD Steps)', 'خوارزمية إقليدس (خطوات ق.م.أ)'),
           intro: [
-            'Repeatedly divide A by B:  A = Q × B + R, then shift (A ← B, B ← R) until R = 0.',
+            tr(
+              'Repeatedly divide A by B:  A = Q × B + R, then shift (A ← B, B ← R) until R = 0.',
+              'اقسم A على B تكراراً: A = Q × B + R، ثم أزح (A ← B, B ← R) حتى يصبح R = 0.',
+            ),
           ],
-          headers: ['#', 'A', 'B', 'Q', 'R', 'Division Equation'],
+          headers: [
+            '#',
+            'A',
+            'B',
+            'Q',
+            'R',
+            tr('Division Equation', 'معادلة القسمة'),
+          ],
           rows: rows,
-          conclusion:
-              'Last non-zero remainder = gcd = $a  (${a == BigInt.one ? "Coprime ✓" : "Not Coprime"})',
+          conclusion: tr(
+            'Last non-zero remainder = gcd = $a  (${a == BigInt.one ? "Coprime ✓" : "Not Coprime"})',
+            'آخر باقٍ غير صفري = gcd = $a  (${a == BigInt.one ? "أوليان نسبياً ✓" : "ليسا أوليين نسبياً"})',
+          ),
         );
       }
 
@@ -1523,14 +1629,23 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
 
         final BigInt d = x < BigInt.zero ? x + phi : x;
         final String conclusion = x < BigInt.zero
-            ? 'x = $x is negative → d = $x + $phi = $d  •  Verify: ($eOrig × $d) mod $phi = 1 ✓'
-            : 'd = x = $d  •  Verify: ($eOrig × $d) mod $phi = 1 ✓';
+            ? tr(
+                'x = $x is negative → d = $x + $phi = $d  •  Verify: ($eOrig × $d) mod $phi = 1 ✓',
+                'x = $x سالب ← d = $x + $phi = $d  •  تحقق: ($eOrig × $d) mod $phi = 1 ✓',
+              )
+            : tr(
+                'd = x = $d  •  Verify: ($eOrig × $d) mod $phi = 1 ✓',
+                'd = x = $d  •  تحقق: ($eOrig × $d) mod $phi = 1 ✓',
+              );
 
         return _StepsData(
-          title: 'Extended Euclidean Inverse Steps',
+          title: tr('Extended Euclidean Inverse Steps', 'خطوات إقليدس الممتدة للمعكوس'),
           intro: [
-            'Solving: $eOrig⁻¹ mod $phi',
-            'Update rule: z = x − Q × y, then shift B→A, R→B, y→x, z→y.',
+            tr('Solving: $eOrig⁻¹ mod $phi', 'حل المعادلة: $eOrig⁻¹ mod $phi'),
+            tr(
+              'Update rule: z = x − Q × y, then shift B→A, R→B, y→x, z→y.',
+              'قاعدة التحديث: z = x − Q × y، ثم إزاحة B→A, R→B, y→x, z→y.',
+            ),
           ],
           headers: ['#', 'Q', 'A', 'B', 'R', 'x', 'y', 'z'],
           rows: rows,
@@ -1601,9 +1716,9 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
                             );
                           },
                           icon: const Icon(Icons.open_in_new_rounded, size: 15),
-                          label: const Text(
-                            'Extended Euclid',
-                            style: TextStyle(
+                          label: Text(
+                            tr('Extended Euclid', 'إقليدس الممتدة'),
+                            style: const TextStyle(
                                 fontSize: 12, fontWeight: FontWeight.bold),
                           ),
                           style: TextButton.styleFrom(
@@ -1640,50 +1755,53 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
                   ),
                   const SizedBox(height: 12),
                   Flexible(
-                    child: SingleChildScrollView(
+                    child: Directionality(
+                      textDirection: TextDirection.ltr,
                       child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: DataTable(
-                          headingRowHeight: 36,
-                          dataRowMinHeight: 34,
-                          dataRowMaxHeight: 40,
-                          columnSpacing: 18,
-                          headingRowColor: WidgetStateProperty.all(
-                            primaryColor.withValues(alpha: 0.14),
-                          ),
-                          columns: [
-                            for (final h in data.headers)
-                              DataColumn(
-                                label: Text(
-                                  h,
-                                  style: TextStyle(
-                                    fontFamily: 'Courier New',
-                                    fontWeight: FontWeight.bold,
-                                    color: primaryColor,
-                                    fontSize: 12.5,
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: DataTable(
+                            headingRowHeight: 36,
+                            dataRowMinHeight: 34,
+                            dataRowMaxHeight: 40,
+                            columnSpacing: 18,
+                            headingRowColor: WidgetStateProperty.all(
+                              primaryColor.withValues(alpha: 0.14),
+                            ),
+                            columns: [
+                              for (final h in data.headers)
+                                DataColumn(
+                                  label: Text(
+                                    h,
+                                    style: TextStyle(
+                                      fontFamily: 'Courier New',
+                                      fontWeight: FontWeight.bold,
+                                      color: primaryColor,
+                                      fontSize: 12.5,
+                                    ),
                                   ),
                                 ),
-                              ),
-                          ],
-                          rows: [
-                            for (final r in data.rows)
-                              DataRow(
-                                cells: [
-                                  for (final cell in r)
-                                    DataCell(
-                                      Text(
-                                        cell,
-                                        style: TextStyle(
-                                          fontFamily: 'Courier New',
-                                          fontSize: 12.5,
-                                          fontWeight: FontWeight.w600,
-                                          color: AppTheme.textPrimary(context),
+                            ],
+                            rows: [
+                              for (final r in data.rows)
+                                DataRow(
+                                  cells: [
+                                    for (final cell in r)
+                                      DataCell(
+                                        Text(
+                                          cell,
+                                          style: TextStyle(
+                                            fontFamily: 'Courier New',
+                                            fontSize: 12.5,
+                                            fontWeight: FontWeight.w600,
+                                            color: AppTheme.textPrimary(context),
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                ],
-                              ),
-                          ],
+                                  ],
+                                ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -1701,7 +1819,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
                       data.conclusion,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontFamily: 'Courier New',
+                        fontFamily: AppTheme.monoFont(),
                         fontSize: 12.5,
                         fontWeight: FontWeight.bold,
                         color: AppTheme.successText(context),
@@ -1768,7 +1886,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
                               Icon(Icons.history_rounded, color: primaryColor),
                               const SizedBox(width: 8),
                               Text(
-                                'Calculation History',
+                                tr('Calculation History', 'سجل العمليات الحسابية'),
                                 style: TextStyle(
                                   color: primaryColor,
                                   fontSize: 18,
@@ -1788,7 +1906,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
                               icon: Icon(Icons.delete_outline_rounded,
                                   color: AppTheme.errorText(context), size: 18),
                               label: Text(
-                                'Clear Unpinned',
+                                tr('Clear Unpinned', 'مسح غير المثبت'),
                                 style: TextStyle(
                                   color: AppTheme.errorText(context),
                                   fontSize: 12,
@@ -1799,7 +1917,10 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Tap any entry to reload the full expression into the calculator.',
+                        tr(
+                          'Tap any entry to reload the full expression into the calculator.',
+                          'اضغط على أي عملية لإعادة تحميلها بالكامل في الحاسبة.',
+                        ),
                         style: TextStyle(
                           fontSize: 11.5,
                           color: AppTheme.textMuted(context),
@@ -1810,7 +1931,10 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 32),
                           child: Text(
-                            'Press "=" on any calculation to save it here.',
+                            tr(
+                              'Press "=" on any calculation to save it here.',
+                              'اضغط "=" على أي عملية لحفظها هنا.',
+                            ),
                             textAlign: TextAlign.center,
                             style: TextStyle(color: AppTheme.textMuted(context)),
                           ),
@@ -1839,26 +1963,32 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
                                 child: ListTile(
                                   contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 12, vertical: 4),
-                                  title: Text(
-                                    item.expression,
-                                    style: TextStyle(
-                                      fontFamily: 'Courier New',
-                                      fontSize: 13.5,
-                                      color: AppTheme.textSecondary(context),
-                                      fontWeight: FontWeight.w600,
+                                  title: Directionality(
+                                    textDirection: TextDirection.ltr,
+                                    child: Text(
+                                      item.expression,
+                                      style: TextStyle(
+                                        fontFamily: 'Courier New',
+                                        fontSize: 13.5,
+                                        color: AppTheme.textSecondary(context),
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
                                   ),
                                   subtitle: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        '= ${item.result}',
-                                        style: TextStyle(
-                                          fontFamily: 'Courier New',
-                                          fontSize: 17,
-                                          fontWeight: FontWeight.bold,
-                                          color: primaryColor,
+                                      Directionality(
+                                        textDirection: TextDirection.ltr,
+                                        child: Text(
+                                          '= ${item.result}',
+                                          style: TextStyle(
+                                            fontFamily: AppTheme.monoFont(),
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.bold,
+                                            color: primaryColor,
+                                          ),
                                         ),
                                       ),
                                       if (item.note != null)
@@ -1877,8 +2007,8 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
                                     children: [
                                       IconButton(
                                         tooltip: item.pinned
-                                            ? 'Unpin'
-                                            : 'Pin to keep',
+                                            ? tr('Unpin', 'إلغاء التثبيت')
+                                            : tr('Pin to keep', 'تثبيت للاحتفاظ'),
                                         icon: Icon(
                                           item.pinned
                                               ? Icons.push_pin_rounded
@@ -1902,7 +2032,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
                                         },
                                       ),
                                       IconButton(
-                                        tooltip: 'Copy as homework text',
+                                        tooltip: tr('Copy as homework text', 'نسخ كنص كامل'),
                                         icon: Icon(
                                           Icons.description_outlined,
                                           color: primaryColor,
@@ -1920,7 +2050,8 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
                                               .showSnackBar(
                                             SnackBar(
                                               content: Text(
-                                                  'Copied: $fullText'),
+                                                tr('Copied: $fullText', 'تم النسخ: $fullText'),
+                                              ),
                                               backgroundColor:
                                                   Colors.green.shade700,
                                               behavior:
@@ -1956,18 +2087,19 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBg(context),
       appBar: AppBar(
-        title: const Text(
-          'Crypto Calculator',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        title: Text(
+          tr('Crypto Calculator', 'حاسبة التشفير'),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,
         backgroundColor: AppTheme.orangeAppBar(context),
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
+          AppTheme.buildLanguageToggleButton(context),
           IconButton(
             onPressed: _showHistoryModal,
-            tooltip: 'Calculation History',
+            tooltip: tr('Calculation History', 'سجل العمليات'),
             icon: Badge(
               isLabelVisible: _history.isNotEmpty,
               label: Text('${_history.length}'),
@@ -2049,8 +2181,8 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
                     primaryColor.withValues(alpha: isDark ? 0.16 : 0.1),
                     primaryColor.withValues(alpha: 0.02),
                   ],
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
+                  begin: AlignmentDirectional.centerStart,
+                  end: AlignmentDirectional.centerEnd,
                 ),
                 border: Border(
                   bottom: BorderSide(
@@ -2086,7 +2218,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                               color: primaryColor,
-                              letterSpacing: 0.2,
+                              letterSpacing: isArabic ? 0 : 0.2,
                             ),
                           ),
                         ),
@@ -2106,13 +2238,16 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
                             color: primaryColor.withValues(alpha: 0.3),
                           ),
                         ),
-                        child: Text(
-                          'ANS = ${_history.first.result}',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontFamily: 'Courier New',
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.textSecondary(context),
+                        child: Directionality(
+                          textDirection: TextDirection.ltr,
+                          child: Text(
+                            'ANS = ${_history.first.result}',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontFamily: 'Courier New',
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.textSecondary(context),
+                            ),
                           ),
                         ),
                       ),
@@ -2126,10 +2261,13 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 18),
                 alignment: Alignment.center,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  reverse: true,
-                  child: _buildInteractiveFormulaStream(),
+                child: Directionality(
+                  textDirection: TextDirection.ltr,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    reverse: true,
+                    child: _buildInteractiveFormulaStream(),
+                  ),
                 ),
               ),
             ),
@@ -2177,10 +2315,10 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
                         Padding(
                           padding: const EdgeInsets.only(top: 2),
                           child: Text(
-                            'Verify: $_verifyNote',
+                            tr('Verify: $_verifyNote', 'تحقق: $_verifyNote'),
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontFamily: 'Courier New',
+                              fontFamily: AppTheme.monoFont(),
                               fontSize: 10.5,
                               fontWeight: FontWeight.bold,
                               color: AppTheme.successText(context),
@@ -2245,7 +2383,10 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
                       child: SelectableText(
                         result.isEmpty ? '0' : result,
                         style: TextStyle(
-                          fontFamily: _isError ? 'Roboto' : 'Courier New',
+                          fontFamily: (_isError ||
+                                  RegExp(r'[\u0600-\u06FF]').hasMatch(result))
+                              ? (isArabic ? 'Cairo' : 'Roboto')
+                              : 'Courier New',
                           fontSize: _isError ? 14 : 26,
                           fontWeight: FontWeight.bold,
                           color: _isError
@@ -2265,18 +2406,18 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
                       child: InkWell(
                         onTap: _showStepsSheet,
                         borderRadius: BorderRadius.circular(10),
-                        child: const Padding(
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 7),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.table_chart_rounded,
+                              const Icon(Icons.table_chart_rounded,
                                   size: 14, color: Colors.white),
-                              SizedBox(width: 4),
+                              const SizedBox(width: 4),
                               Text(
-                                'Steps',
-                                style: TextStyle(
+                                tr('Steps', 'الخطوات'),
+                                style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 11.5,
                                   fontWeight: FontWeight.bold,
@@ -2306,7 +2447,10 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
                                   size: 14, color: Colors.white),
                               const SizedBox(width: 4),
                               Text(
-                                'All (${_lastPrimitiveRoots.length})',
+                                tr(
+                                  'All (${_lastPrimitiveRoots.length})',
+                                  'الكل (${_lastPrimitiveRoots.length})',
+                                ),
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 11,
@@ -2327,18 +2471,18 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
                       child: InkWell(
                         onTap: _copyResult,
                         borderRadius: BorderRadius.circular(10),
-                        child: const Padding(
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 7),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.copy_rounded,
+                              const Icon(Icons.copy_rounded,
                                   size: 14, color: Colors.white),
-                              SizedBox(width: 5),
+                              const SizedBox(width: 5),
                               Text(
-                                'Copy',
-                                style: TextStyle(
+                                tr('Copy', 'نسخ'),
+                                style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
@@ -2757,32 +2901,36 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
           },
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 160),
-            padding: const EdgeInsets.symmetric(vertical: 5),
+            padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 4),
             decoration: BoxDecoration(
               color: selected ? primaryColor : Colors.transparent,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  icon,
-                  size: 13,
-                  color:
-                      selected ? Colors.white : AppTheme.textSecondary(context),
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    icon,
+                    size: 13,
                     color: selected
                         ? Colors.white
                         : AppTheme.textSecondary(context),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 4),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: selected
+                          ? Colors.white
+                          : AppTheme.textSecondary(context),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -2798,9 +2946,11 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
       ),
       child: Row(
         children: [
-          chip('Basic', CalcUiMode.basic, Icons.dialpad_rounded),
-          chip('Modular', CalcUiMode.modular, Icons.lock_clock_rounded),
-          chip('Number Theory', CalcUiMode.numberTheory, Icons.hub_rounded),
+          chip(tr('Basic', 'أساسي'), CalcUiMode.basic, Icons.dialpad_rounded),
+          chip(
+              tr('Modular', 'معياري'), CalcUiMode.modular, Icons.lock_clock_rounded),
+          chip(tr('Number Theory', 'نظرية الأعداد'), CalcUiMode.numberTheory,
+              Icons.hub_rounded),
         ],
       ),
     );
@@ -2812,13 +2962,13 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
         return [
           _buildCryptoFunctionKey(
             label: 'xʸ',
-            subtitle: 'Power',
+            subtitle: tr('Power', 'أس'),
             isSelected: _currentOp == MathOp.power,
             onTap: () => _onBinaryOpPressed(MathOp.power),
           ),
           _buildCryptoFunctionKey(
             label: 'MOD',
-            subtitle: 'a mod n',
+            subtitle: tr('a mod n', 'باقي'),
             isSelected: _hasMod && _currentOp != MathOp.modInverse,
             onTap: _onModOperatorPressed,
           ),
@@ -2827,25 +2977,25 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
         return [
           _buildCryptoFunctionKey(
             label: 'xʸ',
-            subtitle: 'Power',
+            subtitle: tr('Power', 'أس'),
             isSelected: _currentOp == MathOp.power,
             onTap: () => _onBinaryOpPressed(MathOp.power),
           ),
           _buildCryptoFunctionKey(
             label: 'MOD',
-            subtitle: 'a mod n',
+            subtitle: tr('a mod n', 'باقي'),
             isSelected: _hasMod && _currentOp != MathOp.modInverse,
             onTap: _onModOperatorPressed,
           ),
           _buildCryptoFunctionKey(
             label: 'e⁻¹',
-            subtitle: 'Inverse',
+            subtitle: tr('Inverse', 'معكوس'),
             isSelected: _currentOp == MathOp.modInverse,
             onTap: _onModInversePressed,
           ),
           _buildCryptoFunctionKey(
             label: 'GCD',
-            subtitle: 'Coprime',
+            subtitle: tr('Coprime', 'ق.م.أ'),
             isSelected: _currentOp == MathOp.gcd,
             onTap: () => _onBinaryOpPressed(MathOp.gcd),
           ),
@@ -2854,19 +3004,19 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
         return [
           _buildCryptoFunctionKey(
             label: 'ROOT',
-            subtitle: 'Prim. α',
+            subtitle: tr('Prim. α', 'جذر α'),
             isSelected: _currentOp == MathOp.primitiveRoot,
             onTap: _onPrimitiveRootPressed,
           ),
           _buildCryptoFunctionKey(
             label: 'PREV P',
-            subtitle: 'Prime < n',
+            subtitle: tr('Prime < n', 'أولي سابق'),
             isSelected: _currentOp == MathOp.prevPrime,
             onTap: () => _onNearbyPrimePressed(MathOp.prevPrime),
           ),
           _buildCryptoFunctionKey(
             label: 'NEXT P',
-            subtitle: 'Prime > n',
+            subtitle: tr('Prime > n', 'أولي تالٍ'),
             isSelected: _currentOp == MathOp.nextPrime,
             onTap: () => _onNearbyPrimePressed(MathOp.nextPrime),
           ),
@@ -2881,129 +3031,135 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
     final Color actionBtnText =
         isDark ? const Color(0xFFE2E8F0) : const Color(0xFF334155);
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-      decoration: BoxDecoration(
-        color: AppTheme.cardBg(context),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.06),
-            blurRadius: 18,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // 1. Mode Strip: Basic | Modular | Number Theory
-          _buildModeSelectorStrip(),
-          const SizedBox(height: 8),
-
-          // 2. Mode-Specific Cryptographic Function Bar
-          SizedBox(
-            height: 48,
-            child: Row(
-              children: _buildModeFunctionKeys(),
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+        decoration: BoxDecoration(
+          color: AppTheme.cardBg(context),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.06),
+              blurRadius: 18,
+              offset: const Offset(0, -4),
             ),
-          ),
-          const SizedBox(height: 8),
-
-          // Main 4x5 Calculator Keypad
-          // Row 1: AC, ⌫, ANS, ÷
-          Expanded(
-            child: Row(
-              children: [
-                _buildKeyButton(
-                  label: 'AC',
-                  subtitle: 'Clear',
-                  bgColor: AppTheme.errorBg(context),
-                  borderColor: AppTheme.errorBorder(context),
-                  textColor: AppTheme.errorText(context),
-                  onTap: _resetFields,
-                ),
-                _buildKeyButton(
-                  label: '⌫',
-                  subtitle: 'Delete',
-                  bgColor: actionBtnBg,
-                  textColor: actionBtnText,
-                  onTap: _onBackspace,
-                ),
-                _buildKeyButton(
-                  label: 'ANS',
-                  subtitle: 'Last',
-                  bgColor: actionBtnBg,
-                  textColor: primaryColor,
-                  onTap: _useAns,
-                ),
-                _buildArithmeticOpKey('÷', MathOp.divide),
-              ],
+          ],
+        ),
+        child: Column(
+          children: [
+            // 1. Mode Strip: Basic | Modular | Number Theory
+            Directionality(
+              textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
+              child: _buildModeSelectorStrip(),
             ),
-          ),
-          const SizedBox(height: 8),
+            const SizedBox(height: 8),
 
-          // Row 2: 7, 8, 9, ×
-          Expanded(
-            child: Row(
-              children: [
-                _buildDigitButton('7'),
-                _buildDigitButton('8'),
-                _buildDigitButton('9'),
-                _buildArithmeticOpKey('×', MathOp.multiply),
-              ],
+            // 2. Mode-Specific Cryptographic Function Bar
+            SizedBox(
+              height: 48,
+              child: Row(
+                children: _buildModeFunctionKeys(),
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
+            const SizedBox(height: 8),
 
-          // Row 3: 4, 5, 6, −
-          Expanded(
-            child: Row(
-              children: [
-                _buildDigitButton('4'),
-                _buildDigitButton('5'),
-                _buildDigitButton('6'),
-                _buildArithmeticOpKey('−', MathOp.subtract),
-              ],
+            // Main 4x5 Calculator Keypad
+            // Row 1: AC, ⌫, ANS, ÷
+            Expanded(
+              child: Row(
+                children: [
+                  _buildKeyButton(
+                    label: 'AC',
+                    subtitle: tr('Clear', 'مسح'),
+                    bgColor: AppTheme.errorBg(context),
+                    borderColor: AppTheme.errorBorder(context),
+                    textColor: AppTheme.errorText(context),
+                    onTap: _resetFields,
+                  ),
+                  _buildKeyButton(
+                    label: '⌫',
+                    subtitle: tr('Delete', 'حذف'),
+                    bgColor: actionBtnBg,
+                    textColor: actionBtnText,
+                    onTap: _onBackspace,
+                  ),
+                  _buildKeyButton(
+                    label: 'ANS',
+                    subtitle: tr('Last', 'السابق'),
+                    bgColor: actionBtnBg,
+                    textColor: primaryColor,
+                    onTap: _useAns,
+                  ),
+                  _buildArithmeticOpKey('÷', MathOp.divide),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
+            const SizedBox(height: 8),
 
-          // Row 4: 1, 2, 3, +
-          Expanded(
-            child: Row(
-              children: [
-                _buildDigitButton('1'),
-                _buildDigitButton('2'),
-                _buildDigitButton('3'),
-                _buildArithmeticOpKey('+', MathOp.add),
-              ],
+            // Row 2: 7, 8, 9, ×
+            Expanded(
+              child: Row(
+                children: [
+                  _buildDigitButton('7'),
+                  _buildDigitButton('8'),
+                  _buildDigitButton('9'),
+                  _buildArithmeticOpKey('×', MathOp.multiply),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
+            const SizedBox(height: 8),
 
-          // Row 5: ±, 0, PASTE, =
-          Expanded(
-            child: Row(
-              children: [
-                _buildKeyButton(
-                  label: '±',
-                  bgColor: actionBtnBg,
-                  textColor: actionBtnText,
-                  onTap: _onToggleSign,
-                ),
-                _buildDigitButton('0'),
-                _buildKeyButton(
-                  label: 'PASTE',
-                  icon: Icons.content_paste_rounded,
-                  bgColor: actionBtnBg,
-                  textColor: actionBtnText,
-                  onTap: _pasteFromClipboard,
-                ),
-                _buildEqualsButton(),
-              ],
+            // Row 3: 4, 5, 6, −
+            Expanded(
+              child: Row(
+                children: [
+                  _buildDigitButton('4'),
+                  _buildDigitButton('5'),
+                  _buildDigitButton('6'),
+                  _buildArithmeticOpKey('−', MathOp.subtract),
+                ],
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+
+            // Row 4: 1, 2, 3, +
+            Expanded(
+              child: Row(
+                children: [
+                  _buildDigitButton('1'),
+                  _buildDigitButton('2'),
+                  _buildDigitButton('3'),
+                  _buildArithmeticOpKey('+', MathOp.add),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+
+            // Row 5: ±, 0, PASTE, =
+            Expanded(
+              child: Row(
+                children: [
+                  _buildKeyButton(
+                    label: '±',
+                    bgColor: actionBtnBg,
+                    textColor: actionBtnText,
+                    onTap: _onToggleSign,
+                  ),
+                  _buildDigitButton('0'),
+                  _buildKeyButton(
+                    label: tr('PASTE', 'لصق'),
+                    icon: Icons.content_paste_rounded,
+                    bgColor: actionBtnBg,
+                    textColor: actionBtnText,
+                    onTap: _pasteFromClipboard,
+                  ),
+                  _buildEqualsButton(),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -3031,6 +3187,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
             onTap: onTap,
             borderRadius: BorderRadius.circular(14),
             child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
@@ -3043,23 +3200,29 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: isSelected ? Colors.white : primaryColor,
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: isSelected ? Colors.white : primaryColor,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 1),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.w600,
-                      color: isSelected
-                          ? Colors.white.withValues(alpha: 0.9)
-                          : primaryColor.withValues(alpha: 0.8),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w600,
+                        color: isSelected
+                            ? Colors.white.withValues(alpha: 0.9)
+                            : primaryColor.withValues(alpha: 0.8),
+                      ),
                     ),
                   ),
                 ],
@@ -3167,6 +3330,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
             borderRadius: BorderRadius.circular(16),
             splashColor: primaryColor.withValues(alpha: 0.15),
             child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
@@ -3181,23 +3345,29 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen>
                     if (icon != null)
                       Icon(icon, size: 17, color: textColor)
                     else
-                      Text(
-                        label,
-                        style: TextStyle(
-                          fontFamily: isLarge ? 'Courier New' : 'Roboto',
-                          fontSize: isLarge ? 24 : 15,
-                          fontWeight: FontWeight.bold,
-                          color: textColor,
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          label,
+                          style: TextStyle(
+                            fontFamily: isLarge ? 'Courier New' : 'Roboto',
+                            fontSize: isLarge ? 24 : 15,
+                            fontWeight: FontWeight.bold,
+                            color: textColor,
+                          ),
                         ),
                       ),
                     if (subtitle != null || icon != null) ...[
                       const SizedBox(height: 1),
-                      Text(
-                        subtitle ?? label,
-                        style: TextStyle(
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.w600,
-                          color: textColor.withValues(alpha: 0.75),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          subtitle ?? label,
+                          style: TextStyle(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w600,
+                            color: textColor.withValues(alpha: 0.75),
+                          ),
                         ),
                       ),
                     ],
