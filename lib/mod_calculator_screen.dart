@@ -121,7 +121,8 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
           return;
         }
 
-        final BigInt g = a.abs().gcd(n.abs());
+        final BigInt normA = ((a % n) + n) % n;
+        final BigInt g = normA.gcd(n.abs());
         if (g != BigInt.one) {
           setState(() {
             _isError = true;
@@ -130,7 +131,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
           return;
         }
 
-        final BigInt inv = a.modInverse(n);
+        final BigInt inv = normA.modInverse(n);
         final String resStr = inv.toString();
 
         setState(() {
@@ -143,19 +144,25 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
           }
         });
       } catch (_) {
-        if (commitToHistory) {
-          setState(() {
+        setState(() {
+          if (commitToHistory) {
             _isError = true;
             result = 'Invalid input!';
-          });
-        }
+          } else {
+            _isError = false;
+            result = '';
+            _helperNote = '';
+          }
+        });
       }
       return;
     }
 
     // 2. Smart Primitive Root (α):
+    // - 1st slot (baseController) = Prime modulus q
+    // - 2nd slot (exponentController) = Optional candidate root α to verify against q
     // - If 1 number (q) is entered: Finds the smallest primitive root of prime q & lists all roots!
-    // - If 2 numbers (α, q) are entered: Checks if α is a primitive root of prime q!
+    // - If 2 numbers (q, α) are entered: Checks if α is a primitive root of prime q!
     if (_currentOp == MathOp.primitiveRoot) {
       final bool hasFirst =
           baseController.text.isNotEmpty && baseController.text != '-';
@@ -166,7 +173,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
         if (commitToHistory) {
           setState(() {
             _isError = true;
-            result = 'Enter a prime q (or α and q)';
+            result = 'Enter a prime q (and optional α)';
           });
         } else {
           setState(() {
@@ -179,20 +186,22 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
       }
 
       try {
-        // Subcase 2A: Only 1 number entered -> Find primitive roots of prime q
+        // Subcase 2A: Only 1st number (q) entered -> Find primitive roots of prime q
         if (hasFirst && !hasSecond) {
           final BigInt q = BigInt.parse(baseController.text);
           _evaluateFindPrimitiveRoots(q, commitToHistory: commitToHistory);
           return;
         } else if (!hasFirst && hasSecond) {
-          final BigInt q = BigInt.parse(exponentController.text);
-          _evaluateFindPrimitiveRoots(q, commitToHistory: commitToHistory);
+          setState(() {
+            _isError = true;
+            result = 'Enter prime modulus q in the 1st box';
+          });
           return;
         }
 
-        // Subcase 2B: Both numbers entered (α and q) -> Check if α is a primitive root of q
-        final BigInt alpha = BigInt.parse(baseController.text);
-        final BigInt q = BigInt.parse(exponentController.text);
+        // Subcase 2B: Both numbers entered (1st = q, 2nd = α) -> Check if α is a primitive root of q
+        final BigInt q = BigInt.parse(baseController.text);
+        final BigInt alpha = BigInt.parse(exponentController.text);
 
         if (q <= BigInt.one) {
           setState(() {
@@ -206,7 +215,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
         if (isPrimeQ == false) {
           setState(() {
             _isError = true;
-            result = '$q is NOT Prime';
+            result = 'q = $q is NOT Prime';
             _helperNote = 'Primitive roots in DH/El-Gamal require a prime q';
           });
           return;
@@ -222,7 +231,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
         if (alpha <= BigInt.zero || alpha >= q) {
           setState(() {
             _isError = true;
-            result = 'α must be between 1 and ${q - BigInt.one}';
+            result = 'α must be between 1 and ${q - BigInt.one} (q−1)';
           });
           return;
         }
@@ -237,7 +246,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
         }
 
         final bool isRoot = _isPrimitiveRootFast(alpha, q, factors);
-        final List<BigInt> roots = _findPrimitiveRoots(q, factors, maxCount: 40);
+        final List<BigInt> roots = _findPrimitiveRoots(q, factors, maxCount: 50);
         _lastPrimitiveRoots = roots;
         _lastRootPrime = q;
 
@@ -249,20 +258,24 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
           _isError = false;
           result = resStr;
           _helperNote = isRoot
-              ? '✓ $alpha is a Primitive Root of $q  •  Roots: $rootsPreview'
-              : '✗ Not a root of $q  •  Valid roots: $rootsPreview';
+              ? '✓ α = $alpha is a Primitive Root of q = $q  •  Roots: [$rootsPreview]'
+              : '✗ α = $alpha is NOT a root of q = $q  •  Valid roots: [$rootsPreview]';
           if (commitToHistory) {
             _justCalculated = true;
-            _recordHistory('isRoot($alpha, $q)', resStr, _helperNote);
+            _recordHistory('isRoot(q=$q, α=$alpha)', resStr, _helperNote);
           }
         });
       } catch (_) {
-        if (commitToHistory) {
-          setState(() {
+        setState(() {
+          if (commitToHistory) {
             _isError = true;
             result = 'Invalid input!';
-          });
-        }
+          } else {
+            _isError = false;
+            result = '';
+            _helperNote = '';
+          }
+        });
       }
       return;
     }
@@ -339,11 +352,44 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
           case CalcMode.modPow:
             BigInt exponent = BigInt.parse(exponentController.text);
             BigInt mod = BigInt.parse(modController.text);
-            finalResult = base.modPow(exponent, mod);
+            if (mod <= BigInt.zero) {
+              setState(() {
+                _isError = true;
+                result = 'Modulus n must be > 0';
+              });
+              return;
+            }
+            if (exponent < BigInt.zero) {
+              if (mod == BigInt.one) {
+                finalResult = BigInt.zero;
+              } else {
+                final BigInt normBase = ((base % mod) + mod) % mod;
+                final BigInt g = normBase.gcd(mod);
+                if (g != BigInt.one) {
+                  setState(() {
+                    _isError = true;
+                    result = 'No inverse for negative exponent (gcd = $g ≠ 1)';
+                  });
+                  return;
+                }
+                final BigInt inv = normBase.modInverse(mod);
+                finalResult = inv.modPow(-exponent, mod);
+              }
+            } else {
+              final BigInt normBase = ((base % mod) + mod) % mod;
+              finalResult = normBase.modPow(exponent, mod);
+            }
             _helperNote = _buildModInsight(base, mod);
             break;
           case CalcMode.powerOnly:
             int exponent = int.parse(exponentController.text);
+            if (exponent < 0) {
+              setState(() {
+                _isError = true;
+                result = 'Tap MOD for negative exponents (a⁻ᵇ mod n)';
+              });
+              return;
+            }
             if (!commitToHistory && exponent > 1000) {
               return;
             }
@@ -352,7 +398,14 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
             break;
           case CalcMode.modOnly:
             BigInt mod = BigInt.parse(modController.text);
-            finalResult = base % mod;
+            if (mod <= BigInt.zero) {
+              setState(() {
+                _isError = true;
+                result = 'Modulus n must be > 0';
+              });
+              return;
+            }
+            finalResult = ((base % mod) + mod) % mod;
             _helperNote = _buildModInsight(base, mod);
             break;
         }
@@ -367,12 +420,16 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
           }
         });
       } catch (e) {
-        if (commitToHistory) {
-          setState(() {
+        setState(() {
+          if (commitToHistory) {
             _isError = true;
             result = "Invalid input!";
-          });
-        }
+          } else {
+            _isError = false;
+            result = '';
+            _helperNote = '';
+          }
+        });
       }
       return;
     }
@@ -437,7 +494,14 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
 
       if (_hasMod) {
         final BigInt mod = BigInt.parse(modController.text);
-        finalResult = finalResult % mod;
+        if (mod <= BigInt.zero) {
+          setState(() {
+            _isError = true;
+            result = 'Modulus n must be > 0';
+          });
+          return;
+        }
+        finalResult = ((finalResult % mod) + mod) % mod;
         _helperNote = _buildModInsight(finalResult, mod);
       }
 
@@ -451,12 +515,16 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
         }
       });
     } catch (e) {
-      if (commitToHistory) {
-        setState(() {
+      setState(() {
+        if (commitToHistory) {
           _isError = true;
           result = "Invalid input!";
-        });
-      }
+        } else {
+          _isError = false;
+          result = '';
+          _helperNote = '';
+        }
+      });
     }
   }
 
@@ -663,7 +731,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
       case MathOp.primitiveRoot:
         core = exponentController.text.isEmpty
             ? 'root($a)'
-            : 'isRoot($a, $b)';
+            : 'isRoot(q=$a, α=$b)';
         break;
       case MathOp.modInverse:
         core = '$a⁻¹';
@@ -753,7 +821,12 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
   void _onPrimitiveRootPressed() {
     HapticFeedback.lightImpact();
     setState(() {
-      if (_justCalculated && result.isNotEmpty && !_isError && !result.startsWith('YES') && !result.startsWith('NO')) {
+      if (_currentOp != MathOp.primitiveRoot &&
+          _justCalculated &&
+          result.isNotEmpty &&
+          !_isError &&
+          !result.startsWith('YES') &&
+          !result.startsWith('NO')) {
         baseController.text = result;
         exponentController.clear();
         modController.clear();
@@ -763,8 +836,8 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
       _currentOp = MathOp.primitiveRoot;
       _hasMod = false;
       modController.clear();
-      // If user already typed a number (e.g. 23), evaluate root(23) immediately
-      // and also allow typing a 2nd number if they want to check isRoot(a, q)!
+      // 1st slot (baseController) = prime q
+      // 2nd slot (exponentController) = optional candidate α to verify against q
       if (baseController.text.isNotEmpty) {
         _activePart = 1;
       } else {
@@ -790,12 +863,10 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
       }
       if (_currentOp == MathOp.primitiveRoot) {
         _currentOp = MathOp.none;
+        exponentController.clear();
       }
       if (baseController.text.isEmpty) {
         baseController.text = '0';
-      }
-      if (_hasSecondOperand && exponentController.text.isEmpty) {
-        exponentController.text = '1';
       }
       _hasMod = true;
       _activePart = 2;
@@ -1053,7 +1124,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
       case MathOp.primitiveRoot:
         return exponentController.text.isEmpty
             ? 'Find Primitive Roots • root(q)'
-            : 'Verify Primitive Root • isRoot(α, q)';
+            : 'Verify Primitive Root • isRoot(q, α)';
       case MathOp.add:
         return _hasMod ? 'Modular Addition • (a + b) mod n' : 'Addition • a + b';
       case MathOp.subtract:
@@ -1652,10 +1723,8 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
       );
     } else if (_currentOp == MathOp.primitiveRoot) {
       // Smart display:
-      // 1st slot = q (or α if 2nd slot used), 2nd optional slot = q when verifying isRoot(α, q)
+      // 1st slot = Prime modulus q, 2nd optional slot = Candidate root α when verifying isRoot(q, α)
       final bool isVerifying = exponentController.text.isNotEmpty;
-      final String firstPlaceholder = isVerifying ? 'α' : 'q';
-      final String secondPlaceholder = isVerifying ? 'q' : 'q?';
 
       coreWidget = Row(
         mainAxisSize: MainAxisSize.min,
@@ -1671,14 +1740,14 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
           ),
           buildToken(
             text: baseController.text.isEmpty
-                ? firstPlaceholder
-                : baseController.text,
+                ? 'q?'
+                : 'q=${baseController.text}',
             isEmpty: baseController.text.isEmpty,
             isActive: isBaseActive,
             onTap: () => setState(() => _activePart = 0),
-            fontSize: 25,
+            fontSize: 24,
           ),
-          if (isSecondActive || isVerifying) ...[
+          if (isSecondActive || isVerifying || baseController.text.isNotEmpty) ...[
             Text(
               ', ',
               style: TextStyle(
@@ -1690,12 +1759,12 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
             ),
             buildToken(
               text: exponentController.text.isEmpty
-                  ? secondPlaceholder
-                  : exponentController.text,
+                  ? 'α?'
+                  : 'α=${exponentController.text}',
               isEmpty: exponentController.text.isEmpty,
               isActive: isSecondActive,
               onTap: () => setState(() => _activePart = 1),
-              fontSize: 25,
+              fontSize: 24,
             ),
           ],
           Text(
