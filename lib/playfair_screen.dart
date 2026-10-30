@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'app_theme.dart';
 
 enum PlayfairMode { encrypt, decrypt }
 
@@ -50,7 +51,7 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
   int? _selectedStepIndex;
 
   // Matches the Substitution section theme color (Caesar & Vigenère)
-  final Color primaryColor = Colors.deepPurple.shade600;
+  Color get primaryColor => AppTheme.purpleAccent(context);
 
   @override
   void initState() {
@@ -272,7 +273,7 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppTheme.scaffoldBg(context),
       appBar: AppBar(
         title: Wrap(
           alignment: WrapAlignment.center,
@@ -287,7 +288,7 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
           ],
         ),
         centerTitle: true,
-        backgroundColor: primaryColor,
+        backgroundColor: AppTheme.purpleAppBar(context),
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -324,9 +325,9 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.cardBg(context),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: AppTheme.borderSubtle(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -343,7 +344,7 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
             child: TextField(
               controller: messageController,
               onChanged: (_) => _processCipher(),
-              style: const TextStyle(fontSize: 14),
+              style: TextStyle(fontSize: 14, color: AppTheme.textPrimary(context)),
               decoration: InputDecoration(
                 labelText: 'Message',
                 hintText: 'e.g., INSTRUMENTS',
@@ -374,7 +375,7 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
                   child: TextField(
                     controller: keywordController,
                     onChanged: (_) => _processCipher(),
-                    style: const TextStyle(fontSize: 14),
+                    style: TextStyle(fontSize: 14, color: AppTheme.textPrimary(context)),
                     decoration: InputDecoration(
                       labelText: 'Keyword',
                       hintText: 'e.g., MONARCHY',
@@ -401,9 +402,9 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
                   height: 44,
                   padding: const EdgeInsets.all(3),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF1F5F9),
+                    color: AppTheme.pillBg(context),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.grey.shade300),
+                    border: Border.all(color: AppTheme.borderMedium(context)),
                   ),
                   child: Row(
                     children: [
@@ -434,7 +435,7 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
           duration: const Duration(milliseconds: 160),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: isSelected ? primaryColor : Colors.transparent,
+            color: isSelected ? Colors.deepPurple.shade600 : Colors.transparent,
             borderRadius: BorderRadius.circular(7),
           ),
           child: Text(
@@ -442,7 +443,7 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
-              color: isSelected ? Colors.white : Colors.blueGrey.shade700,
+              color: isSelected ? Colors.white : AppTheme.textSecondary(context),
             ),
           ),
         ),
@@ -459,7 +460,7 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.cardBg(context),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: primaryColor.withValues(alpha: 0.25)),
         boxShadow: [
@@ -527,9 +528,9 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
                                   (activeStep.outR2 == r &&
                                       activeStep.outC2 == c));
 
-                          Color bgColor = const Color(0xFFF8FAFC);
-                          Color borderColor = Colors.grey.shade300;
-                          Color textColor = Colors.blueGrey.shade900;
+                          Color bgColor = AppTheme.surfaceSubtle(context);
+                          Color borderColor = AppTheme.borderMedium(context);
+                          Color textColor = AppTheme.textPrimary(context);
 
                           if (isOutputCell) {
                             bgColor = Colors.teal.shade600;
@@ -540,7 +541,7 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
                             borderColor = Colors.amber.shade800;
                             textColor = Colors.white;
                           } else if (isFromKeyword) {
-                            bgColor = primaryColor.withValues(alpha: 0.12);
+                            bgColor = primaryColor.withValues(alpha: 0.14);
                             borderColor = primaryColor.withValues(alpha: 0.45);
                             textColor = primaryColor;
                           }
@@ -587,9 +588,9 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
                       ? Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF8FAFC),
+                            color: AppTheme.surfaceSubtle(context),
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: Colors.grey.shade200),
+                            border: Border.all(color: AppTheme.borderSubtle(context)),
                           ),
                           child: Center(
                             child: Text(
@@ -597,7 +598,7 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 11.5,
-                                color: Colors.grey.shade500,
+                                color: AppTheme.textMuted(context),
                               ),
                             ),
                           ),
@@ -611,10 +612,10 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 8, vertical: 6),
                                 decoration: BoxDecoration(
-                                  color: Colors.amber.shade50,
+                                  color: AppTheme.warningBg(context),
                                   borderRadius: BorderRadius.circular(8),
                                   border:
-                                      Border.all(color: Colors.amber.shade300),
+                                      Border.all(color: AppTheme.warningBorder(context)),
                                 ),
                                 child: Column(
                                   children: [
@@ -624,7 +625,7 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
                                         fontFamily: 'Courier New',
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.amber.shade900,
+                                        color: AppTheme.warningText(context),
                                       ),
                                     ),
                                     Text(
@@ -633,7 +634,7 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
                                       style: TextStyle(
                                         fontSize: 10,
                                         fontWeight: FontWeight.w600,
-                                        color: Colors.amber.shade900,
+                                        color: AppTheme.warningText(context),
                                       ),
                                     ),
                                   ],
@@ -645,7 +646,7 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.blueGrey.shade600,
+                                color: AppTheme.textSecondary(context),
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -671,16 +672,16 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
                                             horizontal: 7, vertical: 4),
                                         decoration: BoxDecoration(
                                           color: isSelected
-                                              ? primaryColor
+                                              ? Colors.deepPurple.shade600
                                               : primaryColor.withValues(
-                                                  alpha: 0.07),
+                                                  alpha: 0.1),
                                           borderRadius:
                                               BorderRadius.circular(7),
                                           border: Border.all(
                                             color: isSelected
                                                 ? primaryColor
                                                 : primaryColor.withValues(
-                                                    alpha: 0.25),
+                                                    alpha: 0.3),
                                           ),
                                         ),
                                         child: Text(
@@ -730,7 +731,7 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
           style: TextStyle(
             fontSize: 10.5,
             fontWeight: FontWeight.w600,
-            color: Colors.blueGrey.shade800,
+            color: AppTheme.textSecondary(context),
           ),
         ),
       ],
@@ -739,16 +740,17 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
 
   Widget _buildResultCard() {
     final String pairedResult = _steps.map((s) => s.outputPair).join(' ');
+    final Color cardBg = Colors.deepPurple.shade600;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       decoration: BoxDecoration(
-        color: primaryColor,
+        color: cardBg,
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: primaryColor.withValues(alpha: 0.28),
+            color: cardBg.withValues(alpha: 0.28),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

@@ -1,5 +1,6 @@
 import 'package:crypto_calc/about_me.dart';
 import 'package:flutter/material.dart';
+import 'app_theme.dart';
 import 'caesar_screen.dart';
 import 'diffie_hellman_screen.dart';
 import 'inverse_calc_screen.dart';
@@ -29,15 +30,18 @@ class CryptographyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Crypto Toolkit',
-      theme: ThemeData(
-        primaryColor: const Color(0xFF1E3A8A),
-        scaffoldBackgroundColor: const Color(0xFFF8FAFC),
-        fontFamily: 'Roboto',
-      ),
-      home: const DashboardScreen(),
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: appThemeNotifier,
+      builder: (context, currentMode, _) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'Crypto Toolkit',
+          theme: AppTheme.lightTheme(),
+          darkTheme: AppTheme.darkTheme(),
+          themeMode: currentMode,
+          home: const DashboardScreen(),
+        );
+      },
     );
   }
 }
@@ -52,10 +56,15 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   WorkbenchFilter _selectedFilter = WorkbenchFilter.all;
 
-  final Color _brandNavy = const Color(0xFF1E3A8A);
-
   @override
   Widget build(BuildContext context) {
+    final bool isDark = AppTheme.isDark(context);
+    final Color brandAccent = AppTheme.navyAccent(context);
+    final Color tealColor = AppTheme.tealAccent(context);
+    final Color orangeColor = AppTheme.orangeAccent(context);
+    final Color purpleColor = AppTheme.purpleAccent(context);
+    final Color transColor = AppTheme.transpositionAccent(context);
+
     final bool showMath = _selectedFilter == WorkbenchFilter.all ||
         _selectedFilter == WorkbenchFilter.math;
     final bool showSubstitution = _selectedFilter == WorkbenchFilter.all ||
@@ -67,6 +76,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _selectedFilter == WorkbenchFilter.asymmetric;
 
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg(context),
       appBar: AppBar(
         title: Row(
           mainAxisSize: MainAxisSize.min,
@@ -80,10 +90,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
         centerTitle: true,
-        backgroundColor: _brandNavy,
+        backgroundColor: AppTheme.navyAppBar(context),
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
+          // Dark / Light Mode Toggle Button (left of About Me button)
+          IconButton(
+            tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+            onPressed: toggleAppTheme,
+            icon: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 220),
+              transitionBuilder: (child, anim) =>
+                  RotationTransition(turns: anim, child: child),
+              child: Icon(
+                isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                key: ValueKey<bool>(isDark),
+                color: isDark ? const Color(0xFFFBBF24) : Colors.white,
+              ),
+            ),
+          ),
+          // About Developer Button
           IconButton(
             tooltip: 'About Developer',
             icon: const Icon(Icons.person_pin_rounded),
@@ -102,13 +128,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 1. COMPACT WORKBENCH HERO HEADER + FILTER RIBBON
-              _buildWorkbenchHeroHeader(),
+              _buildWorkbenchHeroHeader(
+                context,
+                brandAccent: brandAccent,
+                tealColor: tealColor,
+                purpleColor: purpleColor,
+                transColor: transColor,
+              ),
 
               const SizedBox(height: 14),
 
               // 2. MATHEMATICAL TOOLS SECTION
               if (showMath) ...[
                 _buildSectionTitle(
+                  context,
                   title: "Mathematical Tools",
                   icon: Icons.calculate_outlined,
                   countLabel: "2 Tools",
@@ -119,7 +152,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   formulaBadge: "a⁻¹ mod n",
                   subtitle: "Find Modular Inverse & GCD step-by-step",
                   icon: Icons.view_comfortable_rounded,
-                  color: Colors.teal.shade700,
+                  color: tealColor,
                   destination: const InverseCalcScreen(),
                 ),
                 _buildMenuCard(
@@ -128,7 +161,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   formulaBadge: "a^b mod n",
                   subtitle: "Fast modular power, inverse & primitive roots",
                   icon: Icons.speed_rounded,
-                  color: Colors.orange.shade800,
+                  color: orangeColor,
                   destination: const ModCalculatorScreen(),
                 ),
                 const SizedBox(height: 8),
@@ -137,6 +170,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               // 3. SYMMETRIC CIPHERS SECTION (SUBSTITUTION + TRANSPOSITION)
               if (showSymmetricHeader) ...[
                 _buildSectionTitle(
+                  context,
                   title: "Symmetric Ciphers",
                   icon: Icons.vpn_key_rounded,
                   countLabel: showSubstitution && showTransposition
@@ -145,10 +179,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
                 if (showSubstitution)
                   _buildSubSectionGroup(
+                    context,
                     title: "Substitution",
                     subtitle: "Replace characters or digraphs using a key",
                     icon: Icons.find_replace_rounded,
-                    color: Colors.deepPurple.shade600,
+                    color: purpleColor,
                     children: [
                       _buildMenuCard(
                         context,
@@ -157,7 +192,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         formulaBadge: "(P + K) mod 26",
                         subtitle: "Classic monoalphabetic shift cipher",
                         icon: Icons.text_fields_rounded,
-                        color: Colors.deepPurple.shade600,
+                        color: purpleColor,
                         destination: const CaesarScreen(),
                       ),
                       _buildMenuCard(
@@ -167,7 +202,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         formulaBadge: "(Pᵢ + Kᵢ) mod 26",
                         subtitle: "Polyalphabetic keyword shift method",
                         icon: Icons.lock_open_rounded,
-                        color: Colors.deepPurple.shade600,
+                        color: purpleColor,
                         destination: const VigenereScreen(),
                       ),
                       _buildMenuCard(
@@ -178,7 +213,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         formulaBadge: "5×5 Matrix",
                         subtitle: "Digraph substitution on a 5×5 key grid",
                         icon: Icons.grid_on_rounded,
-                        color: Colors.deepPurple.shade600,
+                        color: purpleColor,
                         destination: const PlayfairScreen(),
                       ),
                     ],
@@ -187,10 +222,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   const SizedBox(height: 12),
                 if (showTransposition)
                   _buildSubSectionGroup(
+                    context,
                     title: "Transposition",
-                    subtitle: "Rearrange character positions via geometric paths",
+                    subtitle:
+                        "Rearrange character positions via geometric paths",
                     icon: Icons.swap_calls_rounded,
-                    color: Colors.blueGrey.shade800,
+                    color: transColor,
                     children: [
                       _buildMenuCard(
                         context,
@@ -199,7 +236,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         formulaBadge: "Zigzag Rails",
                         subtitle: "Diagonal wave transposition across rails",
                         icon: Icons.fence_rounded,
-                        color: Colors.blueGrey.shade800,
+                        color: transColor,
                         destination: const RailFenceScreen(),
                       ),
                       _buildMenuCard(
@@ -209,7 +246,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         formulaBadge: "Keyed Columns",
                         subtitle: "Columnar readout ordered by numeric key",
                         icon: Icons.view_column_rounded,
-                        color: Colors.blueGrey.shade800,
+                        color: transColor,
                         destination: const RowTranspositionScreen(),
                       ),
                       _buildMenuCard(
@@ -220,7 +257,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         formulaBadge: "Spiral & Snake",
                         subtitle: "Spiral ↻ and snake ⇅ grid path traversal",
                         icon: Icons.route_rounded,
-                        color: Colors.blueGrey.shade800,
+                        color: transColor,
                         destination: const RouteCipherScreen(),
                       ),
                     ],
@@ -231,6 +268,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               // 4. ASYMMETRIC ENCRYPTION SECTION
               if (showAsymmetric) ...[
                 _buildSectionTitle(
+                  context,
                   title: "Asymmetric Encryption",
                   icon: Icons.security_rounded,
                   countLabel: "3 Protocols",
@@ -241,7 +279,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   formulaBadge: "C = M^e mod n",
                   subtitle: "Prime key generation, encryption & decryption",
                   icon: Icons.key_rounded,
-                  color: _brandNavy,
+                  color: brandAccent,
                   destination: const RsaScreen(),
                 ),
                 _buildMenuCard(
@@ -250,16 +288,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   formulaBadge: "K = Y^X mod q",
                   subtitle: "Visual public-channel key exchange crossover",
                   icon: Icons.swap_horizontal_circle_rounded,
-                  color: _brandNavy,
+                  color: brandAccent,
                   destination: const DiffieHellmanScreen(),
                 ),
                 _buildMenuCard(
                   context,
                   title: "El-Gamal Cipher",
                   formulaBadge: "(C₁, C₂) Pair",
-                  subtitle: "Probabilistic public-key encryption & discrete logs",
+                  subtitle:
+                      "Probabilistic public-key encryption & discrete logs",
                   icon: Icons.shield_outlined,
-                  color: _brandNavy,
+                  color: brandAccent,
                   destination: const ElGamalScreen(),
                 ),
               ],
@@ -270,20 +309,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildWorkbenchHeroHeader() {
+  Widget _buildWorkbenchHeroHeader(
+    BuildContext context, {
+    required Color brandAccent,
+    required Color tealColor,
+    required Color purpleColor,
+    required Color transColor,
+  }) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.cardBg(context),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: _brandNavy.withValues(alpha: 0.15),
+          color: brandAccent.withValues(alpha: 0.22),
           width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: _brandNavy.withValues(alpha: 0.05),
+            color: brandAccent.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -297,10 +342,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Container(
                 padding: const EdgeInsets.all(9),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
+                  gradient: const LinearGradient(
                     colors: [
-                      _brandNavy,
-                      const Color(0xFF2563EB),
+                      Color(0xFF1E3A8A),
+                      Color(0xFF2563EB),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -323,7 +368,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       style: TextStyle(
                         fontSize: 19,
                         fontWeight: FontWeight.bold,
-                        color: _brandNavy,
+                        color: brandAccent,
                         letterSpacing: 0.2,
                       ),
                     ),
@@ -332,7 +377,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       "Select a tool or filter by category below",
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.blueGrey.shade600,
+                        color: AppTheme.textSecondary(context),
                       ),
                     ),
                   ],
@@ -341,7 +386,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                 decoration: BoxDecoration(
-                  color: _brandNavy.withValues(alpha: 0.08),
+                  color: brandAccent.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -349,7 +394,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
-                    color: _brandNavy,
+                    color: brandAccent,
                   ),
                 ),
               ),
@@ -361,37 +406,42 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Row(
               children: [
                 _buildFilterChip(
+                  context,
                   label: "All",
                   filter: WorkbenchFilter.all,
-                  activeColor: _brandNavy,
+                  activeColor: brandAccent,
                   icon: Icons.apps_rounded,
                 ),
                 const SizedBox(width: 6),
                 _buildFilterChip(
+                  context,
                   label: "Math",
                   filter: WorkbenchFilter.math,
-                  activeColor: Colors.teal.shade700,
+                  activeColor: tealColor,
                   icon: Icons.functions_rounded,
                 ),
                 const SizedBox(width: 6),
                 _buildFilterChip(
+                  context,
                   label: "Substitution",
                   filter: WorkbenchFilter.substitution,
-                  activeColor: Colors.deepPurple.shade600,
+                  activeColor: purpleColor,
                   icon: Icons.find_replace_rounded,
                 ),
                 const SizedBox(width: 6),
                 _buildFilterChip(
+                  context,
                   label: "Transposition",
                   filter: WorkbenchFilter.transposition,
-                  activeColor: Colors.blueGrey.shade800,
+                  activeColor: transColor,
                   icon: Icons.route_rounded,
                 ),
                 const SizedBox(width: 6),
                 _buildFilterChip(
+                  context,
                   label: "Asymmetric",
                   filter: WorkbenchFilter.asymmetric,
-                  activeColor: _brandNavy,
+                  activeColor: brandAccent,
                   icon: Icons.security_rounded,
                 ),
               ],
@@ -402,15 +452,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildFilterChip({
+  Widget _buildFilterChip(
+    BuildContext context, {
     required String label,
     required WorkbenchFilter filter,
     required Color activeColor,
     required IconData icon,
   }) {
     final bool isSelected = _selectedFilter == filter;
+    final bool isDark = AppTheme.isDark(context);
+    final Color chipFill = isSelected
+        ? activeColor
+        : (isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9));
+    final Color activeTextColor =
+        isDark && activeColor.computeLuminance() > 0.45
+            ? const Color(0xFF0F172A)
+            : Colors.white;
+
     return Material(
-      color: isSelected ? activeColor : const Color(0xFFF1F5F9),
+      color: chipFill,
       borderRadius: BorderRadius.circular(20),
       child: InkWell(
         onTap: () => setState(() => _selectedFilter = filter),
@@ -422,7 +482,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             border: Border.all(
               color: isSelected
                   ? activeColor
-                  : Colors.blueGrey.withValues(alpha: 0.2),
+                  : AppTheme.borderSubtle(context),
             ),
           ),
           child: Row(
@@ -431,7 +491,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Icon(
                 icon,
                 size: 13,
-                color: isSelected ? Colors.white : Colors.blueGrey.shade700,
+                color: isSelected
+                    ? activeTextColor
+                    : AppTheme.textSecondary(context),
               ),
               const SizedBox(width: 5),
               Text(
@@ -439,7 +501,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 style: TextStyle(
                   fontSize: 11.5,
                   fontWeight: FontWeight.bold,
-                  color: isSelected ? Colors.white : Colors.blueGrey.shade800,
+                  color: isSelected
+                      ? activeTextColor
+                      : AppTheme.textPrimary(context),
                 ),
               ),
             ],
@@ -449,11 +513,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildSectionTitle({
+  Widget _buildSectionTitle(
+    BuildContext context, {
     required String title,
     required IconData icon,
     required String countLabel,
   }) {
+    final bool isDark = AppTheme.isDark(context);
+    final Color bannerStart =
+        isDark ? const Color(0xFF1E3A8A) : const Color(0xFF1E3A8A);
+    final Color bannerEnd = isDark
+        ? const Color(0xFF1E293B)
+        : const Color(0xFF1E3A8A).withValues(alpha: 0.08);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -461,9 +533,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            _brandNavy,
-            _brandNavy.withValues(alpha: 0.85),
-            _brandNavy.withValues(alpha: 0.08),
+            bannerStart,
+            bannerStart.withValues(alpha: 0.85),
+            bannerEnd,
           ],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
@@ -488,7 +560,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.9),
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.14)
+                  : Colors.white.withValues(alpha: 0.9),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
@@ -496,7 +570,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               style: TextStyle(
                 fontSize: 10.5,
                 fontWeight: FontWeight.bold,
-                color: _brandNavy,
+                color: isDark ? Colors.white : const Color(0xFF1E3A8A),
               ),
             ),
           ),
@@ -505,21 +579,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildSubSectionGroup({
+  Widget _buildSubSectionGroup(
+    BuildContext context, {
     required String title,
     required String subtitle,
     required IconData icon,
     required Color color,
     required List<Widget> children,
   }) {
+    final bool isDark = AppTheme.isDark(context);
     return Container(
       margin: const EdgeInsets.only(left: 4),
       padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.035),
+        color: color.withValues(alpha: isDark ? 0.06 : 0.035),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: color.withValues(alpha: 0.22),
+          color: color.withValues(alpha: isDark ? 0.3 : 0.22),
           width: 1.2,
         ),
       ),
@@ -540,7 +616,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Container(
                 padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.12),
+                  color: color.withValues(alpha: 0.14),
                   borderRadius: BorderRadius.circular(7),
                 ),
                 child: Icon(icon, size: 14, color: color),
@@ -563,7 +639,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       subtitle,
                       style: TextStyle(
                         fontSize: 10.5,
-                        color: Colors.blueGrey.shade600,
+                        color: AppTheme.textSecondary(context),
                       ),
                     ),
                   ],
@@ -572,7 +648,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
+                  color: color.withValues(alpha: 0.14),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
@@ -604,20 +680,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
     bool isSubItem = false,
     bool isLastInGroup = false,
   }) {
+    final bool isDark = AppTheme.isDark(context);
     return Container(
       margin: EdgeInsets.only(
         bottom: isSubItem ? (isLastInGroup ? 0 : 8) : 10,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.cardBg(context),
         borderRadius: BorderRadius.circular(13),
         border: Border.all(
-          color: color.withValues(alpha: 0.2),
+          color: color.withValues(alpha: isDark ? 0.32 : 0.2),
           width: 1.1,
         ),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.05),
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.25)
+                : color.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -628,8 +707,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         borderRadius: BorderRadius.circular(13),
         child: InkWell(
           borderRadius: BorderRadius.circular(13),
-          splashColor: color.withValues(alpha: 0.1),
-          highlightColor: color.withValues(alpha: 0.05),
+          splashColor: color.withValues(alpha: 0.12),
+          highlightColor: color.withValues(alpha: 0.06),
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => destination),
@@ -644,15 +723,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        color.withValues(alpha: 0.16),
-                        color.withValues(alpha: 0.06),
+                        color.withValues(alpha: isDark ? 0.22 : 0.16),
+                        color.withValues(alpha: isDark ? 0.08 : 0.06),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(11),
                     border: Border.all(
-                      color: color.withValues(alpha: 0.22),
+                      color: color.withValues(alpha: isDark ? 0.35 : 0.22),
                     ),
                   ),
                   child: Icon(icon, color: color, size: 24),
@@ -670,10 +749,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             child: Text(
                               title,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 15,
-                                color: Color(0xFF0F172A),
+                                color: AppTheme.textPrimary(context),
                               ),
                             ),
                           ),
@@ -684,10 +763,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: color.withValues(alpha: 0.1),
+                              color:
+                                  color.withValues(alpha: isDark ? 0.16 : 0.1),
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
-                                color: color.withValues(alpha: 0.25),
+                                color: color.withValues(
+                                    alpha: isDark ? 0.4 : 0.25),
                               ),
                             ),
                             child: Text(
@@ -707,7 +788,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         subtitle,
                         style: TextStyle(
                           fontSize: 11.5,
-                          color: Colors.blueGrey.shade600,
+                          color: AppTheme.textSecondary(context),
                         ),
                       ),
                     ],
@@ -719,7 +800,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.08),
+                    color: color.withValues(alpha: isDark ? 0.14 : 0.08),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(

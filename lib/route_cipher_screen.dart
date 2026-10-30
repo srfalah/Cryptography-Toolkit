@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'app_theme.dart';
 
 enum RouteCipherMode { encrypt, decrypt }
 
@@ -44,7 +45,7 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
   int? _highlightedStep; // 1-based step number
 
   // Matches the Transposition subsection theme color (Rail-Fence & Row Transposition)
-  final Color primaryColor = Colors.blueGrey.shade800;
+  Color get primaryColor => AppTheme.transpositionAccent(context);
 
   @override
   void initState() {
@@ -285,7 +286,7 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppTheme.scaffoldBg(context),
       appBar: AppBar(
         title: Wrap(
           alignment: WrapAlignment.center,
@@ -300,7 +301,7 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
           ],
         ),
         centerTitle: true,
-        backgroundColor: primaryColor,
+        backgroundColor: AppTheme.transpositionAppBar(context),
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -337,9 +338,9 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.cardBg(context),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: AppTheme.borderSubtle(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -356,7 +357,7 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
             child: TextField(
               controller: messageController,
               onChanged: (_) => _processCipher(),
-              style: const TextStyle(fontSize: 14),
+              style: TextStyle(fontSize: 14, color: AppTheme.textPrimary(context)),
               decoration: InputDecoration(
                 labelText: 'Input Message',
                 hintText: 'e.g., WE ARE DISCOVERED',
@@ -387,9 +388,9 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
                   height: 42,
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF1F5F9),
+                    color: AppTheme.pillBg(context),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.grey.shade300),
+                    border: Border.all(color: AppTheme.borderMedium(context)),
                   ),
                   child: Row(
                     children: [
@@ -420,9 +421,9 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
                   height: 42,
                   padding: const EdgeInsets.all(3),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF1F5F9),
+                    color: AppTheme.pillBg(context),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.grey.shade300),
+                    border: Border.all(color: AppTheme.borderMedium(context)),
                   ),
                   child: Row(
                     children: [
@@ -441,9 +442,9 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
             height: 38,
             padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
+              color: AppTheme.surfaceSubtle(context),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.grey.shade300),
+              border: Border.all(color: AppTheme.borderMedium(context)),
             ),
             child: Row(
               children: [
@@ -461,6 +462,7 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
 
   Widget _buildColPill(int cols) {
     final bool isSelected = _selectedCols == cols;
+    final bool isDark = AppTheme.isDark(context);
     return Expanded(
       child: GestureDetector(
         onTap: () {
@@ -473,7 +475,9 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
           duration: const Duration(milliseconds: 150),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: isSelected ? primaryColor : Colors.transparent,
+            color: isSelected
+                ? (isDark ? const Color(0xFF0284C7) : primaryColor)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(7),
           ),
           child: Text(
@@ -481,7 +485,7 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
-              color: isSelected ? Colors.white : Colors.blueGrey.shade700,
+              color: isSelected ? Colors.white : AppTheme.textSecondary(context),
             ),
           ),
         ),
@@ -491,6 +495,7 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
 
   Widget _buildModePill(String label, RouteCipherMode mode) {
     final bool isSelected = _selectedMode == mode;
+    final bool isDark = AppTheme.isDark(context);
     return Expanded(
       child: GestureDetector(
         onTap: () {
@@ -503,7 +508,9 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
           duration: const Duration(milliseconds: 150),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: isSelected ? primaryColor : Colors.transparent,
+            color: isSelected
+                ? (isDark ? const Color(0xFF0284C7) : primaryColor)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(7),
           ),
           child: Text(
@@ -511,7 +518,7 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
-              color: isSelected ? Colors.white : Colors.blueGrey.shade700,
+              color: isSelected ? Colors.white : AppTheme.textSecondary(context),
             ),
           ),
         ),
@@ -546,7 +553,7 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.bold,
-              color: isSelected ? primaryColor : Colors.blueGrey.shade600,
+              color: isSelected ? primaryColor : AppTheme.textSecondary(context),
             ),
           ),
         ),
@@ -557,11 +564,12 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
   Widget _buildVisualWorkspaceCard() {
     final int rows = _grid.length;
     final int cols = _selectedCols;
+    final bool isDark = AppTheme.isDark(context);
 
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.cardBg(context),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: primaryColor.withValues(alpha: 0.25)),
         boxShadow: [
@@ -594,7 +602,7 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
                   style: TextStyle(
                     fontSize: 10.5,
                     fontWeight: FontWeight.w600,
-                    color: Colors.blueGrey.shade600,
+                    color: AppTheme.textSecondary(context),
                   ),
                 ),
               ),
@@ -624,8 +632,8 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
                               _highlightedStep != null &&
                                   stepNum < _highlightedStep!;
 
-                          Color bgColor = const Color(0xFFF8FAFC);
-                          Color borderColor = Colors.blueGrey.shade200;
+                          Color bgColor = AppTheme.surfaceSubtle(context);
+                          Color borderColor = AppTheme.borderMedium(context);
                           Color textColor = primaryColor;
 
                           if (isHighlighted) {
@@ -637,7 +645,9 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
                             borderColor = primaryColor.withValues(alpha: 0.45);
                             textColor = primaryColor;
                           } else if (ch.isNotEmpty) {
-                            bgColor = primaryColor;
+                            bgColor = isDark
+                                ? const Color(0xFF0284C7)
+                                : primaryColor;
                             borderColor = primaryColor;
                             textColor = Colors.white;
                           }
@@ -673,7 +683,7 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
                                                   (ch.isNotEmpty &&
                                                       !isVisitedBefore)
                                               ? Colors.white70
-                                              : Colors.blueGrey.shade500,
+                                              : AppTheme.textSecondary(context),
                                         ),
                                       ),
                                     ),
@@ -713,9 +723,9 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
                       ? Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF8FAFC),
+                            color: AppTheme.surfaceSubtle(context),
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: Colors.grey.shade200),
+                            border: Border.all(color: AppTheme.borderSubtle(context)),
                           ),
                           child: Center(
                             child: Text(
@@ -723,7 +733,7 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 11,
-                                color: Colors.blueGrey.shade500,
+                                color: AppTheme.textMuted(context),
                               ),
                             ),
                           ),
@@ -735,10 +745,10 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 8, vertical: 5),
                               decoration: BoxDecoration(
-                                color: Colors.amber.shade50,
+                                color: AppTheme.warningBg(context),
                                 borderRadius: BorderRadius.circular(8),
                                 border:
-                                    Border.all(color: Colors.amber.shade300),
+                                    Border.all(color: AppTheme.warningBorder(context)),
                               ),
                               child: Text(
                                 _highlightedStep != null &&
@@ -749,7 +759,7 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.amber.shade900,
+                                  color: AppTheme.warningText(context),
                                 ),
                               ),
                             ),
@@ -759,7 +769,7 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.blueGrey.shade600,
+                                color: AppTheme.textSecondary(context),
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -783,14 +793,14 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
                                           color: isSelected
                                               ? Colors.amber.shade700
                                               : primaryColor.withValues(
-                                                  alpha: 0.08),
+                                                  alpha: 0.1),
                                           borderRadius:
                                               BorderRadius.circular(6),
                                           border: Border.all(
                                             color: isSelected
                                                 ? Colors.amber.shade900
                                                 : primaryColor.withValues(
-                                                    alpha: 0.25),
+                                                    alpha: 0.3),
                                           ),
                                         ),
                                         child: Text(

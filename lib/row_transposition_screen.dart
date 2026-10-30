@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_theme.dart';
 
 enum RowTransMode { encrypt, decrypt }
 
@@ -17,8 +18,7 @@ class _RowTranspositionScreenState extends State<RowTranspositionScreen> {
   String result = '';
   String? errorMessage;
 
-  final Color primaryColor = Colors.blueGrey.shade800;
-  final Color highlightColor = Colors.blueGrey.shade100;
+  Color _accent(BuildContext context) => AppTheme.transpositionAccent(context);
 
   List<List<String>> displayGrid = [];
 
@@ -39,7 +39,8 @@ class _RowTranspositionScreenState extends State<RowTranspositionScreen> {
       setState(() {
         result = '';
         displayGrid = [];
-        errorMessage = "Invalid Key: Must be a sequence from 1 to ${key.length} without duplicates.";
+        errorMessage =
+            "Invalid Key: Must be a sequence from 1 to ${key.length} without duplicates.";
       });
       return;
     }
@@ -132,7 +133,7 @@ class _RowTranspositionScreenState extends State<RowTranspositionScreen> {
   }
 
   void _clearAll() {
-    FocusScope.of(context).unfocus() ;
+    FocusScope.of(context).unfocus();
 
     setState(() {
       messageController.clear();
@@ -146,21 +147,28 @@ class _RowTranspositionScreenState extends State<RowTranspositionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final Color primaryColor = _accent(context);
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg(context),
       appBar: AppBar(
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: const [
             Icon(Icons.table_chart_rounded),
             SizedBox(width: 10),
-            Text('Row Transposition', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              'Row Transposition',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ],
         ),
         centerTitle: true,
-        backgroundColor: primaryColor,
+        backgroundColor: AppTheme.transpositionAppBar(context),
         foregroundColor: Colors.white,
         elevation: 0,
-        actions: [IconButton(onPressed: _clearAll, icon: const Icon(Icons.refresh))],
+        actions: [
+          IconButton(onPressed: _clearAll, icon: const Icon(Icons.refresh)),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -168,40 +176,51 @@ class _RowTranspositionScreenState extends State<RowTranspositionScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSectionTitle("Input Message"),
+              _buildSectionTitle("Input Message", primaryColor),
               TextField(
                 controller: messageController,
                 maxLines: 3,
+                style: TextStyle(color: AppTheme.textPrimary(context)),
                 onChanged: (value) => _processCipher(),
                 decoration: InputDecoration(
                   hintText: "Enter text here...",
                   border: const OutlineInputBorder(),
-                  focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: primaryColor, width: 2)),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: primaryColor, width: 2),
+                  ),
                   prefixIcon: Icon(Icons.message, color: primaryColor),
                 ),
               ),
               const SizedBox(height: 15),
-
-              _buildSectionTitle("Numeric Key"),
+              _buildSectionTitle("Numeric Key", primaryColor),
               TextField(
                 controller: keyController,
                 keyboardType: TextInputType.number,
+                style: TextStyle(color: AppTheme.textPrimary(context)),
                 onChanged: (value) => _processCipher(),
                 decoration: InputDecoration(
                   hintText: "E.g., 4312",
                   border: const OutlineInputBorder(),
-                  focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: primaryColor, width: 2)),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: primaryColor, width: 2),
+                  ),
                   prefixIcon: Icon(Icons.password, color: primaryColor),
                 ),
               ),
               if (errorMessage != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 8, left: 5),
-                  child: Text(errorMessage!, style: const TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold)),
+                  child: Text(
+                    errorMessage!,
+                    style: TextStyle(
+                      color: AppTheme.errorText(context),
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               const SizedBox(height: 20),
-
-              _buildSectionTitle("Select Mode"),
+              _buildSectionTitle("Select Mode", primaryColor),
               RadioGroup<RowTransMode>(
                 groupValue: _selectedMode,
                 onChanged: (val) {
@@ -214,17 +233,18 @@ class _RowTranspositionScreenState extends State<RowTranspositionScreen> {
                 },
                 child: Row(
                   children: [
-                    _buildModeRadioTile("Encrypt", RowTransMode.encrypt),
-                    _buildModeRadioTile("Decrypt", RowTransMode.decrypt),
+                    _buildModeRadioTile(
+                        context, "Encrypt", RowTransMode.encrypt, primaryColor),
+                    _buildModeRadioTile(
+                        context, "Decrypt", RowTransMode.decrypt, primaryColor),
                   ],
                 ),
               ),
               const SizedBox(height: 20),
-
-              if (displayGrid.isNotEmpty) _buildVisualizationGrid(),
+              if (displayGrid.isNotEmpty)
+                _buildVisualizationGrid(context, primaryColor),
               const SizedBox(height: 20),
-
-              _buildResultCard(),
+              _buildResultCard(context, primaryColor),
             ],
           ),
         ),
@@ -232,103 +252,128 @@ class _RowTranspositionScreenState extends State<RowTranspositionScreen> {
     );
   }
 
-
-  Widget _buildVisualizationGrid() {
+  Widget _buildVisualizationGrid(BuildContext context, Color primaryColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle("Visual Grid (Key + Matrix)"),
+        _buildSectionTitle("Visual Grid (Key + Matrix)", primaryColor),
         LayoutBuilder(
-            builder: (context, constraints) {
-              int colsCount = displayGrid[0].length + 1;
-              double calculatedWidth = ((constraints.maxWidth - 20) / colsCount) - 4;
-              double cellWidth = calculatedWidth < 35 ? 35 : calculatedWidth;
+          builder: (context, constraints) {
+            int colsCount = displayGrid[0].length + 1;
+            double calculatedWidth =
+                ((constraints.maxWidth - 20) / colsCount) - 4;
+            double cellWidth = calculatedWidth < 35 ? 35 : calculatedWidth;
 
-              return Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: highlightColor.withValues(alpha: 0.3),
-                  border: Border.all(color: primaryColor.withValues(alpha: 0.5)),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: displayGrid.asMap().entries.map((entry) {
-                      int rowIndex = entry.key;
-                      List<String> row = entry.value;
-                      bool isHeader = rowIndex == 0;
+            return Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppTheme.cardBg(context),
+                border: Border.all(color: primaryColor.withValues(alpha: 0.5)),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: displayGrid.asMap().entries.map((entry) {
+                    int rowIndex = entry.key;
+                    List<String> row = entry.value;
+                    bool isHeader = rowIndex == 0;
 
-                      return Row(
-                        children: [
-                          Container(
+                    return Row(
+                      children: [
+                        Container(
+                          width: cellWidth,
+                          height: 40,
+                          margin: const EdgeInsets.all(2),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: isHeader
+                                ? Colors.blueGrey.shade900
+                                : Colors.blueGrey.shade200,
+                            border: Border.all(color: Colors.blueGrey.shade400),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            isHeader ? '#' : rowIndex.toString(),
+                            style: TextStyle(
+                              color: isHeader ? Colors.white : Colors.black87,
+                              fontWeight: FontWeight.w900,
+                              fontSize: isHeader ? 18 : 14,
+                            ),
+                          ),
+                        ),
+                        ...row.map((char) {
+                          return Container(
                             width: cellWidth,
                             height: 40,
                             margin: const EdgeInsets.all(2),
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
-                              color: isHeader ? Colors.blueGrey.shade900 : Colors.blueGrey.shade200,
-                              border: Border.all(color: Colors.blueGrey.shade400),
+                              color: isHeader
+                                  ? Colors.blueGrey.shade900
+                                  : Colors.blueGrey.shade600,
+                              border: Border.all(
+                                color: isHeader
+                                    ? Colors.black
+                                    : Colors.blueGrey.shade300,
+                              ),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              isHeader ? '#' : rowIndex.toString(),
+                              char,
                               style: TextStyle(
-                                color: isHeader ? Colors.white : Colors.black87,
-                                fontWeight: FontWeight.w900,
-                                fontSize: isHeader ? 18 : 14,
+                                color: Colors.white,
+                                fontWeight: isHeader
+                                    ? FontWeight.w900
+                                    : FontWeight.bold,
+                                fontSize: isHeader ? 18 : 16,
                               ),
                             ),
-                          ),
-
-                          ...row.map((char) {
-                            return Container(
-                              width: cellWidth,
-                              height: 40,
-                              margin: const EdgeInsets.all(2),
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: isHeader ? Colors.blueGrey.shade900 : Colors.blueGrey.shade600,
-                                border: Border.all(
-                                  color: isHeader ? Colors.black : Colors.blueGrey.shade300,
-                                ),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                char,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: isHeader ? FontWeight.w900 : FontWeight.bold,
-                                  fontSize: isHeader ? 18 : 16,
-                                ),
-                              ),
-                            );
-                          }),
-                        ],
-                      );
-                    }).toList(),
-                  ),
+                          );
+                        }),
+                      ],
+                    );
+                  }).toList(),
                 ),
-              );
-            }
+              ),
+            );
+          },
         ),
       ],
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(String title, Color primaryColor) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10, left: 5),
-      child: Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: primaryColor)),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.bold,
+          color: primaryColor,
+        ),
+      ),
     );
   }
 
-  Widget _buildModeRadioTile(String title, RowTransMode mode) {
+  Widget _buildModeRadioTile(
+    BuildContext context,
+    String title,
+    RowTransMode mode,
+    Color primaryColor,
+  ) {
     return Expanded(
       child: RadioListTile<RowTransMode>(
-        title: Text(title, style: const TextStyle(fontSize: 14)),
+        title: Text(
+          title,
+          style: TextStyle(
+            fontSize: 14,
+            color: AppTheme.textPrimary(context),
+          ),
+        ),
         value: mode,
         activeColor: primaryColor,
         contentPadding: EdgeInsets.zero,
@@ -336,12 +381,12 @@ class _RowTranspositionScreenState extends State<RowTranspositionScreen> {
     );
   }
 
-  Widget _buildResultCard() {
+  Widget _buildResultCard(BuildContext context, Color primaryColor) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: primaryColor.withValues(alpha: 0.05),
+        color: primaryColor.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(15),
         border: Border.all(color: primaryColor, width: 2),
       ),
@@ -349,7 +394,12 @@ class _RowTranspositionScreenState extends State<RowTranspositionScreen> {
         children: [
           Text(
             "OUTPUT RESULT",
-            style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1.2),
+            style: TextStyle(
+              color: primaryColor,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+              letterSpacing: 1.2,
+            ),
           ),
           const SizedBox(height: 15),
           SelectableText(
@@ -358,7 +408,9 @@ class _RowTranspositionScreenState extends State<RowTranspositionScreen> {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: result.isEmpty ? Colors.grey : primaryColor,
+              color: result.isEmpty
+                  ? AppTheme.textMuted(context)
+                  : primaryColor,
               letterSpacing: 2.0,
             ),
           ),

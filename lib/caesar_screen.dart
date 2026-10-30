@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_theme.dart';
 
 enum CaesarMode { encrypt, decrypt }
 
@@ -12,16 +13,17 @@ class CaesarScreen extends StatefulWidget {
 class _CaesarScreenState extends State<CaesarScreen> {
   final TextEditingController messageController = TextEditingController();
 
-
   double _shiftValue = 3.0;
   CaesarMode _selectedMode = CaesarMode.encrypt;
   String result = '';
 
-  final Color primaryColor = Colors.deepPurple.shade600;
+  Color _accent(BuildContext context) => AppTheme.purpleAccent(context);
 
   void _processCipher() {
     if (messageController.text.isEmpty) {
-      setState(() { result = ""; });
+      setState(() {
+        result = "";
+      });
       return;
     }
 
@@ -49,9 +51,9 @@ class _CaesarScreenState extends State<CaesarScreen> {
       result = processedText;
     });
   }
-  
+
   void _clearAll() {
-    FocusScope.of(context).unfocus() ;
+    FocusScope.of(context).unfocus();
 
     setState(() {
       messageController.clear();
@@ -63,8 +65,9 @@ class _CaesarScreenState extends State<CaesarScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final Color primaryColor = _accent(context);
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppTheme.scaffoldBg(context),
       appBar: AppBar(
         title: Row(
           mainAxisSize: MainAxisSize.min,
@@ -75,10 +78,12 @@ class _CaesarScreenState extends State<CaesarScreen> {
           ],
         ),
         centerTitle: true,
-        backgroundColor: primaryColor,
+        backgroundColor: AppTheme.purpleAppBar(context),
         foregroundColor: Colors.white,
         elevation: 0,
-        actions: [IconButton(onPressed: _clearAll, icon: const Icon(Icons.refresh))],
+        actions: [
+          IconButton(onPressed: _clearAll, icon: const Icon(Icons.refresh)),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -86,29 +91,35 @@ class _CaesarScreenState extends State<CaesarScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildSectionTitle("1. Message"),
+              _buildSectionTitle("1. Message", primaryColor),
               TextField(
                 controller: messageController,
                 maxLines: 3,
+                style: TextStyle(color: AppTheme.textPrimary(context)),
                 onChanged: (value) => _processCipher(),
                 decoration: InputDecoration(
                   hintText: 'Type your message here...',
                   border: const OutlineInputBorder(),
-                  focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: primaryColor, width: 2)),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: primaryColor, width: 2),
+                  ),
                   prefixIcon: Icon(Icons.text_fields, color: primaryColor),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: AppTheme.cardBg(context),
                 ),
               ),
               const SizedBox(height: 25),
-        
-              _buildSectionTitle("2. Shift Key: ${_shiftValue.toInt()}"),
+              _buildSectionTitle(
+                "2. Shift Key: ${_shiftValue.toInt()}",
+                primaryColor,
+              ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppTheme.cardBg(context),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade300),
+                  border: Border.all(color: AppTheme.borderMedium(context)),
                 ),
                 child: Column(
                   children: [
@@ -127,19 +138,31 @@ class _CaesarScreenState extends State<CaesarScreen> {
                         });
                       },
                     ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 15),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [Text("0"), Text("13"), Text("25")],
+                        children: [
+                          Text(
+                            "0",
+                            style: TextStyle(color: AppTheme.textSecondary(context)),
+                          ),
+                          Text(
+                            "13",
+                            style: TextStyle(color: AppTheme.textSecondary(context)),
+                          ),
+                          Text(
+                            "25",
+                            style: TextStyle(color: AppTheme.textSecondary(context)),
+                          ),
+                        ],
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),
               const SizedBox(height: 25),
-        
-              _buildSectionTitle("3. Operation"),
+              _buildSectionTitle("3. Operation", primaryColor),
               RadioGroup<CaesarMode>(
                 groupValue: _selectedMode,
                 onChanged: (value) {
@@ -152,14 +175,15 @@ class _CaesarScreenState extends State<CaesarScreen> {
                 },
                 child: Row(
                   children: [
-                    _buildRadioTile("Encrypt", CaesarMode.encrypt),
-                    _buildRadioTile("Decrypt", CaesarMode.decrypt),
+                    _buildRadioTile(
+                        context, "Encrypt", CaesarMode.encrypt, primaryColor),
+                    _buildRadioTile(
+                        context, "Decrypt", CaesarMode.decrypt, primaryColor),
                   ],
                 ),
               ),
               const SizedBox(height: 35),
-        
-              _buildResultCard(),
+              _buildResultCard(primaryColor),
             ],
           ),
         ),
@@ -167,34 +191,60 @@ class _CaesarScreenState extends State<CaesarScreen> {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(String title, Color primaryColor) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10, left: 5),
-      child: Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: primaryColor)),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.bold,
+          color: primaryColor,
+        ),
+      ),
     );
   }
 
-  Widget _buildRadioTile(String title, CaesarMode mode) {
+  Widget _buildRadioTile(
+    BuildContext context,
+    String title,
+    CaesarMode mode,
+    Color primaryColor,
+  ) {
     return Expanded(
       child: RadioListTile<CaesarMode>(
-        title: Text(title, style: const TextStyle(fontSize: 14)),
+        title: Text(
+          title,
+          style: TextStyle(
+            fontSize: 14,
+            color: AppTheme.textPrimary(context),
+          ),
+        ),
         value: mode,
         activeColor: primaryColor,
       ),
     );
   }
 
-  Widget _buildResultCard() {
+  Widget _buildResultCard(Color primaryColor) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: primaryColor.withValues(alpha: 0.05),
+        color: primaryColor.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(15),
         border: Border.all(color: primaryColor, width: 2),
       ),
       child: Column(
         children: [
-          Text("OUTPUT RESULT", style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1.2)),
+          Text(
+            "OUTPUT RESULT",
+            style: TextStyle(
+              color: primaryColor,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+              letterSpacing: 1.2,
+            ),
+          ),
           const SizedBox(height: 15),
           SelectableText(
             result.isEmpty ? 'Waiting for input...' : result,

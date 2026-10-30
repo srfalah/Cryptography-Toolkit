@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'app_theme.dart';
 
 enum CalcMode { modPow, powerOnly, modOnly }
 
@@ -56,7 +57,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
   final List<CalcHistoryEntry> _history = [];
 
   // Signature screen theme color matching the rest of the app
-  final Color primaryColor = Colors.orange.shade800;
+  Color get primaryColor => AppTheme.orangeAccent(context);
 
   @override
   void dispose() {
@@ -1022,9 +1023,10 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
 
   void _showAllPrimitiveRootsSheet() {
     if (_lastPrimitiveRoots.isEmpty || _lastRootPrime == null) return;
+    final bool isDark = AppTheme.isDark(context);
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.cardBg(context),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -1055,7 +1057,8 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
                 const SizedBox(height: 6),
                 Text(
                   'Tap any primitive root α below to copy it to your clipboard:',
-                  style: TextStyle(fontSize: 12, color: Colors.blueGrey.shade600),
+                  style: TextStyle(
+                      fontSize: 12, color: AppTheme.textSecondary(context)),
                 ),
                 const Divider(height: 20),
                 Flexible(
@@ -1069,11 +1072,13 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
                         return ActionChip(
                           backgroundColor: isSmallest
                               ? primaryColor
-                              : const Color(0xFFFFF7ED),
+                              : (isDark
+                                  ? primaryColor.withValues(alpha: 0.14)
+                                  : const Color(0xFFFFF7ED)),
                           side: BorderSide(
                             color: isSmallest
                                 ? primaryColor
-                                : primaryColor.withValues(alpha: 0.3),
+                                : primaryColor.withValues(alpha: 0.35),
                           ),
                           label: Text(
                             isSmallest ? '$rootVal (Smallest)' : '$rootVal',
@@ -1145,7 +1150,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
   void _showHistoryModal() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.cardBg(context),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -1181,22 +1186,22 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
                           Navigator.pop(context);
                         },
                         icon: Icon(Icons.delete_outline_rounded,
-                            color: Colors.red.shade700, size: 18),
+                            color: AppTheme.errorText(context), size: 18),
                         label: Text(
                           'Clear',
-                          style: TextStyle(color: Colors.red.shade700),
+                          style: TextStyle(color: AppTheme.errorText(context)),
                         ),
                       ),
                   ],
                 ),
                 const Divider(height: 20),
                 if (_history.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 32),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 32),
                     child: Text(
                       'Press "=" on any calculation to save it here.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(color: AppTheme.textMuted(context)),
                     ),
                   )
                 else
@@ -1209,17 +1214,18 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
                         final item = _history[index];
                         return Container(
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF8FAFC),
+                            color: AppTheme.surfaceSubtle(context),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.grey.shade200),
+                            border: Border.all(
+                                color: AppTheme.borderSubtle(context)),
                           ),
                           child: ListTile(
                             title: Text(
                               item.expression,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontFamily: 'Courier New',
                                 fontSize: 14,
-                                color: Colors.black54,
+                                color: AppTheme.textSecondary(context),
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -1240,7 +1246,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
                                     item.note!,
                                     style: TextStyle(
                                       fontSize: 11,
-                                      color: Colors.blueGrey.shade600,
+                                      color: AppTheme.textSecondary(context),
                                     ),
                                   ),
                               ],
@@ -1294,7 +1300,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppTheme.scaffoldBg(context),
       appBar: AppBar(
         title: Wrap(
           alignment: WrapAlignment.center,
@@ -1309,7 +1315,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
           ],
         ),
         centerTitle: true,
-        backgroundColor: primaryColor,
+        backgroundColor: AppTheme.orangeAppBar(context),
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -1320,7 +1326,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
               isLabelVisible: _history.isNotEmpty,
               label: Text('${_history.length}'),
               backgroundColor: Colors.white,
-              textColor: primaryColor,
+              textColor: AppTheme.orangeAppBar(context),
               child: const Icon(Icons.history_rounded),
             ),
           ),
@@ -1349,20 +1355,22 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
 
   Widget _buildDisplayCard() {
     final bool hasValidResult = result.isNotEmpty && !_isError;
+    final bool isDark = AppTheme.isDark(context);
+    final Color tealColor = AppTheme.tealAccent(context);
 
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.cardBg(context),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: primaryColor.withValues(alpha: 0.28),
+          color: primaryColor.withValues(alpha: 0.32),
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: primaryColor.withValues(alpha: 0.08),
+            color: primaryColor.withValues(alpha: isDark ? 0.14 : 0.08),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -1379,7 +1387,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    primaryColor.withValues(alpha: 0.1),
+                    primaryColor.withValues(alpha: isDark ? 0.16 : 0.1),
                     primaryColor.withValues(alpha: 0.02),
                   ],
                   begin: Alignment.centerLeft,
@@ -1387,7 +1395,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
                 ),
                 border: Border(
                   bottom: BorderSide(
-                    color: primaryColor.withValues(alpha: 0.12),
+                    color: primaryColor.withValues(alpha: 0.15),
                   ),
                 ),
               ),
@@ -1433,10 +1441,10 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: AppTheme.surfaceSubtle(context),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: primaryColor.withValues(alpha: 0.25),
+                            color: primaryColor.withValues(alpha: 0.3),
                           ),
                         ),
                         child: Text(
@@ -1445,7 +1453,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
                             fontSize: 11,
                             fontFamily: 'Courier New',
                             fontWeight: FontWeight.bold,
-                            color: Colors.blueGrey.shade700,
+                            color: AppTheme.textSecondary(context),
                           ),
                         ),
                       ),
@@ -1476,7 +1484,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
                 child: Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-                  color: Colors.teal.shade50.withValues(alpha: 0.7),
+                  color: tealColor.withValues(alpha: isDark ? 0.14 : 0.1),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -1485,7 +1493,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
                             ? Icons.touch_app_rounded
                             : Icons.verified_outlined,
                         size: 13,
-                        color: Colors.teal.shade700,
+                        color: tealColor,
                       ),
                       const SizedBox(width: 6),
                       Flexible(
@@ -1495,7 +1503,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
-                            color: Colors.teal.shade900,
+                            color: isDark ? tealColor : Colors.teal.shade900,
                           ),
                         ),
                       ),
@@ -1509,17 +1517,19 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
               decoration: BoxDecoration(
                 color: _isError
-                    ? const Color(0xFFFEF2F2)
+                    ? AppTheme.errorBg(context)
                     : (hasValidResult
-                        ? const Color(0xFFFFF7ED)
-                        : const Color(0xFFF8FAFC)),
+                        ? (isDark
+                            ? primaryColor.withValues(alpha: 0.12)
+                            : const Color(0xFFFFF7ED))
+                        : AppTheme.surfaceSubtle(context)),
                 border: Border(
                   top: BorderSide(
                     color: _isError
-                        ? Colors.red.shade200
+                        ? AppTheme.errorBorder(context)
                         : (hasValidResult
-                            ? primaryColor.withValues(alpha: 0.25)
-                            : Colors.grey.shade200),
+                            ? primaryColor.withValues(alpha: 0.28)
+                            : AppTheme.borderSubtle(context)),
                   ),
                 ),
               ),
@@ -1531,8 +1541,8 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: _isError
-                          ? Colors.red.shade100
-                          : primaryColor.withValues(alpha: 0.14),
+                          ? AppTheme.errorText(context).withValues(alpha: 0.16)
+                          : primaryColor.withValues(alpha: 0.16),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -1541,7 +1551,9 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
                         fontFamily: 'Courier New',
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: _isError ? Colors.red.shade800 : primaryColor,
+                        color: _isError
+                            ? AppTheme.errorText(context)
+                            : primaryColor,
                       ),
                     ),
                   ),
@@ -1557,10 +1569,10 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
                           fontSize: _isError ? 14 : 26,
                           fontWeight: FontWeight.bold,
                           color: _isError
-                              ? Colors.red.shade700
+                              ? AppTheme.errorText(context)
                               : (result.isEmpty
-                                  ? Colors.grey.shade400
-                                  : const Color(0xFF0F172A)),
+                                  ? AppTheme.textMuted(context)
+                                  : AppTheme.textPrimary(context)),
                         ),
                       ),
                     ),
@@ -1640,6 +1652,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
     final bool isBaseActive = _activePart == 0;
     final bool isSecondActive = _activePart == 1;
     final bool isModActive = _activePart == 2;
+    final bool isDark = AppTheme.isDark(context);
 
     final String aText =
         baseController.text.isEmpty ? 'a' : baseController.text;
@@ -1661,13 +1674,17 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
             color: isActive
-                ? primaryColor.withValues(alpha: 0.12)
-                : (isEmpty ? Colors.grey.shade100 : Colors.transparent),
+                ? primaryColor.withValues(alpha: 0.15)
+                : (isEmpty
+                    ? AppTheme.surfaceSubtle(context)
+                    : Colors.transparent),
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: isActive
                   ? primaryColor
-                  : (isEmpty ? Colors.grey.shade300 : Colors.transparent),
+                  : (isEmpty
+                      ? AppTheme.borderMedium(context)
+                      : Colors.transparent),
               width: 1.8,
             ),
           ),
@@ -1678,8 +1695,8 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
               fontSize: fontSize,
               fontWeight: FontWeight.bold,
               color: isEmpty
-                  ? (isActive ? primaryColor : Colors.grey.shade400)
-                  : const Color(0xFF0F172A),
+                  ? (isActive ? primaryColor : AppTheme.textMuted(context))
+                  : AppTheme.textPrimary(context),
             ),
           ),
         ),
@@ -1846,8 +1863,10 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: isSecondActive
-                      ? primaryColor.withValues(alpha: 0.16)
-                      : const Color(0xFFFFF7ED),
+                      ? primaryColor.withValues(alpha: 0.18)
+                      : (isDark
+                          ? primaryColor.withValues(alpha: 0.1)
+                          : const Color(0xFFFFF7ED)),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: isSecondActive
@@ -1863,7 +1882,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: exponentController.text.isEmpty
-                        ? primaryColor.withValues(alpha: 0.5)
+                        ? primaryColor.withValues(alpha: 0.55)
                         : primaryColor,
                   ),
                 ),
@@ -1901,7 +1920,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
                 fontFamily: 'Courier New',
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey.shade500,
+                color: AppTheme.textMuted(context),
               ),
             ),
           buildToken(
@@ -1934,7 +1953,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
                 fontFamily: 'Courier New',
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey.shade500,
+                color: AppTheme.textMuted(context),
               ),
             ),
         ],
@@ -1958,7 +1977,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
-                color: primaryColor.withValues(alpha: 0.1),
+                color: primaryColor.withValues(alpha: 0.14),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
@@ -1983,14 +2002,20 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
   }
 
   Widget _buildKeypadSection() {
+    final bool isDark = AppTheme.isDark(context);
+    final Color actionBtnBg =
+        isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9);
+    final Color actionBtnText =
+        isDark ? const Color(0xFFE2E8F0) : const Color(0xFF334155);
+
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.cardBg(context),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.06),
             blurRadius: 18,
             offset: const Offset(0, -4),
           ),
@@ -2046,22 +2071,22 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
                 _buildKeyButton(
                   label: 'AC',
                   subtitle: 'Clear',
-                  bgColor: const Color(0xFFFEF2F2),
-                  borderColor: Colors.red.shade200,
-                  textColor: Colors.red.shade700,
+                  bgColor: AppTheme.errorBg(context),
+                  borderColor: AppTheme.errorBorder(context),
+                  textColor: AppTheme.errorText(context),
                   onTap: _resetFields,
                 ),
                 _buildKeyButton(
                   label: '⌫',
                   subtitle: 'Delete',
-                  bgColor: const Color(0xFFF1F5F9),
-                  textColor: const Color(0xFF334155),
+                  bgColor: actionBtnBg,
+                  textColor: actionBtnText,
                   onTap: _onBackspace,
                 ),
                 _buildKeyButton(
                   label: 'ANS',
                   subtitle: 'Last',
-                  bgColor: const Color(0xFFF1F5F9),
+                  bgColor: actionBtnBg,
                   textColor: primaryColor,
                   onTap: _useAns,
                 ),
@@ -2116,16 +2141,16 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
               children: [
                 _buildKeyButton(
                   label: '±',
-                  bgColor: const Color(0xFFF1F5F9),
-                  textColor: const Color(0xFF334155),
+                  bgColor: actionBtnBg,
+                  textColor: actionBtnText,
                   onTap: _onToggleSign,
                 ),
                 _buildDigitButton('0'),
                 _buildKeyButton(
                   label: 'PASTE',
                   icon: Icons.content_paste_rounded,
-                  bgColor: const Color(0xFFF1F5F9),
-                  textColor: const Color(0xFF334155),
+                  bgColor: actionBtnBg,
+                  textColor: actionBtnText,
                   onTap: _pasteFromClipboard,
                 ),
                 _buildEqualsButton(),
@@ -2143,11 +2168,16 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
+    final bool isDark = AppTheme.isDark(context);
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 3.5),
         child: Material(
-          color: isSelected ? primaryColor : const Color(0xFFFFF7ED),
+          color: isSelected
+              ? primaryColor
+              : (isDark
+                  ? primaryColor.withValues(alpha: 0.12)
+                  : const Color(0xFFFFF7ED)),
           borderRadius: BorderRadius.circular(14),
           elevation: isSelected ? 2 : 0,
           shadowColor: primaryColor.withValues(alpha: 0.4),
@@ -2160,7 +2190,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
                 border: Border.all(
                   color: isSelected
                       ? primaryColor
-                      : primaryColor.withValues(alpha: 0.3),
+                      : primaryColor.withValues(alpha: 0.35),
                   width: 1.2,
                 ),
               ),
@@ -2183,7 +2213,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
                       fontWeight: FontWeight.w600,
                       color: isSelected
                           ? Colors.white.withValues(alpha: 0.9)
-                          : primaryColor.withValues(alpha: 0.75),
+                          : primaryColor.withValues(alpha: 0.8),
                     ),
                   ),
                 ],
@@ -2197,11 +2227,16 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
 
   Widget _buildArithmeticOpKey(String symbol, MathOp op) {
     final bool isSelected = _currentOp == op;
+    final bool isDark = AppTheme.isDark(context);
     return _buildKeyButton(
       label: symbol,
-      bgColor: isSelected ? primaryColor : const Color(0xFFFFF7ED),
+      bgColor: isSelected
+          ? primaryColor
+          : (isDark
+              ? primaryColor.withValues(alpha: 0.12)
+              : const Color(0xFFFFF7ED)),
       borderColor:
-          isSelected ? primaryColor : primaryColor.withValues(alpha: 0.25),
+          isSelected ? primaryColor : primaryColor.withValues(alpha: 0.3),
       textColor: isSelected ? Colors.white : primaryColor,
       isLarge: true,
       onTap: () => _onBinaryOpPressed(op),
@@ -2211,9 +2246,9 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
   Widget _buildDigitButton(String digit) {
     return _buildKeyButton(
       label: digit,
-      bgColor: const Color(0xFFF8FAFC),
-      borderColor: const Color(0xFFE2E8F0),
-      textColor: const Color(0xFF0F172A),
+      bgColor: AppTheme.surfaceSubtle(context),
+      borderColor: AppTheme.borderSubtle(context),
+      textColor: AppTheme.textPrimary(context),
       isLarge: true,
       onTap: () => _onDigitPressed(digit),
     );
@@ -2226,7 +2261,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
         child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [primaryColor, Colors.deepOrange.shade600],
+              colors: [Colors.orange.shade700, Colors.deepOrange.shade600],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -2289,7 +2324,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: borderColor ?? const Color(0xFFE2E8F0),
+                  color: borderColor ?? AppTheme.borderSubtle(context),
                   width: 1.2,
                 ),
               ),
@@ -2316,7 +2351,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
                         style: TextStyle(
                           fontSize: 9.5,
                           fontWeight: FontWeight.w600,
-                          color: textColor.withValues(alpha: 0.7),
+                          color: textColor.withValues(alpha: 0.75),
                         ),
                       ),
                     ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math';
+import 'app_theme.dart';
 
 class ElGamalScreen extends StatefulWidget {
   const ElGamalScreen({super.key});
@@ -10,8 +11,8 @@ class ElGamalScreen extends StatefulWidget {
 }
 
 class _ElGamalScreenState extends State<ElGamalScreen> {
-  final Color primaryColor = const Color(0xFF1E3A8A);
-  final Color accentColor = Colors.orange.shade800;
+  Color get primaryColor => AppTheme.navyAccent(context);
+  Color get accentColor => AppTheme.orangeAccent(context);
 
   // Step 1: Key Generation Controllers
   final TextEditingController qController = TextEditingController();
@@ -370,7 +371,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: AppTheme.scaffoldBgAlt(context),
       appBar: AppBar(
         title: Wrap(
           alignment: WrapAlignment.center,
@@ -385,7 +386,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
           ],
         ),
         centerTitle: true,
-        backgroundColor: primaryColor,
+        backgroundColor: AppTheme.navyAppBar(context),
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -431,8 +432,8 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
         icon: const Icon(Icons.auto_awesome, size: 16),
         label: const Text("Auto Fill", style: TextStyle(fontSize: 12)),
         style: TextButton.styleFrom(
-          foregroundColor: Colors.teal.shade700,
-          backgroundColor: Colors.teal.shade50,
+          foregroundColor: AppTheme.tealAccent(context),
+          backgroundColor: AppTheme.tealAccent(context).withValues(alpha: 0.12),
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
@@ -475,14 +476,14 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: Colors.amber.shade50,
+                color: AppTheme.warningBg(context),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.amber.shade300),
+                border: Border.all(color: AppTheme.warningBorder(context)),
               ),
               child: Row(
                 children: [
                   Icon(Icons.warning_amber_rounded,
-                      color: Colors.amber.shade900, size: 18),
+                      color: AppTheme.warningText(context), size: 18),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -490,7 +491,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: Colors.amber.shade900,
+                        color: AppTheme.warningText(context),
                       ),
                     ),
                   ),
@@ -622,7 +623,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: primaryColor,
+              backgroundColor: const Color(0xFF1E3A8A),
               foregroundColor: Colors.white,
               minimumSize: const Size(double.infinity, 46),
               shape: RoundedRectangleBorder(
@@ -743,7 +744,9 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
               substitutedFormula:
                   "(${c2Controller.text} × ${kInverseController.text}) mod ${qController.text}",
               resultValue: decryptedController.text,
-              highlightColor: Colors.green.shade700,
+              highlightColor: AppTheme.isDark(context)
+                  ? const Color(0xFF4ADE80)
+                  : Colors.green.shade700,
             ),
             const SizedBox(height: 12),
             _buildSuccessDecryptionBanner(),
@@ -763,8 +766,9 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.cardBg(context),
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.borderSubtle(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -781,7 +785,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: primaryColor.withValues(alpha: 0.1),
+                  color: primaryColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(icon, color: primaryColor, size: 20),
@@ -803,7 +807,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
                       subtitle,
                       style: TextStyle(
                         fontSize: 11,
-                        color: Colors.blueGrey.shade600,
+                        color: AppTheme.textSecondary(context),
                       ),
                     ),
                   ],
@@ -837,7 +841,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
         keyboardType: TextInputType.number,
         inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9]'))],
         style: TextStyle(
-          color: color ?? Colors.black87,
+          color: color ?? AppTheme.textPrimary(context),
           fontSize: 14,
           fontWeight: FontWeight.w600,
           fontFamily: 'Courier New',
@@ -858,7 +862,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
             borderSide: BorderSide(color: color ?? primaryColor, width: 2),
           ),
           filled: true,
-          fillColor: readOnly ? Colors.grey.shade50 : const Color(0xFFF8FAFC),
+          fillColor: AppTheme.surfaceSubtle(context),
         ),
       ),
     );
@@ -876,9 +880,9 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
+        color: AppTheme.surfaceSubtle(context),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.blueGrey.shade100),
+        border: Border.all(color: AppTheme.borderSubtle(context)),
       ),
       child: Row(
         children: [
@@ -893,7 +897,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
                       style: TextStyle(
                         fontSize: 11.5,
                         fontWeight: FontWeight.bold,
-                        color: Colors.blueGrey.shade800,
+                        color: AppTheme.textPrimary(context),
                       ),
                     ),
                     const SizedBox(width: 6),
@@ -901,7 +905,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 6, vertical: 1.5),
                       decoration: BoxDecoration(
-                        color: activeColor.withValues(alpha: 0.1),
+                        color: activeColor.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
@@ -922,7 +926,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
                   style: TextStyle(
                     fontFamily: 'Courier New',
                     fontSize: 12,
-                    color: Colors.blueGrey.shade600,
+                    color: AppTheme.textSecondary(context),
                   ),
                 ),
               ],
@@ -932,9 +936,9 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppTheme.cardBg(context),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: activeColor.withValues(alpha: 0.35)),
+              border: Border.all(color: activeColor.withValues(alpha: 0.4)),
             ),
             child: SelectableText(
               resultValue,
@@ -957,9 +961,9 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
       decoration: BoxDecoration(
-        color: primaryColor.withValues(alpha: 0.06),
+        color: primaryColor.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: primaryColor.withValues(alpha: 0.3)),
+        border: Border.all(color: primaryColor.withValues(alpha: 0.35)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1001,21 +1005,21 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.amber.shade50,
+        color: AppTheme.warningBg(context),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.amber.shade200),
+        border: Border.all(color: AppTheme.warningBorder(context)),
       ),
       child: Row(
         children: [
-          Icon(Icons.info_outline, color: Colors.amber.shade900),
+          Icon(Icons.info_outline, color: AppTheme.warningText(context)),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Text(
               "Complete Step 1 (or tap 'Auto Fill') to unlock Encryption and Decryption.",
               style: TextStyle(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w600,
-                color: Colors.black87,
+                color: AppTheme.warningText(context),
               ),
             ),
           ),
@@ -1028,9 +1032,9 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.green.shade50,
+        color: AppTheme.successBg(context),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.green.shade400, width: 1.5),
+        border: Border.all(color: AppTheme.successBorder(context), width: 1.5),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1038,7 +1042,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
           Row(
             children: [
               Icon(Icons.verified_user_rounded,
-                  color: Colors.green.shade700, size: 22),
+                  color: AppTheme.successText(context), size: 22),
               const SizedBox(width: 10),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1046,7 +1050,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
                   Text(
                     "Recovered Original Message (M)",
                     style: TextStyle(
-                      color: Colors.green.shade900,
+                      color: AppTheme.successText(context),
                       fontWeight: FontWeight.bold,
                       fontSize: 11.5,
                     ),
@@ -1057,7 +1061,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
                       fontFamily: 'Courier New',
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color: Colors.green.shade800,
+                      color: AppTheme.successText(context),
                     ),
                   ),
                 ],
@@ -1067,8 +1071,8 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
           IconButton(
             onPressed: () =>
                 _copyText(decryptedController.text, 'Recovered Message M'),
-            icon:
-                Icon(Icons.copy_rounded, color: Colors.green.shade800, size: 20),
+            icon: Icon(Icons.copy_rounded,
+                color: AppTheme.successText(context), size: 20),
             tooltip: 'Copy M',
           ),
         ],

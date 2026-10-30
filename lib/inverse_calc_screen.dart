@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_theme.dart';
 
 class InverseCalcScreen extends StatefulWidget {
   const InverseCalcScreen({super.key});
@@ -11,15 +12,16 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
   final TextEditingController eController = TextEditingController();
   final TextEditingController phiController = TextEditingController();
 
-
-  final Color primaryColor = Colors.teal.shade700;
-
   List<Map<String, dynamic>> tableRows = [];
   String finalResult = "";
 
+  Color _accent(BuildContext context) => AppTheme.tealAccent(context);
+
   void _calculateInverse() {
     tableRows.clear();
-    setState(() { finalResult = ""; });
+    setState(() {
+      finalResult = "";
+    });
 
     try {
       BigInt e = BigInt.parse(eController.text);
@@ -36,7 +38,13 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
         BigInt z = x - (q * y);
 
         tableRows.add({
-          'q': q, 'a': a, 'b': b, 'r': r, 'x': x, 'y': y, 'z': z,
+          'q': q,
+          'a': a,
+          'b': b,
+          'r': r,
+          'x': x,
+          'y': y,
+          'z': z,
         });
 
         a = b;
@@ -46,7 +54,13 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
       }
 
       tableRows.add({
-        'q': '-', 'a': a, 'b': 0, 'r': '-', 'x': x, 'y': '-', 'z': '-',
+        'q': '-',
+        'a': a,
+        'b': 0,
+        'r': '-',
+        'x': x,
+        'y': '-',
+        'z': '-',
       });
 
       if (a == BigInt.one) {
@@ -64,7 +78,7 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
   }
 
   void _resetFields() {
-    FocusScope.of(context).unfocus() ;
+    FocusScope.of(context).unfocus();
 
     setState(() {
       eController.clear();
@@ -73,12 +87,12 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
       finalResult = "";
     });
   }
-  
 
   @override
   Widget build(BuildContext context) {
+    final Color primaryColor = _accent(context);
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppTheme.scaffoldBg(context),
       appBar: AppBar(
         title: Wrap(
           alignment: WrapAlignment.center,
@@ -93,9 +107,11 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
           ],
         ),
         centerTitle: true,
-        backgroundColor: primaryColor,
+        backgroundColor: AppTheme.tealAppBar(context),
         foregroundColor: Colors.white,
-        actions: [IconButton(onPressed: _resetFields, icon: const Icon(Icons.refresh))],
+        actions: [
+          IconButton(onPressed: _resetFields, icon: const Icon(Icons.refresh)),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -103,37 +119,55 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text("Inputs", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryColor)),
-              Divider(thickness: 1.5, color: primaryColor.withValues(alpha: 0.3)),
+              Text(
+                "Inputs",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: primaryColor,
+                ),
+              ),
+              Divider(
+                thickness: 1.5,
+                color: primaryColor.withValues(alpha: 0.3),
+              ),
               const SizedBox(height: 16),
-        
-              _buildTextField(eController, 'Enter Value (e)'),
+              _buildTextField(context, eController, 'Enter Value (e)', primaryColor),
               const SizedBox(height: 16),
-              _buildTextField(phiController, 'Enter Modulus (phi)'),
+              _buildTextField(context, phiController, 'Enter Modulus (phi)', primaryColor),
               const SizedBox(height: 20),
-        
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _calculateInverse,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
+                    backgroundColor: Colors.teal.shade700,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 18),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
-                  child: const Text("CALCULATE STEPS", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    "CALCULATE STEPS",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
-        
               const SizedBox(height: 32),
-        
               if (tableRows.isNotEmpty) ...[
-                Text("Calculation Steps", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryColor)),
+                Text(
+                  "Calculation Steps",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: primaryColor,
+                  ),
+                ),
                 const SizedBox(height: 12),
-                _buildModernTable(),
+                _buildModernTable(context, primaryColor),
                 const SizedBox(height: 24),
-                _buildResultCard(),
+                _buildResultCard(context),
               ],
             ],
           ),
@@ -142,45 +176,124 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label) {
+  Widget _buildTextField(
+    BuildContext context,
+    TextEditingController controller,
+    String label,
+    Color primaryColor,
+  ) {
     return TextField(
       controller: controller,
+      style: TextStyle(color: AppTheme.textPrimary(context)),
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
-        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: primaryColor, width: 2)),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: primaryColor, width: 2),
+        ),
       ),
       keyboardType: TextInputType.number,
     );
   }
 
-  Widget _buildModernTable() {
+  Widget _buildModernTable(BuildContext context, Color primaryColor) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.cardBg(context),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade300),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
+        border: Border.all(color: AppTheme.borderMedium(context)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+          ),
+        ],
       ),
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.symmetric(vertical: 12),
             decoration: BoxDecoration(
-              color: primaryColor,
-              borderRadius: const BorderRadius.only(topLeft: Radius.circular(7), topRight: Radius.circular(7)),
+              color: Colors.teal.shade700,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(7),
+                topRight: Radius.circular(7),
+              ),
             ),
             child: Table(
               children: const [
                 TableRow(
                   children: [
-                    Center(child: Text('Q', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
-                    Center(child: Text('A', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
-                    Center(child: Text('B', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
-                    Center(child: Text('R', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
-                    Center(child: Text('𝑥', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
-                    Center(child: Text('𝑦', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
-                    Center(child: Text('𝑧', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
+                    Center(
+                      child: Text(
+                        'Q',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    Center(
+                      child: Text(
+                        'A',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    Center(
+                      child: Text(
+                        'B',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    Center(
+                      child: Text(
+                        'R',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    Center(
+                      child: Text(
+                        '𝑥',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    Center(
+                      child: Text(
+                        '𝑦',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    Center(
+                      child: Text(
+                        '𝑧',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -190,7 +303,10 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: tableRows.length,
-            separatorBuilder: (context, index) => Divider(height: 1, color: Colors.grey.shade200),
+            separatorBuilder: (context, index) => Divider(
+              height: 1,
+              color: AppTheme.borderSubtle(context),
+            ),
             itemBuilder: (context, index) {
               final row = tableRows[index];
               return Padding(
@@ -199,13 +315,18 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
                   children: [
                     TableRow(
                       children: [
-                        _buildCell(row['q'].toString()),
-                        _buildCell(row['a'].toString()),
-                        _buildCell(row['b'].toString()),
-                        _buildCell(row['r'].toString()),
-                        _buildCell(row['x'].toString(), isBold: true),
-                        _buildCell(row['y'].toString()),
-                        _buildCell(row['z'].toString()),
+                        _buildCell(context, row['q'].toString(), primaryColor),
+                        _buildCell(context, row['a'].toString(), primaryColor),
+                        _buildCell(context, row['b'].toString(), primaryColor),
+                        _buildCell(context, row['r'].toString(), primaryColor),
+                        _buildCell(
+                          context,
+                          row['x'].toString(),
+                          primaryColor,
+                          isBold: true,
+                        ),
+                        _buildCell(context, row['y'].toString(), primaryColor),
+                        _buildCell(context, row['z'].toString(), primaryColor),
                       ],
                     ),
                   ],
@@ -218,35 +339,50 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
     );
   }
 
-  Widget _buildCell(String text, {bool isBold = false}) {
+  Widget _buildCell(
+    BuildContext context,
+    String text,
+    Color primaryColor, {
+    bool isBold = false,
+  }) {
     return Center(
       child: Text(
         text,
         style: TextStyle(
           fontFamily: 'Courier New',
           fontSize: 13,
-          color: isBold ? primaryColor : Colors.black87,
+          fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+          color: isBold ? primaryColor : AppTheme.textPrimary(context),
         ),
       ),
     );
   }
 
-  Widget _buildResultCard() {
+  Widget _buildResultCard(BuildContext context) {
     bool isSuccess = finalResult.startsWith("Multiplicative");
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: isSuccess ? const Color(0xFFECFDF5) : const Color(0xFFFEF2F2),
+        color: isSuccess
+            ? AppTheme.successBg(context)
+            : AppTheme.errorBg(context),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isSuccess ? Colors.green : Colors.red, width: 2),
+        border: Border.all(
+          color: isSuccess
+              ? AppTheme.successBorder(context)
+              : AppTheme.errorBorder(context),
+          width: 2,
+        ),
       ),
       child: Text(
         finalResult,
         textAlign: TextAlign.center,
         style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: isSuccess ? const Color(0xFF065F46) : const Color(0xFF991B1B)
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: isSuccess
+              ? AppTheme.successText(context)
+              : AppTheme.errorText(context),
         ),
       ),
     );

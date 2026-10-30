@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_theme.dart';
 
 enum VigenereMode { encrypt, decrypt }
 
@@ -17,13 +18,15 @@ class _VigenereScreenState extends State<VigenereScreen> {
   String result = '';
   String repeatedKeyDisplay = '';
 
-  final Color primaryColor = Colors.deepPurple.shade600;
+  Color _accent(BuildContext context) => AppTheme.purpleAccent(context);
 
   void _processCipher() {
     String text = messageController.text;
     String keyword = keywordController.text.toUpperCase();
 
-    if (text.isEmpty || keyword.isEmpty || !RegExp(r'^[A-Z]+$').hasMatch(keyword)) {
+    if (text.isEmpty ||
+        keyword.isEmpty ||
+        !RegExp(r'^[A-Z]+$').hasMatch(keyword)) {
       setState(() {
         result = '';
         repeatedKeyDisplay = '';
@@ -38,10 +41,10 @@ class _VigenereScreenState extends State<VigenereScreen> {
     for (int i = 0; i < text.length; i++) {
       int charCode = text.codeUnitAt(i);
 
-      if ((charCode >= 65 && charCode <= 90) || (charCode >= 97 && charCode <= 122)) {
+      if ((charCode >= 65 && charCode <= 90) ||
+          (charCode >= 97 && charCode <= 122)) {
         int base = (charCode >= 65 && charCode <= 90) ? 65 : 97;
         int p = charCode - base;
-
 
         String currentKeyChar = keyword[keywordIndex % keyword.length];
         int k = currentKeyChar.codeUnitAt(0) - 65;
@@ -70,7 +73,7 @@ class _VigenereScreenState extends State<VigenereScreen> {
   }
 
   void _clearAll() {
-    FocusScope.of(context).unfocus() ;
+    FocusScope.of(context).unfocus();
 
     setState(() {
       messageController.clear();
@@ -81,11 +84,11 @@ class _VigenereScreenState extends State<VigenereScreen> {
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
+    final Color primaryColor = _accent(context);
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppTheme.scaffoldBg(context),
       appBar: AppBar(
         title: Wrap(
           alignment: WrapAlignment.center,
@@ -100,9 +103,11 @@ class _VigenereScreenState extends State<VigenereScreen> {
           ],
         ),
         centerTitle: true,
-        backgroundColor: primaryColor,
+        backgroundColor: AppTheme.purpleAppBar(context),
         foregroundColor: Colors.white,
-        actions: [IconButton(onPressed: _clearAll, icon: const Icon(Icons.refresh))],
+        actions: [
+          IconButton(onPressed: _clearAll, icon: const Icon(Icons.refresh)),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -110,16 +115,28 @@ class _VigenereScreenState extends State<VigenereScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildInputField(messageController, "Message", Icons.message_outlined, 3),
+              _buildInputField(
+                context,
+                messageController,
+                "Message",
+                Icons.message_outlined,
+                3,
+                primaryColor,
+              ),
               const SizedBox(height: 16),
-              _buildInputField(keywordController, "Keyword (Letters Only)", Icons.vpn_key_outlined, 1),
+              _buildInputField(
+                context,
+                keywordController,
+                "Keyword (Letters Only)",
+                Icons.vpn_key_outlined,
+                1,
+                primaryColor,
+              ),
               const SizedBox(height: 24),
-        
-        
-              if (repeatedKeyDisplay.isNotEmpty) _buildEducationalPreview(),
-        
+              if (repeatedKeyDisplay.isNotEmpty)
+                _buildEducationalPreview(context, primaryColor),
               const SizedBox(height: 24),
-              _buildModeSelector(),
+              _buildModeSelector(context, primaryColor),
               const SizedBox(height: 32),
               _buildResultCard(),
             ],
@@ -129,23 +146,33 @@ class _VigenereScreenState extends State<VigenereScreen> {
     );
   }
 
-  Widget _buildEducationalPreview() {
+  Widget _buildEducationalPreview(BuildContext context, Color primaryColor) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.amber.shade50,
+        color: AppTheme.warningBg(context),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.amber.shade300),
+        border: Border.all(color: AppTheme.warningBorder(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.school_outlined, size: 18, color: Colors.amber.shade900),
+              Icon(
+                Icons.school_outlined,
+                size: 18,
+                color: AppTheme.warningText(context),
+              ),
               const SizedBox(width: 8),
-              Text("How it works (Key Alignment):",
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.amber.shade900)),
+              Text(
+                "How it works (Key Alignment):",
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.warningText(context),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 10),
@@ -154,8 +181,22 @@ class _VigenereScreenState extends State<VigenereScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("MSG: ${messageController.text}", style: const TextStyle(fontFamily: 'Courier New', fontWeight: FontWeight.bold)),
-                Text("KEY: $repeatedKeyDisplay", style: TextStyle(fontFamily: 'Courier New', color: primaryColor, fontWeight: FontWeight.bold)),
+                Text(
+                  "MSG: ${messageController.text}",
+                  style: TextStyle(
+                    fontFamily: 'Courier New',
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textPrimary(context),
+                  ),
+                ),
+                Text(
+                  "KEY: $repeatedKeyDisplay",
+                  style: TextStyle(
+                    fontFamily: 'Courier New',
+                    color: primaryColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
           ),
@@ -164,21 +205,31 @@ class _VigenereScreenState extends State<VigenereScreen> {
     );
   }
 
-  Widget _buildInputField(TextEditingController ctrl, String label, IconData icon, int lines) {
+  Widget _buildInputField(
+    BuildContext context,
+    TextEditingController ctrl,
+    String label,
+    IconData icon,
+    int lines,
+    Color primaryColor,
+  ) {
     return TextField(
       controller: ctrl,
       maxLines: lines,
+      style: TextStyle(color: AppTheme.textPrimary(context)),
       onChanged: (_) => _processCipher(),
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, color: primaryColor),
         border: const OutlineInputBorder(),
-        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: primaryColor, width: 2)),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: primaryColor, width: 2),
+        ),
       ),
     );
   }
 
-  Widget _buildModeSelector() {
+  Widget _buildModeSelector(BuildContext context, Color primaryColor) {
     return RadioGroup<VigenereMode>(
       groupValue: _selectedMode,
       onChanged: (v) {
@@ -191,14 +242,20 @@ class _VigenereScreenState extends State<VigenereScreen> {
         children: [
           Expanded(
             child: RadioListTile<VigenereMode>(
-              title: const Text("Encrypt"),
+              title: Text(
+                "Encrypt",
+                style: TextStyle(color: AppTheme.textPrimary(context)),
+              ),
               value: VigenereMode.encrypt,
               activeColor: primaryColor,
             ),
           ),
           Expanded(
             child: RadioListTile<VigenereMode>(
-              title: const Text("Decrypt"),
+              title: Text(
+                "Decrypt",
+                style: TextStyle(color: AppTheme.textPrimary(context)),
+              ),
               value: VigenereMode.decrypt,
               activeColor: primaryColor,
             ),
@@ -209,21 +266,40 @@ class _VigenereScreenState extends State<VigenereScreen> {
   }
 
   Widget _buildResultCard() {
+    final Color cardColor = Colors.deepPurple.shade600;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: primaryColor,
+        color: cardColor,
         borderRadius: BorderRadius.circular(15),
-        boxShadow: [BoxShadow(color: primaryColor.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 5))],
+        boxShadow: [
+          BoxShadow(
+            color: cardColor.withValues(alpha: 0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Column(
         children: [
-          const Text("RESULT", style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: 12)),
+          const Text(
+            "RESULT",
+            style: TextStyle(
+              color: Colors.white70,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
+          ),
           const SizedBox(height: 10),
           SelectableText(
             result.isEmpty ? '...' : result,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'Courier New'),
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              fontFamily: 'Courier New',
+            ),
             textAlign: TextAlign.center,
           ),
         ],

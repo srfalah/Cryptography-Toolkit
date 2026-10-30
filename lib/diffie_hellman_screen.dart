@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math';
+import 'app_theme.dart';
 
 class DiffieHellmanScreen extends StatefulWidget {
   const DiffieHellmanScreen({super.key});
@@ -10,10 +11,10 @@ class DiffieHellmanScreen extends StatefulWidget {
 }
 
 class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
-  final Color primaryColor = const Color(0xFF1E3A8A);
-  final Color aliceColor = Colors.pink.shade700;
-  final Color bobColor = Colors.blue.shade800;
-  final Color successColor = Colors.green.shade700;
+  Color get primaryColor => AppTheme.navyAccent(context);
+  Color get aliceColor => AppTheme.aliceColor(context);
+  Color get bobColor => AppTheme.bobColor(context);
+  Color get successColor => AppTheme.successText(context);
 
   final TextEditingController qController = TextEditingController();
   final TextEditingController alphaController = TextEditingController();
@@ -244,7 +245,7 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: AppTheme.scaffoldBgAlt(context),
       appBar: AppBar(
         title: Wrap(
           alignment: WrapAlignment.center,
@@ -260,7 +261,7 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
           ],
         ),
         centerTitle: true,
-        backgroundColor: primaryColor,
+        backgroundColor: AppTheme.navyAppBar(context),
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -303,14 +304,16 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
   }
 
   Widget _buildGlobalCard() {
+    final bool isDark = AppTheme.isDark(context);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.cardBg(context),
         borderRadius: BorderRadius.circular(16),
+        border: isDark ? Border.all(color: AppTheme.borderSubtle(context)) : null,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -350,8 +353,9 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
                 label:
                     const Text("Auto Demo", style: TextStyle(fontSize: 11.5)),
                 style: TextButton.styleFrom(
-                  foregroundColor: Colors.teal.shade700,
-                  backgroundColor: Colors.teal.shade50,
+                  foregroundColor: AppTheme.tealAccent(context),
+                  backgroundColor: AppTheme.tealAccent(context)
+                      .withValues(alpha: isDark ? 0.14 : 0.1),
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   minimumSize: Size.zero,
@@ -387,20 +391,20 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.amber.shade50,
+                color: AppTheme.warningBg(context),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.amber.shade300),
+                border: Border.all(color: AppTheme.warningBorder(context)),
               ),
               child: Row(
                 children: [
                   Icon(Icons.warning_amber_rounded,
-                      color: Colors.amber.shade900, size: 16),
+                      color: AppTheme.warningText(context), size: 16),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       errorMessage!,
                       style: TextStyle(
-                        color: Colors.amber.shade900,
+                        color: AppTheme.warningText(context),
                         fontSize: 11.5,
                         fontWeight: FontWeight.w600,
                       ),
@@ -481,9 +485,9 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.cardBg(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
+        border: Border.all(color: color.withValues(alpha: 0.35), width: 1.5),
         boxShadow: [
           BoxShadow(
             color: color.withValues(alpha: 0.06),
@@ -531,7 +535,7 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
+                    color: color.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Row(
@@ -567,12 +571,12 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.07),
+              color: color.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
                 color: publicVal != null
                     ? color.withValues(alpha: 0.45)
-                    : Colors.grey.shade200,
+                    : AppTheme.borderSubtle(context),
               ),
             ),
             child: Column(
@@ -592,7 +596,7 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
                     fontFamily: 'Courier New',
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: Colors.blueGrey.shade700,
+                    color: AppTheme.textSecondary(context),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -600,7 +604,9 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                   decoration: BoxDecoration(
-                    color: publicVal != null ? color : Colors.grey.shade200,
+                    color: publicVal != null
+                        ? color
+                        : AppTheme.pillBg(context),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -609,7 +615,9 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
                       fontFamily: 'Courier New',
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: publicVal != null ? Colors.white : Colors.black38,
+                      color: publicVal != null
+                          ? Colors.white
+                          : AppTheme.textMuted(context),
                     ),
                   ),
                 ),
@@ -636,6 +644,7 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
               painter: _CrossoverArrowsPainter(
                 aliceColor: aliceColor,
                 bobColor: bobColor,
+                inactiveColor: AppTheme.borderMedium(context),
                 isActive: hasBothPublic,
               ),
             ),
@@ -667,10 +676,12 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppTheme.cardBg(context),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: hasBothPublic ? primaryColor : Colors.grey.shade300,
+                color: hasBothPublic
+                    ? primaryColor
+                    : AppTheme.borderMedium(context),
                 width: 1.5,
               ),
               boxShadow: [
@@ -687,7 +698,9 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
                 Icon(
                   Icons.swap_horiz_rounded,
                   size: 16,
-                  color: hasBothPublic ? primaryColor : Colors.grey,
+                  color: hasBothPublic
+                      ? primaryColor
+                      : AppTheme.textMuted(context),
                 ),
                 const SizedBox(width: 5),
                 Text(
@@ -696,7 +709,9 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
                     fontSize: 9.5,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 0.6,
-                    color: hasBothPublic ? primaryColor : Colors.grey.shade600,
+                    color: hasBothPublic
+                        ? primaryColor
+                        : AppTheme.textMuted(context),
                   ),
                 ),
               ],
@@ -739,7 +754,7 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: isActive ? color : Colors.grey.shade200,
+        color: isActive ? color : AppTheme.pillBg(context),
         borderRadius: BorderRadius.circular(8),
         boxShadow: isActive
             ? [
@@ -757,7 +772,7 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
           fontFamily: 'Courier New',
           fontSize: 11,
           fontWeight: FontWeight.bold,
-          color: isActive ? Colors.white : Colors.grey.shade600,
+          color: isActive ? Colors.white : AppTheme.textMuted(context),
         ),
       ),
     );
@@ -771,10 +786,14 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
       decoration: BoxDecoration(
-        color: isActive ? color.withValues(alpha: 0.12) : Colors.grey.shade100,
+        color: isActive
+            ? color.withValues(alpha: 0.14)
+            : AppTheme.surfaceSubtle(context),
         borderRadius: BorderRadius.circular(6),
         border: Border.all(
-          color: isActive ? color.withValues(alpha: 0.4) : Colors.grey.shade300,
+          color: isActive
+              ? color.withValues(alpha: 0.45)
+              : AppTheme.borderMedium(context),
         ),
       ),
       child: Text(
@@ -782,7 +801,7 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
         style: TextStyle(
           fontSize: 9.5,
           fontWeight: FontWeight.bold,
-          color: isActive ? color : Colors.grey.shade500,
+          color: isActive ? color : AppTheme.textMuted(context),
         ),
       ),
     );
@@ -837,10 +856,12 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.cardBg(context),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isReady ? successColor : Colors.grey.shade300,
+          color: isReady
+              ? AppTheme.successBorder(context)
+              : AppTheme.borderMedium(context),
           width: isReady ? 2.0 : 1.2,
         ),
         boxShadow: [
@@ -858,7 +879,7 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.bold,
-              color: Colors.blueGrey.shade800,
+              color: AppTheme.textPrimary(context),
             ),
           ),
           const SizedBox(height: 6),
@@ -874,7 +895,7 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
               children: [
                 TextSpan(
                   text: "K = (",
-                  style: TextStyle(color: Colors.blueGrey.shade700),
+                  style: TextStyle(color: AppTheme.textSecondary(context)),
                 ),
                 TextSpan(
                   text: receivedKeySymbol,
@@ -882,7 +903,7 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
                 ),
                 TextSpan(
                   text: ")^",
-                  style: TextStyle(color: Colors.blueGrey.shade700),
+                  style: TextStyle(color: AppTheme.textSecondary(context)),
                 ),
                 TextSpan(
                   text: ownPrivateSymbol,
@@ -890,7 +911,7 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
                 ),
                 TextSpan(
                   text: " mod q",
-                  style: TextStyle(color: Colors.blueGrey.shade700),
+                  style: TextStyle(color: AppTheme.textSecondary(context)),
                 ),
               ],
             ),
@@ -901,9 +922,9 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
             decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
+              color: AppTheme.surfaceSubtle(context),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.shade200),
+              border: Border.all(color: AppTheme.borderSubtle(context)),
             ),
             child: FittedBox(
               fit: BoxFit.scaleDown,
@@ -914,7 +935,7 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                     decoration: BoxDecoration(
-                      color: partnerColor.withValues(alpha: 0.14),
+                      color: partnerColor.withValues(alpha: 0.16),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
@@ -933,7 +954,7 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 4, vertical: 1),
                       decoration: BoxDecoration(
-                        color: ownerColor.withValues(alpha: 0.14),
+                        color: ownerColor.withValues(alpha: 0.16),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
@@ -953,7 +974,7 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
                       fontFamily: 'Courier New',
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: Colors.blueGrey.shade700,
+                      color: AppTheme.textSecondary(context),
                     ),
                   ),
                 ],
@@ -967,7 +988,9 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 6),
             decoration: BoxDecoration(
-              color: isReady ? Colors.green.shade50 : Colors.grey.shade100,
+              color: isReady
+                  ? AppTheme.successBg(context)
+                  : AppTheme.surfaceSubtle(context),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
@@ -977,7 +1000,7 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
                 fontFamily: 'Courier New',
                 fontSize: 17,
                 fontWeight: FontWeight.bold,
-                color: isReady ? successColor : Colors.grey.shade500,
+                color: isReady ? successColor : AppTheme.textMuted(context),
               ),
             ),
           ),
@@ -1016,14 +1039,14 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           filled: true,
-          fillColor: const Color(0xFFF8FAFC),
+          fillColor: AppTheme.surfaceSubtle(context),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: Colors.grey.shade300),
+            borderSide: BorderSide(color: AppTheme.borderMedium(context)),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: color.withValues(alpha: 0.3)),
+            borderSide: BorderSide(color: color.withValues(alpha: 0.35)),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
@@ -1038,9 +1061,9 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.green.shade50,
+        color: AppTheme.successBg(context),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.green.shade400, width: 1.5),
+        border: Border.all(color: AppTheme.successBorder(context), width: 1.5),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1057,7 +1080,7 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
                       Text(
                         "Shared Secret Matched!  K = $sharedA",
                         style: TextStyle(
-                          color: Colors.green.shade900,
+                          color: successColor,
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                         ),
@@ -1068,7 +1091,7 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
                           fontFamily: 'Courier New',
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: Colors.green.shade800,
+                          color: successColor.withValues(alpha: 0.9),
                         ),
                       ),
                     ],
@@ -1092,11 +1115,13 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
 class _CrossoverArrowsPainter extends CustomPainter {
   final Color aliceColor;
   final Color bobColor;
+  final Color inactiveColor;
   final bool isActive;
 
   _CrossoverArrowsPainter({
     required this.aliceColor,
     required this.bobColor,
+    required this.inactiveColor,
     required this.isActive,
   });
 
@@ -1108,13 +1133,13 @@ class _CrossoverArrowsPainter extends CustomPainter {
     final double bottomY = size.height - 4;
 
     final Paint alicePaint = Paint()
-      ..color = isActive ? aliceColor : Colors.grey.shade300
+      ..color = isActive ? aliceColor : inactiveColor
       ..strokeWidth = isActive ? 2.5 : 1.8
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
     final Paint bobPaint = Paint()
-      ..color = isActive ? bobColor : Colors.grey.shade300
+      ..color = isActive ? bobColor : inactiveColor
       ..strokeWidth = isActive ? 2.5 : 1.8
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -1134,7 +1159,7 @@ class _CrossoverArrowsPainter extends CustomPainter {
     _drawArrowHead(
       canvas,
       Offset(rightX, bottomY - 22),
-      isActive ? aliceColor : Colors.grey.shade400,
+      isActive ? aliceColor : inactiveColor,
     );
 
     // 2. Bob (Top-Right) -> Alice (Bottom-Left) S-Curve
@@ -1152,7 +1177,7 @@ class _CrossoverArrowsPainter extends CustomPainter {
     _drawArrowHead(
       canvas,
       Offset(leftX, bottomY - 22),
-      isActive ? bobColor : Colors.grey.shade400,
+      isActive ? bobColor : inactiveColor,
     );
   }
 
@@ -1174,6 +1199,7 @@ class _CrossoverArrowsPainter extends CustomPainter {
   bool shouldRepaint(covariant _CrossoverArrowsPainter oldDelegate) {
     return oldDelegate.isActive != isActive ||
         oldDelegate.aliceColor != aliceColor ||
-        oldDelegate.bobColor != bobColor;
+        oldDelegate.bobColor != bobColor ||
+        oldDelegate.inactiveColor != inactiveColor;
   }
 }
