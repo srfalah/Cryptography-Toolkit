@@ -104,7 +104,7 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text("Inputs", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryColor)),
-              Divider(thickness: 1.5, color: primaryColor.withOpacity(0.3)),
+              Divider(thickness: 1.5, color: primaryColor.withValues(alpha: 0.3)),
               const SizedBox(height: 16),
         
               _buildTextField(eController, 'Enter Value (e)'),
@@ -160,7 +160,7 @@ class _InverseCalcScreenState extends State<InverseCalcScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.grey.shade300),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
       ),
       child: Column(
         children: [

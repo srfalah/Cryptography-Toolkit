@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
-import 'dart:async';
+
 
 class RsaScreen extends StatefulWidget {
   const RsaScreen({super.key});
@@ -63,7 +63,9 @@ class _RsaScreenState extends State<RsaScreen> {
         phiController.text = ((p - BigInt.one) * (q - BigInt.one)).toString();
         _onEFieldChanged();
       }
-    } catch (e) {}
+    } catch (e) {
+      // Ignore invalid input
+    }
   }
 
   void _suggestE() {
@@ -97,7 +99,9 @@ class _RsaScreenState extends State<RsaScreen> {
         }
         start += BigInt.two;
       }
-    } catch (e) {}
+    } catch (e) {
+      // Ignore invalid input
+    }
   }
 
   void _onEFieldChanged() {
@@ -226,7 +230,7 @@ class _RsaScreenState extends State<RsaScreen> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Container(
+                        SizedBox(
                           height: 55,
                           child: ElevatedButton(
                             onPressed: _suggestE,
@@ -296,7 +300,7 @@ class _RsaScreenState extends State<RsaScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

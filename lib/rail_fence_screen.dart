@@ -164,20 +164,42 @@ class _RailFenceScreenState extends State<RailFenceScreen> {
               const SizedBox(height: 20),
 
               _buildSectionTitle("Select Key (Rails)"),
-              Row(
-                children: [
-                  _buildKeyRadioTile("2 Rails", 2),
-                  _buildKeyRadioTile("3 Rails", 3),
-                ],
+              RadioGroup<int>(
+                groupValue: _selectedKey,
+                onChanged: (val) {
+                  if (val != null) {
+                    setState(() {
+                      _selectedKey = val;
+                      _processCipher();
+                    });
+                  }
+                },
+                child: Row(
+                  children: [
+                    _buildKeyRadioTile("2 Rails", 2),
+                    _buildKeyRadioTile("3 Rails", 3),
+                  ],
+                ),
               ),
               const SizedBox(height: 10),
 
               _buildSectionTitle("Select Mode"),
-              Row(
-                children: [
-                  _buildModeRadioTile("Encrypt", RailFenceMode.encrypt),
-                  _buildModeRadioTile("Decrypt", RailFenceMode.decrypt),
-                ],
+              RadioGroup<RailFenceMode>(
+                groupValue: _selectedMode,
+                onChanged: (val) {
+                  if (val != null) {
+                    setState(() {
+                      _selectedMode = val;
+                      _processCipher();
+                    });
+                  }
+                },
+                child: Row(
+                  children: [
+                    _buildModeRadioTile("Encrypt", RailFenceMode.encrypt),
+                    _buildModeRadioTile("Decrypt", RailFenceMode.decrypt),
+                  ],
+                ),
               ),
               const SizedBox(height: 20),
 
@@ -201,8 +223,8 @@ class _RailFenceScreenState extends State<RailFenceScreen> {
           width: double.infinity,
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: highlightColor.withOpacity(0.3),
-            border: Border.all(color: primaryColor.withOpacity(0.5)),
+            color: highlightColor.withValues(alpha: 0.3),
+            border: Border.all(color: primaryColor.withValues(alpha: 0.5)),
             borderRadius: BorderRadius.circular(10),
           ),
           child: SingleChildScrollView(
@@ -264,13 +286,6 @@ class _RailFenceScreenState extends State<RailFenceScreen> {
       child: RadioListTile<int>(
         title: Text(title, style: const TextStyle(fontSize: 14)),
         value: value,
-        groupValue: _selectedKey,
-        onChanged: (val) {
-          setState(() {
-            _selectedKey = val!;
-            _processCipher();
-          });
-        },
         activeColor: primaryColor,
         contentPadding: EdgeInsets.zero,
       ),
@@ -282,13 +297,6 @@ class _RailFenceScreenState extends State<RailFenceScreen> {
       child: RadioListTile<RailFenceMode>(
         title: Text(title, style: const TextStyle(fontSize: 14)),
         value: mode,
-        groupValue: _selectedMode,
-        onChanged: (val) {
-          setState(() {
-            _selectedMode = val!;
-            _processCipher();
-          });
-        },
         activeColor: primaryColor,
         contentPadding: EdgeInsets.zero,
       ),
@@ -300,7 +308,7 @@ class _RailFenceScreenState extends State<RailFenceScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: primaryColor.withOpacity(0.05),
+        color: primaryColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(15),
         border: Border.all(color: primaryColor, width: 2),
       ),

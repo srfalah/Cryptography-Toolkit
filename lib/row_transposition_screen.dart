@@ -202,11 +202,22 @@ class _RowTranspositionScreenState extends State<RowTranspositionScreen> {
               const SizedBox(height: 20),
 
               _buildSectionTitle("Select Mode"),
-              Row(
-                children: [
-                  _buildModeRadioTile("Encrypt", RowTransMode.encrypt),
-                  _buildModeRadioTile("Decrypt", RowTransMode.decrypt),
-                ],
+              RadioGroup<RowTransMode>(
+                groupValue: _selectedMode,
+                onChanged: (val) {
+                  if (val != null) {
+                    setState(() {
+                      _selectedMode = val;
+                      _processCipher();
+                    });
+                  }
+                },
+                child: Row(
+                  children: [
+                    _buildModeRadioTile("Encrypt", RowTransMode.encrypt),
+                    _buildModeRadioTile("Decrypt", RowTransMode.decrypt),
+                  ],
+                ),
               ),
               const SizedBox(height: 20),
 
@@ -237,8 +248,8 @@ class _RowTranspositionScreenState extends State<RowTranspositionScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: highlightColor.withOpacity(0.3),
-                  border: Border.all(color: primaryColor.withOpacity(0.5)),
+                  color: highlightColor.withValues(alpha: 0.3),
+                  border: Border.all(color: primaryColor.withValues(alpha: 0.5)),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: SingleChildScrollView(
@@ -319,13 +330,6 @@ class _RowTranspositionScreenState extends State<RowTranspositionScreen> {
       child: RadioListTile<RowTransMode>(
         title: Text(title, style: const TextStyle(fontSize: 14)),
         value: mode,
-        groupValue: _selectedMode,
-        onChanged: (val) {
-          setState(() {
-            _selectedMode = val!;
-            _processCipher();
-          });
-        },
         activeColor: primaryColor,
         contentPadding: EdgeInsets.zero,
       ),
@@ -337,7 +341,7 @@ class _RowTranspositionScreenState extends State<RowTranspositionScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: primaryColor.withOpacity(0.05),
+        color: primaryColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(15),
         border: Border.all(color: primaryColor, width: 2),
       ),

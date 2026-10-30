@@ -248,7 +248,7 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
       textAlign: TextAlign.center,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(fontSize: 11, color: color?.withOpacity(0.8)),
+        labelStyle: TextStyle(fontSize: 11, color: color?.withValues(alpha: 0.8)),
         focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: color ?? primaryColor, width: 2)),
       ),
     );

@@ -92,7 +92,9 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
       setState(() {
         kRandomController.text = k.toString();
       });
-    } catch (e) {}
+    } catch (e) {
+      // Ignore invalid number format
+    }
   }
 
   void _encryptMessage() {
@@ -318,7 +320,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -380,9 +382,9 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
       decoration: BoxDecoration(
-        color: primaryColor.withOpacity(0.05),
+        color: primaryColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: primaryColor.withOpacity(0.3)),
+        border: Border.all(color: primaryColor.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [

@@ -119,7 +119,7 @@ class _CaesarScreenState extends State<CaesarScreen> {
                       divisions: 25,
                       label: _shiftValue.toInt().toString(),
                       activeColor: primaryColor,
-                      inactiveColor: primaryColor.withOpacity(0.2),
+                      inactiveColor: primaryColor.withValues(alpha: 0.2),
                       onChanged: (double value) {
                         setState(() {
                           _shiftValue = value;
@@ -140,11 +140,22 @@ class _CaesarScreenState extends State<CaesarScreen> {
               const SizedBox(height: 25),
         
               _buildSectionTitle("3. Operation"),
-              Row(
-                children: [
-                  _buildRadioTile("Encrypt", CaesarMode.encrypt),
-                  _buildRadioTile("Decrypt", CaesarMode.decrypt),
-                ],
+              RadioGroup<CaesarMode>(
+                groupValue: _selectedMode,
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() {
+                      _selectedMode = value;
+                      _processCipher();
+                    });
+                  }
+                },
+                child: Row(
+                  children: [
+                    _buildRadioTile("Encrypt", CaesarMode.encrypt),
+                    _buildRadioTile("Decrypt", CaesarMode.decrypt),
+                  ],
+                ),
               ),
               const SizedBox(height: 35),
         
@@ -168,13 +179,6 @@ class _CaesarScreenState extends State<CaesarScreen> {
       child: RadioListTile<CaesarMode>(
         title: Text(title, style: const TextStyle(fontSize: 14)),
         value: mode,
-        groupValue: _selectedMode,
-        onChanged: (value) {
-          setState(() {
-            _selectedMode = value!;
-            _processCipher();
-          });
-        },
         activeColor: primaryColor,
       ),
     );
@@ -184,7 +188,7 @@ class _CaesarScreenState extends State<CaesarScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: primaryColor.withOpacity(0.05),
+        color: primaryColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(15),
         border: Border.all(color: primaryColor, width: 2),
       ),

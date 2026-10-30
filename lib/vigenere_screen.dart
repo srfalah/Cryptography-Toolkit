@@ -179,17 +179,32 @@ class _VigenereScreenState extends State<VigenereScreen> {
   }
 
   Widget _buildModeSelector() {
-    return Row(
-      children: [
-        Expanded(child: RadioListTile<VigenereMode>(
-          title: const Text("Encrypt"), value: VigenereMode.encrypt, groupValue: _selectedMode,
-          onChanged: (v) { setState(() => _selectedMode = v!); _processCipher(); }, activeColor: primaryColor,
-        )),
-        Expanded(child: RadioListTile<VigenereMode>(
-          title: const Text("Decrypt"), value: VigenereMode.decrypt, groupValue: _selectedMode,
-          onChanged: (v) { setState(() => _selectedMode = v!); _processCipher(); }, activeColor: primaryColor,
-        )),
-      ],
+    return RadioGroup<VigenereMode>(
+      groupValue: _selectedMode,
+      onChanged: (v) {
+        if (v != null) {
+          setState(() => _selectedMode = v);
+          _processCipher();
+        }
+      },
+      child: Row(
+        children: [
+          Expanded(
+            child: RadioListTile<VigenereMode>(
+              title: const Text("Encrypt"),
+              value: VigenereMode.encrypt,
+              activeColor: primaryColor,
+            ),
+          ),
+          Expanded(
+            child: RadioListTile<VigenereMode>(
+              title: const Text("Decrypt"),
+              value: VigenereMode.decrypt,
+              activeColor: primaryColor,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -200,7 +215,7 @@ class _VigenereScreenState extends State<VigenereScreen> {
       decoration: BoxDecoration(
         color: primaryColor,
         borderRadius: BorderRadius.circular(15),
-        boxShadow: [BoxShadow(color: primaryColor.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5))],
+        boxShadow: [BoxShadow(color: primaryColor.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 5))],
       ),
       child: Column(
         children: [

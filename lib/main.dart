@@ -9,6 +9,8 @@ import 'vigenere_screen.dart';
 import 'elgamal_screen.dart';
 import 'rail_fence_screen.dart';
 import 'row_transposition_screen.dart';
+import 'playfair_screen.dart';
+import 'route_cipher_screen.dart';
 
 void main() {
   runApp(const CryptographyApp());
@@ -109,6 +111,15 @@ class DashboardScreen extends StatelessWidget {
                 color: Colors.deepPurple.shade600,
                 destination: const VigenereScreen(),
               ),
+              _buildMenuCard(
+                context,
+                isSubItem: true,
+                title: "Playfair Cipher",
+                subtitle: "5×5 matrix digraph substitution",
+                icon: Icons.grid_on_rounded,
+                color: Colors.deepPurple.shade600,
+                destination: const PlayfairScreen(),
+              ),
 
               const SizedBox(height: 10),
 
@@ -130,6 +141,15 @@ class DashboardScreen extends StatelessWidget {
                 icon: Icons.view_column_rounded,
                 color: Colors.blueGrey.shade800,
                 destination: const RowTranspositionScreen(),
+              ),
+              _buildMenuCard(
+                context,
+                isSubItem: true,
+                title: "Route Cipher",
+                subtitle: "Spiral & snake grid path transposition",
+                icon: Icons.route_rounded,
+                color: Colors.blueGrey.shade800,
+                destination: const RouteCipherScreen(),
               ),
 
               const SizedBox(height: 20),
@@ -189,8 +209,8 @@ class DashboardScreen extends StatelessWidget {
         gradient: LinearGradient(
           colors: [
             const Color(0xFF1E3A8A),
-            const Color(0xFF1E3A8A).withOpacity(0.8),
-            const Color(0xFF1E3A8A).withOpacity(0.0),
+            const Color(0xFF1E3A8A).withValues(alpha: 0.8),
+            const Color(0xFF1E3A8A).withValues(alpha: 0.0),
           ],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
@@ -227,8 +247,8 @@ class DashboardScreen extends StatelessWidget {
         border: Border(left: BorderSide(color: color, width: 5)),
         gradient: LinearGradient(
           colors: [
-            color.withOpacity(0.15),
-            color.withOpacity(0.02),
+            color.withValues(alpha: 0.15),
+            color.withValues(alpha: 0.02),
           ],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
@@ -259,13 +279,13 @@ class DashboardScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 4))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 4))],
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         leading: Container(
           padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+          decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
           child: Icon(icon, color: color, size: 28),
         ),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
