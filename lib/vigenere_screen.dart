@@ -90,17 +90,9 @@ class _VigenereScreenState extends State<VigenereScreen> {
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBg(context),
       appBar: AppBar(
-        title: Wrap(
-          alignment: WrapAlignment.center,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: const [
-            Icon(Icons.lock_open, size: 25),
-            SizedBox(width: 8),
-            Text(
-              'Vigenère Cipher',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
-            ),
-          ],
+        title: const Text(
+          'Vigenère Cipher',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,
         backgroundColor: AppTheme.purpleAppBar(context),

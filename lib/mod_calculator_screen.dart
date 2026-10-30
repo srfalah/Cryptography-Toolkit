@@ -1,8 +1,14 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'app_theme.dart';
+import 'inverse_calc_screen.dart';
 
 enum CalcMode { modPow, powerOnly, modOnly }
+
+// Keypad modes: choose which crypto function keys are shown
+enum CalcUiMode { basic, modular, numberTheory }
 
 enum MathOp {
   none,
@@ -10,6 +16,8 @@ enum MathOp {
   modInverse, // a^-1 mod n
   gcd, // gcd(a, b)
   primitiveRoot, // Smart Primitive Root: root(q) or isRoot(α, q)
+  nextPrime, // smallest prime > n
+  prevPrime, // largest prime < n
   add, // a + b
   subtract, // a − b
   multiply, // a × b
@@ -21,10 +29,45 @@ class CalcHistoryEntry {
   final String result;
   final String? note;
 
+  // Snapshot of the whole expression so it can be reloaded later
+  final String baseText;
+  final String exponentText;
+  final String modText;
+  final MathOp op;
+  final bool hasMod;
+  bool pinned;
+
   CalcHistoryEntry({
     required this.expression,
     required this.result,
     this.note,
+    this.baseText = '',
+    this.exponentText = '',
+    this.modText = '',
+    this.op = MathOp.none,
+    this.hasMod = false,
+    this.pinned = false,
+  });
+}
+
+// Content of the "Steps" sheet
+class _StepsData {
+  final String title;
+  final List<String> intro;
+  final List<String> headers;
+  final List<List<String>> rows;
+  final String conclusion;
+  final String? inverseE;
+  final String? inverseN;
+
+  _StepsData({
+    required this.title,
+    required this.intro,
+    required this.headers,
+    required this.rows,
+    required this.conclusion,
+    this.inverseE,
+    this.inverseN,
   });
 }
 
@@ -35,7 +78,8 @@ class ModCalculatorScreen extends StatefulWidget {
   State<ModCalculatorScreen> createState() => _ModCalculatorScreenState();
 }
 
-class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
+class _ModCalculatorScreenState extends State<ModCalculatorScreen>
+    with SingleTickerProviderStateMixin {
   // Backing controllers preserved for the core BigInt mathematical calculations
   final TextEditingController baseController = TextEditingController();
   final TextEditingController exponentController = TextEditingController();
@@ -56,6 +100,20 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
   BigInt? _lastRootPrime;
   final List<CalcHistoryEntry> _history = [];
 
+  CalcUiMode _uiMode = CalcUiMode.modular;
+  String _verifyNote = '';
+
+  // Shakes the display card when "=" gives an error
+  late final AnimationController _shakeController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 420),
+  );
+
+  bool get _isSingleOperandOp =>
+      _currentOp == MathOp.primitiveRoot ||
+      _currentOp == MathOp.nextPrime ||
+      _currentOp == MathOp.prevPrime;
+
   // Signature screen theme color matching the rest of the app
   Color get primaryColor => AppTheme.orangeAccent(context);
 
@@ -64,6 +122,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
     baseController.dispose();
     exponentController.dispose();
     modController.dispose();
+    _shakeController.dispose();
     super.dispose();
   }
 
@@ -89,6 +148,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
     }
 
     _helperNote = '';
+    _verifyNote = '';
     _lastPrimitiveRoots = [];
     _lastRootPrime = null;
 
@@ -138,7 +198,8 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
         setState(() {
           _isError = false;
           result = resStr;
-          _helperNote = 'Verify: ($a × $inv) mod $n = 1';
+          _helperNote = 'gcd(a,n) = 1 (Coprime)  •  Inverse exists';
+          _verifyNote = '($a × $inv) mod $n = 1 ✓';
           if (commitToHistory) {
             _justCalculated = true;
             _recordHistory(_buildPlainExpression(), resStr, _helperNote);
@@ -254,6 +315,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
         final String rootsPreview = roots.take(6).map((e) => e.toString()).join(', ') +
             (roots.length > 6 ? '...' : '');
         final String resStr = isRoot ? 'YES (α = $alpha)' : 'NO (α = $alpha)';
+        _verifyNote = _rootVerifyNote(alpha, q, factors);
 
         setState(() {
           _isError = false;
@@ -278,6 +340,15 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
           }
         });
       }
+      return;
+    }
+
+    // 2b. Next / Previous prime
+    if (_currentOp == MathOp.nextPrime || _currentOp == MathOp.prevPrime) {
+      _evaluateNearbyPrime(
+        next: _currentOp == MathOp.nextPrime,
+        commitToHistory: commitToHistory,
+      );
       return;
     }
 
@@ -381,6 +452,11 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
               finalResult = normBase.modPow(exponent, mod);
             }
             _helperNote = _buildModInsight(base, mod);
+            if (exponent >= BigInt.zero) {
+              final String bin = exponent.toRadixString(2);
+              _verifyNote =
+                  'Square-and-Multiply: $exponent = $bin₂ (${bin.length} bits) ✓';
+            }
             break;
           case CalcMode.powerOnly:
             int exponent = int.parse(exponentController.text);
@@ -408,6 +484,8 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
             }
             finalResult = ((base % mod) + mod) % mod;
             _helperNote = _buildModInsight(base, mod);
+            _verifyNote =
+                '$base = ${(base - finalResult) ~/ mod} × $mod + $finalResult ✓';
             break;
         }
 
@@ -482,12 +560,18 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
           finalResult = a ~/ b;
           final BigInt rem = a.remainder(b);
           _helperNote = 'Quotient: $finalResult  •  Remainder: $rem';
+          _verifyNote =
+              '$finalResult × $b + $rem = ${finalResult * b + rem} ✓';
           break;
         case MathOp.gcd:
           finalResult = a.abs().gcd(b.abs());
           _helperNote = finalResult == BigInt.one
               ? 'Coprime (gcd = 1) • Modular inverse exists'
               : 'Not Coprime (Share factor $finalResult)';
+          if (finalResult > BigInt.zero) {
+            _verifyNote =
+                '${a.abs()} ÷ $finalResult = ${a.abs() ~/ finalResult} and ${b.abs()} ÷ $finalResult = ${b.abs() ~/ finalResult} (both exact ✓)';
+          }
           break;
         default:
           return;
@@ -504,6 +588,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
         }
         finalResult = ((finalResult % mod) + mod) % mod;
         _helperNote = _buildModInsight(finalResult, mod);
+        _verifyNote = '';
       }
 
       final String resStr = finalResult.toString();
@@ -577,6 +662,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
     _lastRootPrime = q;
 
     final String smallestRoot = roots.first.toString();
+    _verifyNote = _rootVerifyNote(roots.first, q, factors);
     final String allPreview =
         roots.take(7).map((r) => r.toString()).join(', ') +
             (roots.length > 7 ? '...' : '');
@@ -651,11 +737,121 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
         expression: expr,
         result: res,
         note: note.isEmpty ? null : note,
+        baseText: baseController.text,
+        exponentText: exponentController.text,
+        modText: modController.text,
+        op: _currentOp,
+        hasMod: _hasMod,
       ),
     );
     if (_history.length > 25) {
-      _history.removeLast();
+      final int idx = _history.lastIndexWhere((e) => !e.pinned);
+      if (idx != -1) _history.removeAt(idx);
     }
+  }
+
+  // Shows why a candidate α is (or is not) a primitive root of q
+  String _rootVerifyNote(BigInt alpha, BigInt q, List<BigInt> factors) {
+    if (q <= BigInt.two || factors.isEmpty) return '';
+    final BigInt phi = q - BigInt.one;
+    final List<String> parts = [];
+    bool noneIsOne = true;
+    for (final BigInt p in factors) {
+      final BigInt e = phi ~/ p;
+      final BigInt v = alpha.modPow(e, q);
+      if (v == BigInt.one) noneIsOne = false;
+      parts.add('$alpha^$e = $v');
+    }
+    return noneIsOne
+        ? '${parts.join(',  ')}  (none equals 1 → order is q−1 ✓)'
+        : '${parts.join(',  ')}  (one equals 1 → not a primitive root)';
+  }
+
+  // Next / previous prime around n
+  void _evaluateNearbyPrime({
+    required bool next,
+    required bool commitToHistory,
+  }) {
+    final String text = baseController.text;
+    if (text.isEmpty || text == '-') {
+      setState(() {
+        if (commitToHistory) {
+          _isError = true;
+          result = 'Enter a number n';
+        } else {
+          _isError = false;
+          result = '';
+          _helperNote = '';
+        }
+      });
+      return;
+    }
+
+    BigInt n;
+    try {
+      n = BigInt.parse(text);
+    } catch (_) {
+      setState(() {
+        _isError = true;
+        result = 'Invalid input!';
+      });
+      return;
+    }
+
+    final BigInt limit = BigInt.parse('1000000000000');
+    if (n.abs() > limit) {
+      setState(() {
+        _isError = true;
+        result = 'Number is too large (max 10¹²)';
+      });
+      return;
+    }
+
+    BigInt? found;
+    if (next) {
+      BigInt c = n + BigInt.one;
+      if (c < BigInt.two) c = BigInt.two;
+      while (true) {
+        final bool? p = _isPrimeQuick(c);
+        if (p == null) break;
+        if (p) {
+          found = c;
+          break;
+        }
+        c += BigInt.one;
+      }
+    } else {
+      BigInt c = n - BigInt.one;
+      while (c >= BigInt.two) {
+        if (_isPrimeQuick(c) == true) {
+          found = c;
+          break;
+        }
+        c -= BigInt.one;
+      }
+    }
+
+    if (found == null) {
+      setState(() {
+        _isError = true;
+        result = next ? 'No prime found' : 'No prime below $n';
+      });
+      return;
+    }
+
+    final String resStr = found.toString();
+    setState(() {
+      _isError = false;
+      result = resStr;
+      _helperNote = _buildSingleNumberInsight(n);
+      _verifyNote = next
+          ? '$found is prime ✓  •  no prime between $n and $found'
+          : '$found is prime ✓  •  no prime between $found and $n';
+      if (commitToHistory) {
+        _justCalculated = true;
+        _recordHistory(_buildPlainExpression(), resStr, _helperNote);
+      }
+    });
   }
 
   String _buildSingleNumberInsight(BigInt a) {
@@ -733,6 +929,12 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
         core = exponentController.text.isEmpty
             ? 'root($a)'
             : 'isRoot(q=$a, α=$b)';
+        break;
+      case MathOp.nextPrime:
+        core = 'nextPrime($a)';
+        break;
+      case MathOp.prevPrime:
+        core = 'prevPrime($a)';
         break;
       case MathOp.modInverse:
         core = '$a⁻¹';
@@ -852,6 +1054,39 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
     _performCalculation(commitToHistory: false);
   }
 
+  void _onNearbyPrimePressed(MathOp op) {
+    HapticFeedback.lightImpact();
+    setState(() {
+      if (!_isSingleOperandOp &&
+          _justCalculated &&
+          result.isNotEmpty &&
+          !_isError &&
+          !result.startsWith('YES') &&
+          !result.startsWith('NO')) {
+        baseController.text = result;
+        _justCalculated = false;
+      } else if ((_currentOp == MathOp.nextPrime ||
+              _currentOp == MathOp.prevPrime) &&
+          _justCalculated &&
+          result.isNotEmpty &&
+          !_isError) {
+        // Pressing NEXT P / PREV P again steps to the next prime in sequence!
+        baseController.text = result;
+        _justCalculated = false;
+      }
+      _currentOp = op;
+      _hasMod = false;
+      exponentController.clear();
+      modController.clear();
+      _activePart = 0;
+      if (_isError) {
+        _isError = false;
+        result = '';
+      }
+    });
+    _performCalculation(commitToHistory: false);
+  }
+
   void _onModOperatorPressed() {
     HapticFeedback.lightImpact();
     setState(() {
@@ -862,7 +1097,9 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
         _currentOp = MathOp.none;
         _justCalculated = false;
       }
-      if (_currentOp == MathOp.primitiveRoot) {
+      if (_currentOp == MathOp.primitiveRoot ||
+          _currentOp == MathOp.nextPrime ||
+          _currentOp == MathOp.prevPrime) {
         _currentOp = MathOp.none;
         exponentController.clear();
       }
@@ -913,7 +1150,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
         if (baseController.text.isNotEmpty) {
           baseController.text =
               baseController.text.substring(0, baseController.text.length - 1);
-        } else if (_currentOp == MathOp.primitiveRoot) {
+        } else if (_isSingleOperandOp) {
           _currentOp = MathOp.none;
         }
       }
@@ -948,6 +1185,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
       _justCalculated = false;
       result = "";
       _helperNote = "";
+      _verifyNote = "";
       _lastPrimitiveRoots = [];
       _lastRootPrime = null;
       _isError = false;
@@ -1117,7 +1355,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
   String _getDetectedOperationTitle() {
     switch (_currentOp) {
       case MathOp.none:
-        return _hasMod ? 'Modulo • a mod n' : 'Modular & Crypto Calculator';
+        return _hasMod ? 'Modulo • a mod n' : 'Crypto Calculator';
       case MathOp.power:
         return _hasMod
             ? 'Modular Exponentiation • a^b mod n'
@@ -1130,6 +1368,10 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
         return exponentController.text.isEmpty
             ? 'Find Primitive Roots • root(q)'
             : 'Verify Primitive Root • isRoot(q, α)';
+      case MathOp.nextPrime:
+        return 'Next Prime • Smallest Prime > n';
+      case MathOp.prevPrime:
+        return 'Previous Prime • Largest Prime < n';
       case MathOp.add:
         return _hasMod ? 'Modular Addition • (a + b) mod n' : 'Addition • a + b';
       case MathOp.subtract:
@@ -1147,151 +1389,563 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
     }
   }
 
-  void _showHistoryModal() {
+  void _onEqualsPressed() {
+    _performCalculation(commitToHistory: true);
+    if (_isError) {
+      HapticFeedback.heavyImpact();
+      _shakeController.forward(from: 0);
+    }
+  }
+
+  // Builds step-by-step tables for Modular Exponentiation, GCD, and Modular Inverse
+  _StepsData? _buildStepsData() {
+    if (_isError || result.isEmpty) return null;
+
+    try {
+      // 1. Modular Exponentiation: Square-and-Multiply Table
+      if (_currentOp == MathOp.power && _hasMod) {
+        if (baseController.text.isEmpty ||
+            exponentController.text.isEmpty ||
+            modController.text.isEmpty) {
+          return null;
+        }
+        final BigInt a = BigInt.parse(baseController.text);
+        final BigInt b = BigInt.parse(exponentController.text);
+        final BigInt n = BigInt.parse(modController.text);
+        if (b < BigInt.zero || n <= BigInt.zero) return null;
+        final String bits = b.toRadixString(2);
+        if (bits.length > 64) return null;
+
+        final BigInt baseMod = ((a % n) + n) % n;
+        BigInt acc = BigInt.one;
+        final List<List<String>> rows = [];
+
+        for (int i = 0; i < bits.length; i++) {
+          final String bit = bits[i];
+          final BigInt sq = (acc * acc) % n;
+          String multStr = '—';
+          if (bit == '1') {
+            acc = (sq * baseMod) % n;
+            multStr = '($sq × $baseMod) mod $n = $acc';
+          } else {
+            acc = sq;
+          }
+          rows.add([
+            '${i + 1}',
+            bit,
+            '$sq',
+            multStr,
+            '$acc',
+          ]);
+        }
+
+        return _StepsData(
+          title: 'Square-and-Multiply Steps',
+          intro: [
+            'Expression: $a^$b mod $n',
+            'Exponent in binary: $b = $bits₂ (${bits.length} bits, MSB → LSB)',
+            'Start with result R = 1. For each bit: square R mod $n, and if bit = 1, multiply by ${a != baseMod ? "($a mod $n = $baseMod)" : "$baseMod"} mod $n.',
+          ],
+          headers: ['#', 'Bit', 'Square mod n', 'Multiply (if bit=1)', 'R'],
+          rows: rows,
+          conclusion: 'Final Answer: $a^$b mod $n = $acc',
+        );
+      }
+
+      // 2. GCD: Euclidean Division Chain
+      if (_currentOp == MathOp.gcd && !_hasMod) {
+        if (baseController.text.isEmpty || exponentController.text.isEmpty) {
+          return null;
+        }
+        BigInt a = BigInt.parse(baseController.text).abs();
+        BigInt b = BigInt.parse(exponentController.text).abs();
+        if (a == BigInt.zero && b == BigInt.zero) return null;
+
+        final List<List<String>> rows = [];
+        int step = 1;
+        while (b > BigInt.zero && step <= 60) {
+          final BigInt q = a ~/ b;
+          final BigInt r = a % b;
+          rows.add([
+            '$step',
+            '$a',
+            '$b',
+            '$q',
+            '$r',
+            '$a = $q × $b + $r',
+          ]);
+          a = b;
+          b = r;
+          step++;
+        }
+
+        return _StepsData(
+          title: 'Euclidean Algorithm (GCD Steps)',
+          intro: [
+            'Repeatedly divide A by B:  A = Q × B + R, then shift (A ← B, B ← R) until R = 0.',
+          ],
+          headers: ['#', 'A', 'B', 'Q', 'R', 'Division Equation'],
+          rows: rows,
+          conclusion:
+              'Last non-zero remainder = gcd = $a  (${a == BigInt.one ? "Coprime ✓" : "Not Coprime"})',
+        );
+      }
+
+      // 3. Modular Inverse: Extended Euclidean Table + Shortcut to Extended Euclid Screen
+      if (_currentOp == MathOp.modInverse) {
+        if (baseController.text.isEmpty || modController.text.isEmpty) {
+          return null;
+        }
+        final BigInt eOrig = BigInt.parse(baseController.text);
+        final BigInt phi = BigInt.parse(modController.text);
+        if (phi <= BigInt.one) return null;
+        final BigInt e = ((eOrig % phi) + phi) % phi;
+
+        BigInt a = phi;
+        BigInt b = e;
+        BigInt x = BigInt.zero;
+        BigInt y = BigInt.one;
+        final List<List<String>> rows = [];
+        int step = 1;
+
+        while (b > BigInt.zero && step <= 60) {
+          final BigInt q = a ~/ b;
+          final BigInt r = a % b;
+          final BigInt z = x - (q * y);
+          rows.add(['$step', '$q', '$a', '$b', '$r', '$x', '$y', '$z']);
+          a = b;
+          b = r;
+          x = y;
+          y = z;
+          step++;
+        }
+        rows.add(['$step', '-', '$a', '0', '-', '$x', '-', '-']);
+
+        final BigInt d = x < BigInt.zero ? x + phi : x;
+        final String conclusion = x < BigInt.zero
+            ? 'x = $x is negative → d = $x + $phi = $d  •  Verify: ($eOrig × $d) mod $phi = 1 ✓'
+            : 'd = x = $d  •  Verify: ($eOrig × $d) mod $phi = 1 ✓';
+
+        return _StepsData(
+          title: 'Extended Euclidean Inverse Steps',
+          intro: [
+            'Solving: $eOrig⁻¹ mod $phi',
+            'Update rule: z = x − Q × y, then shift B→A, R→B, y→x, z→y.',
+          ],
+          headers: ['#', 'Q', 'A', 'B', 'R', 'x', 'y', 'z'],
+          rows: rows,
+          conclusion: conclusion,
+          inverseE: e.toString(),
+          inverseN: phi.toString(),
+        );
+      }
+    } catch (_) {
+      return null;
+    }
+    return null;
+  }
+
+  void _showStepsSheet() {
+    final _StepsData? data = _buildStepsData();
+    if (data == null) return;
+
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: AppTheme.cardBg(context),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (context) {
+      builder: (sheetContext) {
         return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.history_rounded, color: primaryColor),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Calculation History',
-                          style: TextStyle(
-                            color: primaryColor,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (_history.isNotEmpty)
-                      TextButton.icon(
-                        onPressed: () {
-                          setState(() => _history.clear());
-                          Navigator.pop(context);
-                        },
-                        icon: Icon(Icons.delete_outline_rounded,
-                            color: AppTheme.errorText(context), size: 18),
-                        label: Text(
-                          'Clear',
-                          style: TextStyle(color: AppTheme.errorText(context)),
-                        ),
-                      ),
-                  ],
-                ),
-                const Divider(height: 20),
-                if (_history.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 32),
-                    child: Text(
-                      'Press "=" on any calculation to save it here.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: AppTheme.textMuted(context)),
-                    ),
-                  )
-                else
-                  Flexible(
-                    child: ListView.separated(
-                      shrinkWrap: true,
-                      itemCount: _history.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 8),
-                      itemBuilder: (context, index) {
-                        final item = _history[index];
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: AppTheme.surfaceSubtle(context),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                                color: AppTheme.borderSubtle(context)),
-                          ),
-                          child: ListTile(
-                            title: Text(
-                              item.expression,
-                              style: TextStyle(
-                                fontFamily: 'Courier New',
-                                fontSize: 14,
-                                color: AppTheme.textSecondary(context),
-                                fontWeight: FontWeight.w600,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(sheetContext).size.height * 0.78,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Icon(Icons.fact_check_rounded, color: primaryColor),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                data.title,
+                                style: TextStyle(
+                                  color: primaryColor,
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '= ${item.result}',
-                                  style: TextStyle(
-                                    fontFamily: 'Courier New',
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: primaryColor,
-                                  ),
-                                ),
-                                if (item.note != null)
-                                  Text(
-                                    item.note!,
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: AppTheme.textSecondary(context),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                            trailing: IconButton(
-                              icon: Icon(Icons.copy_rounded,
-                                  color: primaryColor, size: 20),
-                              onPressed: () {
-                                Clipboard.setData(
-                                    ClipboardData(text: item.result));
-                                Navigator.pop(context);
-                                ScaffoldMessenger.of(this.context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                        'Copied ${item.result} to clipboard'),
-                                    backgroundColor: Colors.green.shade700,
-                                    behavior: SnackBarBehavior.floating,
-                                  ),
-                                );
-                              },
-                            ),
-                            onTap: () {
-                              if (!item.result.startsWith('YES') &&
-                                  !item.result.startsWith('NO')) {
-                                setState(() {
-                                  baseController.text = item.result;
-                                  exponentController.clear();
-                                  modController.clear();
-                                  _currentOp = MathOp.none;
-                                  _hasMod = false;
-                                  _activePart = 0;
-                                  result = item.result;
-                                  _isError = false;
-                                });
-                              }
-                              Navigator.pop(context);
-                            },
+                          ],
+                        ),
+                      ),
+                      if (data.inverseE != null && data.inverseN != null)
+                        TextButton.icon(
+                          onPressed: () {
+                            Navigator.pop(sheetContext);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const InverseCalcScreen(),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.open_in_new_rounded, size: 15),
+                          label: const Text(
+                            'Extended Euclid',
+                            style: TextStyle(
+                                fontSize: 12, fontWeight: FontWeight.bold),
                           ),
-                        );
-                      },
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppTheme.tealAccent(context),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceSubtle(context),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AppTheme.borderSubtle(context)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        for (final line in data.intro)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 2),
+                            child: Text(
+                              line,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppTheme.textSecondary(context),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
-              ],
+                  const SizedBox(height: 12),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: DataTable(
+                          headingRowHeight: 36,
+                          dataRowMinHeight: 34,
+                          dataRowMaxHeight: 40,
+                          columnSpacing: 18,
+                          headingRowColor: WidgetStateProperty.all(
+                            primaryColor.withValues(alpha: 0.14),
+                          ),
+                          columns: [
+                            for (final h in data.headers)
+                              DataColumn(
+                                label: Text(
+                                  h,
+                                  style: TextStyle(
+                                    fontFamily: 'Courier New',
+                                    fontWeight: FontWeight.bold,
+                                    color: primaryColor,
+                                    fontSize: 12.5,
+                                  ),
+                                ),
+                              ),
+                          ],
+                          rows: [
+                            for (final r in data.rows)
+                              DataRow(
+                                cells: [
+                                  for (final cell in r)
+                                    DataCell(
+                                      Text(
+                                        cell,
+                                        style: TextStyle(
+                                          fontFamily: 'Courier New',
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppTheme.textPrimary(context),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: AppTheme.successBg(context),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AppTheme.successBorder(context)),
+                    ),
+                    child: Text(
+                      data.conclusion,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'Courier New',
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.successText(context),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
+        );
+      },
+    );
+  }
+
+  void _reloadHistoryEntry(CalcHistoryEntry item) {
+    HapticFeedback.selectionClick();
+    setState(() {
+      baseController.text = item.baseText;
+      exponentController.text = item.exponentText;
+      modController.text = item.modText;
+      _currentOp = item.op;
+      _hasMod = item.hasMod;
+      if (_hasMod && modController.text.isNotEmpty) {
+        _activePart = 2;
+      } else if (_hasSecondOperand && exponentController.text.isNotEmpty) {
+        _activePart = 1;
+      } else {
+        _activePart = 0;
+      }
+      _justCalculated = false;
+      _isError = false;
+    });
+    _performCalculation(commitToHistory: false);
+  }
+
+  void _showHistoryModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppTheme.cardBg(context),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (modalContext) {
+        return StatefulBuilder(
+          builder: (modalContext, setModalState) {
+            return SafeArea(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(modalContext).size.height * 0.75,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.history_rounded, color: primaryColor),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Calculation History',
+                                style: TextStyle(
+                                  color: primaryColor,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (_history.isNotEmpty)
+                            TextButton.icon(
+                              onPressed: () {
+                                setState(() {
+                                  _history.removeWhere((e) => !e.pinned);
+                                });
+                                setModalState(() {});
+                              },
+                              icon: Icon(Icons.delete_outline_rounded,
+                                  color: AppTheme.errorText(context), size: 18),
+                              label: Text(
+                                'Clear Unpinned',
+                                style: TextStyle(
+                                  color: AppTheme.errorText(context),
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Tap any entry to reload the full expression into the calculator.',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          color: AppTheme.textMuted(context),
+                        ),
+                      ),
+                      const Divider(height: 18),
+                      if (_history.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 32),
+                          child: Text(
+                            'Press "=" on any calculation to save it here.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: AppTheme.textMuted(context)),
+                          ),
+                        )
+                      else
+                        Flexible(
+                          child: ListView.separated(
+                            shrinkWrap: true,
+                            itemCount: _history.length,
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(height: 8),
+                            itemBuilder: (context, index) {
+                              final item = _history[index];
+                              return Container(
+                                decoration: BoxDecoration(
+                                  color: item.pinned
+                                      ? primaryColor.withValues(alpha: 0.08)
+                                      : AppTheme.surfaceSubtle(context),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: item.pinned
+                                        ? primaryColor.withValues(alpha: 0.45)
+                                        : AppTheme.borderSubtle(context),
+                                  ),
+                                ),
+                                child: ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 4),
+                                  title: Text(
+                                    item.expression,
+                                    style: TextStyle(
+                                      fontFamily: 'Courier New',
+                                      fontSize: 13.5,
+                                      color: AppTheme.textSecondary(context),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  subtitle: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '= ${item.result}',
+                                        style: TextStyle(
+                                          fontFamily: 'Courier New',
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.bold,
+                                          color: primaryColor,
+                                        ),
+                                      ),
+                                      if (item.note != null)
+                                        Text(
+                                          item.note!,
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            color:
+                                                AppTheme.textSecondary(context),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        tooltip: item.pinned
+                                            ? 'Unpin'
+                                            : 'Pin to keep',
+                                        icon: Icon(
+                                          item.pinned
+                                              ? Icons.push_pin_rounded
+                                              : Icons.push_pin_outlined,
+                                          color: item.pinned
+                                              ? primaryColor
+                                              : AppTheme.textMuted(context),
+                                          size: 19,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            item.pinned = !item.pinned;
+                                            _history.sort((a, b) {
+                                              if (a.pinned == b.pinned) {
+                                                return 0;
+                                              }
+                                              return a.pinned ? -1 : 1;
+                                            });
+                                          });
+                                          setModalState(() {});
+                                        },
+                                      ),
+                                      IconButton(
+                                        tooltip: 'Copy as homework text',
+                                        icon: Icon(
+                                          Icons.description_outlined,
+                                          color: primaryColor,
+                                          size: 19,
+                                        ),
+                                        onPressed: () {
+                                          final String fullText = item.note !=
+                                                  null
+                                              ? '${item.expression} = ${item.result} (${item.note})'
+                                              : '${item.expression} = ${item.result}';
+                                          Clipboard.setData(
+                                              ClipboardData(text: fullText));
+                                          Navigator.pop(modalContext);
+                                          ScaffoldMessenger.of(this.context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                  'Copied: $fullText'),
+                                              backgroundColor:
+                                                  Colors.green.shade700,
+                                              behavior:
+                                                  SnackBarBehavior.floating,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                  onTap: () {
+                                    Navigator.pop(modalContext);
+                                    _reloadHistoryEntry(item);
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
         );
       },
     );
@@ -1302,17 +1956,9 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBg(context),
       appBar: AppBar(
-        title: Wrap(
-          alignment: WrapAlignment.center,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: const [
-            Icon(Icons.speed_rounded, size: 22),
-            SizedBox(width: 8),
-            Text(
-              'Modular Exponentiation',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 19),
-            ),
-          ],
+        title: const Text(
+          'Crypto Calculator',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,
         backgroundColor: AppTheme.orangeAppBar(context),
@@ -1336,15 +1982,28 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // 1. PREMIUM DISPLAY SCREEN CARD
+            // 1. PREMIUM DISPLAY SCREEN CARD (with shake feedback on error)
             Expanded(
-              flex: 41,
-              child: _buildDisplayCard(),
+              flex: 40,
+              child: AnimatedBuilder(
+                animation: _shakeController,
+                builder: (context, child) {
+                  final double dx =
+                      math.sin(_shakeController.value * math.pi * 4) *
+                          (1.0 - _shakeController.value) *
+                          10.0;
+                  return Transform.translate(
+                    offset: Offset(dx, 0),
+                    child: child,
+                  );
+                },
+                child: _buildDisplayCard(),
+              ),
             ),
 
             // 2. PROFESSIONAL CRYPTOGRAPHIC & ARITHMETIC KEYPAD
             Expanded(
-              flex: 59,
+              flex: 60,
               child: _buildKeypadSection(),
             ),
           ],
@@ -1475,8 +2134,8 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
               ),
             ),
 
-            // Contextual Crypto Insight Strip (tappable when showing Primitive Roots list!)
-            if (_helperNote.isNotEmpty && !_isError)
+            // Contextual Crypto Insight & Verify Strip
+            if ((_helperNote.isNotEmpty || _verifyNote.isNotEmpty) && !_isError)
               GestureDetector(
                 onTap: _lastPrimitiveRoots.isNotEmpty
                     ? _showAllPrimitiveRootsSheet
@@ -1485,28 +2144,49 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
                   color: tealColor.withValues(alpha: isDark ? 0.14 : 0.1),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        _lastPrimitiveRoots.isNotEmpty
-                            ? Icons.touch_app_rounded
-                            : Icons.verified_outlined,
-                        size: 13,
-                        color: tealColor,
-                      ),
-                      const SizedBox(width: 6),
-                      Flexible(
-                        child: Text(
-                          _helperNote,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: isDark ? tealColor : Colors.teal.shade900,
+                      if (_helperNote.isNotEmpty)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              _lastPrimitiveRoots.isNotEmpty
+                                  ? Icons.touch_app_rounded
+                                  : Icons.verified_outlined,
+                              size: 13,
+                              color: tealColor,
+                            ),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                _helperNote,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color:
+                                      isDark ? tealColor : Colors.teal.shade900,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      if (_verifyNote.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(
+                            'Verify: $_verifyNote',
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: 'Courier New',
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.successText(context),
+                            ),
                           ),
                         ),
-                      ),
                     ],
                   ),
                 ),
@@ -1577,6 +2257,37 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
                       ),
                     ),
                   ),
+                  if (_buildStepsData() != null) ...[
+                    const SizedBox(width: 8),
+                    Material(
+                      color: AppTheme.tealAccent(context),
+                      borderRadius: BorderRadius.circular(10),
+                      child: InkWell(
+                        onTap: _showStepsSheet,
+                        borderRadius: BorderRadius.circular(10),
+                        child: const Padding(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.table_chart_rounded,
+                                  size: 14, color: Colors.white),
+                              SizedBox(width: 4),
+                              Text(
+                                'Steps',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                   if (_lastPrimitiveRoots.length > 1 && !_isError) ...[
                     const SizedBox(width: 8),
                     Material(
@@ -1795,6 +2506,40 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
           ),
         ],
       );
+    } else if (_currentOp == MathOp.nextPrime ||
+        _currentOp == MathOp.prevPrime) {
+      final String fnLabel =
+          _currentOp == MathOp.nextPrime ? 'nextPrime(' : 'prevPrime(';
+      coreWidget = Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            fnLabel,
+            style: TextStyle(
+              fontFamily: 'Courier New',
+              fontSize: 25,
+              fontWeight: FontWeight.bold,
+              color: primaryColor,
+            ),
+          ),
+          buildToken(
+            text: baseController.text.isEmpty ? 'n?' : baseController.text,
+            isEmpty: baseController.text.isEmpty,
+            isActive: isBaseActive,
+            onTap: () => setState(() => _activePart = 0),
+            fontSize: 25,
+          ),
+          Text(
+            ')',
+            style: TextStyle(
+              fontFamily: 'Courier New',
+              fontSize: 25,
+              fontWeight: FontWeight.bold,
+              color: primaryColor,
+            ),
+          ),
+        ],
+      );
     } else if (_currentOp == MathOp.gcd) {
       coreWidget = Row(
         mainAxisSize: MainAxisSize.min,
@@ -2001,6 +2746,134 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
     );
   }
 
+  Widget _buildModeSelectorStrip() {
+    Widget chip(String title, CalcUiMode mode, IconData icon) {
+      final bool selected = _uiMode == mode;
+      return Expanded(
+        child: GestureDetector(
+          onTap: () {
+            HapticFeedback.selectionClick();
+            setState(() => _uiMode = mode);
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 160),
+            padding: const EdgeInsets.symmetric(vertical: 5),
+            decoration: BoxDecoration(
+              color: selected ? primaryColor : Colors.transparent,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  icon,
+                  size: 13,
+                  color:
+                      selected ? Colors.white : AppTheme.textSecondary(context),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: selected
+                        ? Colors.white
+                        : AppTheme.textSecondary(context),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceSubtle(context),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.borderSubtle(context)),
+      ),
+      child: Row(
+        children: [
+          chip('Basic', CalcUiMode.basic, Icons.dialpad_rounded),
+          chip('Modular', CalcUiMode.modular, Icons.lock_clock_rounded),
+          chip('Number Theory', CalcUiMode.numberTheory, Icons.hub_rounded),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildModeFunctionKeys() {
+    switch (_uiMode) {
+      case CalcUiMode.basic:
+        return [
+          _buildCryptoFunctionKey(
+            label: 'xʸ',
+            subtitle: 'Power',
+            isSelected: _currentOp == MathOp.power,
+            onTap: () => _onBinaryOpPressed(MathOp.power),
+          ),
+          _buildCryptoFunctionKey(
+            label: 'MOD',
+            subtitle: 'a mod n',
+            isSelected: _hasMod && _currentOp != MathOp.modInverse,
+            onTap: _onModOperatorPressed,
+          ),
+        ];
+      case CalcUiMode.modular:
+        return [
+          _buildCryptoFunctionKey(
+            label: 'xʸ',
+            subtitle: 'Power',
+            isSelected: _currentOp == MathOp.power,
+            onTap: () => _onBinaryOpPressed(MathOp.power),
+          ),
+          _buildCryptoFunctionKey(
+            label: 'MOD',
+            subtitle: 'a mod n',
+            isSelected: _hasMod && _currentOp != MathOp.modInverse,
+            onTap: _onModOperatorPressed,
+          ),
+          _buildCryptoFunctionKey(
+            label: 'e⁻¹',
+            subtitle: 'Inverse',
+            isSelected: _currentOp == MathOp.modInverse,
+            onTap: _onModInversePressed,
+          ),
+          _buildCryptoFunctionKey(
+            label: 'GCD',
+            subtitle: 'Coprime',
+            isSelected: _currentOp == MathOp.gcd,
+            onTap: () => _onBinaryOpPressed(MathOp.gcd),
+          ),
+        ];
+      case CalcUiMode.numberTheory:
+        return [
+          _buildCryptoFunctionKey(
+            label: 'ROOT',
+            subtitle: 'Prim. α',
+            isSelected: _currentOp == MathOp.primitiveRoot,
+            onTap: _onPrimitiveRootPressed,
+          ),
+          _buildCryptoFunctionKey(
+            label: 'PREV P',
+            subtitle: 'Prime < n',
+            isSelected: _currentOp == MathOp.prevPrime,
+            onTap: () => _onNearbyPrimePressed(MathOp.prevPrime),
+          ),
+          _buildCryptoFunctionKey(
+            label: 'NEXT P',
+            subtitle: 'Prime > n',
+            isSelected: _currentOp == MathOp.nextPrime,
+            onTap: () => _onNearbyPrimePressed(MathOp.nextPrime),
+          ),
+        ];
+    }
+  }
+
   Widget _buildKeypadSection() {
     final bool isDark = AppTheme.isDark(context);
     final Color actionBtnBg =
@@ -2009,7 +2882,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
         isDark ? const Color(0xFFE2E8F0) : const Color(0xFF334155);
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       decoration: BoxDecoration(
         color: AppTheme.cardBg(context),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
@@ -2023,45 +2896,18 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
       ),
       child: Column(
         children: [
-          // Top Cryptographic Function Bar: x^y, MOD, e^-1, GCD, ROOT (α)
+          // 1. Mode Strip: Basic | Modular | Number Theory
+          _buildModeSelectorStrip(),
+          const SizedBox(height: 8),
+
+          // 2. Mode-Specific Cryptographic Function Bar
           SizedBox(
-            height: 50,
+            height: 48,
             child: Row(
-              children: [
-                _buildCryptoFunctionKey(
-                  label: 'xʸ',
-                  subtitle: 'Power',
-                  isSelected: _currentOp == MathOp.power,
-                  onTap: () => _onBinaryOpPressed(MathOp.power),
-                ),
-                _buildCryptoFunctionKey(
-                  label: 'MOD',
-                  subtitle: 'a mod n',
-                  isSelected: _hasMod && _currentOp != MathOp.modInverse,
-                  onTap: _onModOperatorPressed,
-                ),
-                _buildCryptoFunctionKey(
-                  label: 'e⁻¹',
-                  subtitle: 'Inverse',
-                  isSelected: _currentOp == MathOp.modInverse,
-                  onTap: _onModInversePressed,
-                ),
-                _buildCryptoFunctionKey(
-                  label: 'GCD',
-                  subtitle: 'Coprime',
-                  isSelected: _currentOp == MathOp.gcd,
-                  onTap: () => _onBinaryOpPressed(MathOp.gcd),
-                ),
-                _buildCryptoFunctionKey(
-                  label: 'ROOT',
-                  subtitle: 'Prim. α',
-                  isSelected: _currentOp == MathOp.primitiveRoot,
-                  onTap: _onPrimitiveRootPressed,
-                ),
-              ],
+              children: _buildModeFunctionKeys(),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
 
           // Main 4x5 Calculator Keypad
           // Row 1: AC, ⌫, ANS, ÷
@@ -2278,7 +3124,7 @@ class _ModCalculatorScreenState extends State<ModCalculatorScreen> {
             color: Colors.transparent,
             borderRadius: BorderRadius.circular(16),
             child: InkWell(
-              onTap: () => _performCalculation(commitToHistory: true),
+              onTap: _onEqualsPressed,
               borderRadius: BorderRadius.circular(16),
               child: const Center(
                 child: Text(

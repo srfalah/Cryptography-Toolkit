@@ -403,17 +403,9 @@ class _RsaScreenState extends State<RsaScreen> {
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBgAlt(context),
       appBar: AppBar(
-        title: Wrap(
-          alignment: WrapAlignment.center,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: const [
-            Icon(Icons.key_outlined, size: 24),
-            SizedBox(width: 8),
-            Text(
-              'RSA Algorithm',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
-            ),
-          ],
+        title: const Text(
+          'RSA Algorithm',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,
         backgroundColor: AppTheme.navyAppBar(context),

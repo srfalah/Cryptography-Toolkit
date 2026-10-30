@@ -151,16 +151,9 @@ class _RowTranspositionScreenState extends State<RowTranspositionScreen> {
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBg(context),
       appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            Icon(Icons.table_chart_rounded),
-            SizedBox(width: 10),
-            Text(
-              'Row Transposition',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ],
+        title: const Text(
+          'Row Transposition',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,
         backgroundColor: AppTheme.transpositionAppBar(context),

@@ -288,17 +288,9 @@ class _RouteCipherScreenState extends State<RouteCipherScreen> {
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBg(context),
       appBar: AppBar(
-        title: Wrap(
-          alignment: WrapAlignment.center,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: const [
-            Icon(Icons.route_rounded, size: 22),
-            SizedBox(width: 8),
-            Text(
-              'Route Cipher',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 21),
-            ),
-          ],
+        title: const Text(
+          'Route Cipher',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,
         backgroundColor: AppTheme.transpositionAppBar(context),

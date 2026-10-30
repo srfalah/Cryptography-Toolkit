@@ -247,18 +247,9 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBgAlt(context),
       appBar: AppBar(
-        title: Wrap(
-          alignment: WrapAlignment.center,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: const [
-            Icon(Icons.swap_horizontal_circle_rounded, size: 22),
-            SizedBox(width: 8),
-            Text(
-              'D-H Key Exchange',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 21),
-              textAlign: TextAlign.center,
-            ),
-          ],
+        title: const Text(
+          'D-H Key Exchange',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,
         backgroundColor: AppTheme.navyAppBar(context),
@@ -325,39 +316,50 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: primaryColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: primaryColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(Icons.public_rounded,
+                          color: primaryColor, size: 17),
                     ),
-                    child: Icon(Icons.public_rounded,
-                        color: primaryColor, size: 18),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    "1. Public Global Parameters",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      color: primaryColor,
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        "Global Parameters (q, α)",
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13.5,
+                          color: primaryColor,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               TextButton.icon(
                 onPressed: _generateGlobalParams,
-                icon: const Icon(Icons.auto_awesome, size: 15),
-                label:
-                    const Text("Auto Demo", style: TextStyle(fontSize: 11.5)),
+                icon: const Icon(Icons.auto_awesome, size: 14),
+                label: const Text(
+                  "Auto Demo",
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 style: TextButton.styleFrom(
                   foregroundColor: AppTheme.tealAccent(context),
                   backgroundColor: AppTheme.tealAccent(context)
                       .withValues(alpha: isDark ? 0.14 : 0.1),
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   shape: RoundedRectangleBorder(

@@ -69,13 +69,9 @@ class _CaesarScreenState extends State<CaesarScreen> {
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBg(context),
       appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            Icon(Icons.text_fields_rounded),
-            SizedBox(width: 10),
-            Text('Caesar Cipher', style: TextStyle(fontWeight: FontWeight.bold)),
-          ],
+        title: const Text(
+          'Caesar Cipher',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,
         backgroundColor: AppTheme.purpleAppBar(context),

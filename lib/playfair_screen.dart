@@ -275,17 +275,9 @@ class _PlayfairScreenState extends State<PlayfairScreen> {
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBg(context),
       appBar: AppBar(
-        title: Wrap(
-          alignment: WrapAlignment.center,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: const [
-            Icon(Icons.grid_on_rounded, size: 22),
-            SizedBox(width: 8),
-            Text(
-              'Playfair Cipher',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 21),
-            ),
-          ],
+        title: const Text(
+          'Playfair Cipher',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,
         backgroundColor: AppTheme.purpleAppBar(context),

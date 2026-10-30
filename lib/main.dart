@@ -78,16 +78,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBg(context),
       appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            Icon(Icons.enhanced_encryption_rounded, size: 21),
-            SizedBox(width: 8),
-            Text(
-              'Cryptography Toolkit',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 19),
-            ),
-          ],
+        title: const Text(
+          'Cryptography Toolkit',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,
         backgroundColor: AppTheme.navyAppBar(context),
@@ -157,10 +150,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
                 _buildMenuCard(
                   context,
-                  title: "Modular Exponentiation",
+                  title: "Crypto Calculator",
                   formulaBadge: "a^b mod n",
-                  subtitle: "Fast modular power, inverse & primitive roots",
-                  icon: Icons.speed_rounded,
+                  subtitle: "Modular power, inverse, GCD, primes & roots",
+                  icon: Icons.calculate_rounded,
                   color: orangeColor,
                   destination: const ModCalculatorScreen(),
                 ),
@@ -743,24 +736,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
+                      Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 6,
+                        runSpacing: 3,
                         children: [
-                          Flexible(
-                            child: Text(
-                              title,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                                color: AppTheme.textPrimary(context),
-                              ),
+                          Text(
+                            title,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14.5,
+                              color: AppTheme.textPrimary(context),
                             ),
                           ),
-                          const SizedBox(width: 7),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 7,
-                              vertical: 2,
+                              horizontal: 6,
+                              vertical: 1.5,
                             ),
                             decoration: BoxDecoration(
                               color:
@@ -775,7 +767,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               formulaBadge,
                               style: TextStyle(
                                 fontFamily: 'Courier New',
-                                fontSize: 10,
+                                fontSize: 9.5,
                                 fontWeight: FontWeight.bold,
                                 color: color,
                               ),

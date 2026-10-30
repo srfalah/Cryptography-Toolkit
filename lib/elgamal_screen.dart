@@ -373,17 +373,9 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBgAlt(context),
       appBar: AppBar(
-        title: Wrap(
-          alignment: WrapAlignment.center,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: const [
-            Icon(Icons.shield_outlined, size: 24),
-            SizedBox(width: 8),
-            Text(
-              'El-Gamal Cipher',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
-            ),
-          ],
+        title: const Text(
+          'El-Gamal Cipher',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,
         backgroundColor: AppTheme.navyAppBar(context),
