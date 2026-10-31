@@ -36,10 +36,6 @@ The interface is designed for mobile screens and supports both **English and Ara
 
 ## 📸 Screenshots
 
-<!-- SCREENSHOTS TO BE CAPTURED FROM v3.1.2 AND ADDED BEFORE PUBLISHING.
-     Place the real screenshots in screenshots/v3.1.2/ with the exact filenames below.
-     These image references are placeholders until those files are added. -->
-
 <table>
 <tr>
 <td align="center" width="50%"><img src="screenshots/light_mode.png" alt="Algorithm Workbench in light mode" width="270"><br><strong>Algorithm Workbench · Light</strong></td>
