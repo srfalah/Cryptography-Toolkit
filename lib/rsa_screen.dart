@@ -552,30 +552,33 @@ class _RsaScreenState extends State<RsaScreen> {
             _buildInlineValidationBanner(_primeValidationMessage!),
           ],
 
-          // Computed n and φ(n) Live Breakdown Rows
+          // Computed n and φ(n) Live Breakdown Rows (Equal-sized squares)
           if (isPrimesValid) ...[
             const SizedBox(height: 14),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildCompactCalcRow(
-                    label: tr("Modulus (n)", "المعيار (n)"),
-                    symbolicFormula: "p × q",
-                    substitutedFormula:
-                        "${pController.text} × ${qController.text}",
-                    resultValue: nController.text,
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: _buildEqualMetricSquare(
+                      label: tr("Modulus (n)", "المعيار (n)"),
+                      symbolicFormula: "n = p × q",
+                      substitutedFormula:
+                          "${pController.text} × ${qController.text}",
+                      resultValue: nController.text,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _buildCompactCalcRow(
-                    label: tr("Totient φ(n)", "دالة أويلر φ(n)"),
-                    symbolicFormula: "(p−1)(q−1)",
-                    substitutedFormula: "$pMinus1 × $qMinus1",
-                    resultValue: phiController.text,
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildEqualMetricSquare(
+                      label: tr("Totient φ(n)", "دالة أويلر φ(n)"),
+                      symbolicFormula: "φ(n) = (p−1)(q−1)",
+                      substitutedFormula: "$pMinus1 × $qMinus1",
+                      resultValue: phiController.text,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             const Divider(height: 26),
 
@@ -1065,6 +1068,102 @@ class _RsaScreenState extends State<RsaScreen> {
           filled: true,
           fillColor: AppTheme.surfaceSubtle(context),
         ),
+      ),
+    );
+  }
+
+  Widget _buildEqualMetricSquare({
+    required String label,
+    required String symbolicFormula,
+    required String substitutedFormula,
+    required String resultValue,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceSubtle(context),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: primaryColor.withValues(alpha: 0.28)),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: AlignmentDirectional.centerStart,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimary(context),
+              ),
+            ),
+          ),
+          const SizedBox(height: 5),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: primaryColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Directionality(
+              textDirection: TextDirection.ltr,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  symbolicFormula,
+                  style: TextStyle(
+                    fontFamily: 'Courier New',
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.bold,
+                    color: primaryColor,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 5),
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                "= $substitutedFormula",
+                style: TextStyle(
+                  fontFamily: 'Courier New',
+                  fontSize: 11.5,
+                  color: AppTheme.textSecondary(context),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: AppTheme.cardBg(context),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: primaryColor.withValues(alpha: 0.4)),
+            ),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: SelectableText(
+                resultValue,
+                style: TextStyle(
+                  fontFamily: 'Courier New',
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: primaryColor,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -396,17 +396,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }) {
     final bool isDark = AppTheme.isDark(context);
 
-    // Harmonious multi-stop theme gradient tailored for Light & Dark modes
+    // Harmonious multi-stop theme gradient tailored for Light & Dark modes (richer & darker)
     final List<Color> headerGradient = isDark
         ? const [
-            Color(0xFF172554), // Deep royal midnight navy
-            Color(0xFF1E293B), // Rich slate surface
-            Color(0xFF112A34), // Subtle deep teal-slate accent
+            Color(0xFF0C1938), // Deepest midnight navy
+            Color(0xFF111C33), // Rich dark royal slate
+            Color(0xFF0A222E), // Deep dark teal-slate accent
           ]
         : const [
-            Color(0xFFE0E7FF), // Soft royal indigo-navy mist
-            Color(0xFFEFF6FF), // Airy ice-blue center
-            Color(0xFFE0F2FE), // Soft sky-teal glow
+            Color(0xFFC7D2FE), // Rich indigo-navy tint
+            Color(0xFFDBEAFE), // Medium royal sky blue center
+            Color(0xFFBAE6FD), // Rich sky-teal glow
           ];
 
     return Container(
@@ -420,7 +420,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: brandAccent.withValues(alpha: isDark ? 0.38 : 0.25),
+          color: brandAccent.withValues(alpha: isDark ? 0.45 : 0.35),
           width: 1.2,
         ),
         boxShadow: [

@@ -67,13 +67,6 @@ class AboutMeScreen extends StatelessWidget {
                           letterSpacing: isArabic ? 0 : 1,
                         ),
                       ),
-                      Text(
-                        tr("Junior Enthusiast Programmer", "مبرمج شغوف بتطوير البرمجيات"),
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.8),
-                          fontSize: 14,
-                        ),
-                      ),
                     ],
                   ),
                 ),

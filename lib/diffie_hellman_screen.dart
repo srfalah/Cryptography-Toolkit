@@ -199,14 +199,6 @@ class _DiffieHellmanScreenState extends State<DiffieHellmanScreen> {
     setState(() {
       qController.text = qInt.toString();
       alphaController.text = pair['a'].toString();
-      if (privateAController.text.trim().isEmpty ||
-          (int.tryParse(privateAController.text) ?? 0) >= qInt) {
-        privateAController.text = (Random().nextInt(qInt - 3) + 2).toString();
-      }
-      if (privateBController.text.trim().isEmpty ||
-          (int.tryParse(privateBController.text) ?? 0) >= qInt) {
-        privateBController.text = (Random().nextInt(qInt - 3) + 2).toString();
-      }
       _calculate();
     });
   }

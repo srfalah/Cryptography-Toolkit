@@ -919,7 +919,7 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
     );
   }
 
-  // Compact 1-card live formula & value row (replaces bulky read-only TextField + Badge pairs)
+  // Compact 1-card live formula & value row (structured so values never cover equations)
   Widget _buildCompactCalcRow({
     required String label,
     required String symbolicFormula,
@@ -936,66 +936,74 @@ class _ElGamalScreenState extends State<ElGamalScreen> {
         border: Border.all(color: AppTheme.borderSubtle(context)),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Text(
-                      label,
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimary(context),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 1.5),
-                      decoration: BoxDecoration(
-                        color: activeColor.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Directionality(
-                        textDirection: TextDirection.ltr,
-                        child: Text(
-                          symbolicFormula,
-                          style: TextStyle(
-                            fontFamily: 'Courier New',
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.bold,
-                            color: activeColor,
-                          ),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textPrimary(context),
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: activeColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Directionality(
+                    textDirection: TextDirection.ltr,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        symbolicFormula,
+                        style: TextStyle(
+                          fontFamily: 'Courier New',
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: activeColor,
                         ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Directionality(
                   textDirection: TextDirection.ltr,
-                  child: Text(
-                    "= $substitutedFormula",
-                    style: TextStyle(
-                      fontFamily: 'Courier New',
-                      fontSize: 12,
-                      color: AppTheme.textSecondary(context),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "= $substitutedFormula",
+                      style: TextStyle(
+                        fontFamily: 'Courier New',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.textSecondary(context),
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
           Container(
+            constraints: const BoxConstraints(minWidth: 52),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            alignment: Alignment.center,
             decoration: BoxDecoration(
               color: AppTheme.cardBg(context),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: activeColor.withValues(alpha: 0.4)),
+              border: Border.all(color: activeColor.withValues(alpha: 0.45)),
             ),
             child: SelectableText(
               resultValue,
